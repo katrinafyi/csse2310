@@ -23,34 +23,23 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     // note that we INCLUDE the trailing \0 in the for loop
     // safe_read_line() guarantees our line contains no \0
     // in the middle.
-    int start = 0;
     int topLineNums[4];
-    int num = 0;
-    // strlen() will be wrong once we start inserting \0's
-    int fullLength = strlen(topLine); 
-    for (int i = 0; i <= fullLength; i++) {
-        char c = topLine[i];
-        // if we have whitespace, treat this point
-        // as the end of the string and pass to parse_int().
-        if (c == ' ' || c == '\0') {
-            topLine[i] = '\0';
-            int parsed = parse_int(topLine+start);
-            if (parsed < 0 || num >= 4) {
-                DEBUG_PRINT("invalid integer top line");
-                free(topLine);
-                return false;
-            }
-            topLineNums[num] = parsed;
-            num++;
-            // next int starts from the char after the space.
-            start = i+1;
-        }
-    }
-    free(topLine);
-    if (num < 4) {
-        DEBUG_PRINT("insufficient ints");
+    int* indexes;
+    int numTokens = tokenise(topLine, &indexes);
+    if (numTokens != 4) {
+        DEBUG_PRINT("not exactly 4 ints");
         return false;
     }
+    for (int i = 0; i < numTokens; i++) {
+        int parsed = parse_int(topLine+indexes[i]);
+        if (parsed < 0) {
+            DEBUG_PRINT("invalid integer top line");
+            free(topLine);
+            return false;
+        }
+        topLineNums[i] = parsed;
+    }
+    free(topLine);
     *w = topLineNums[0];
     *h = topLineNums[1];
     *n = topLineNums[2];

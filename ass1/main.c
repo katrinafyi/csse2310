@@ -53,12 +53,6 @@ int exec_main(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-    int* indexes;
-    int n = tokenise(argv[1], &indexes);
-    for (int x = 0; x < n; x++) {
-        printf("token %d is |%s|\n", x, argv[1] +indexes[x]);
-    }
-    
     int ret = exec_main(argc, argv);
     char* error;
     switch (ret) {
