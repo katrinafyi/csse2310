@@ -1,0 +1,67 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BOARD_H	board.h	2;"	d
+BoardState	board.h	/^typedef struct BoardState {$/;"	s
+BoardState	board.h	/^} BoardState;$/;"	t	typeref:struct:BoardState
+Card	deck.h	/^typedef struct Card {$/;"	s
+Card	deck.h	/^} Card;$/;"	t	typeref:struct:Card
+DEBUG_FLAG	util.h	10;"	d
+DEBUG_FLAG	util.h	8;"	d
+DEBUG_PRINT	util.h	13;"	d
+DECK_H	deck.h	2;"	d
+Deck	deck.h	/^typedef struct Deck {$/;"	s
+Deck	deck.h	/^} Deck;$/;"	t	typeref:struct:Deck
+EXITCODES_H	exitCodes.h	2;"	d
+EXIT_BOARD_FULL	exitCodes.h	10;"	d
+EXIT_DECK_ERROR	exitCodes.h	7;"	d
+EXIT_DECK_SHORT	exitCodes.h	9;"	d
+EXIT_EOF	exitCodes.h	11;"	d
+EXIT_INCORRECT_ARGS	exitCodes.h	5;"	d
+EXIT_INCORRECT_ARG_TYPES	exitCodes.h	6;"	d
+EXIT_SAVE_ERROR	exitCodes.h	8;"	d
+EXIT_SUCCESS	exitCodes.h	4;"	d
+GAME_H	game.h	2;"	d
+GameState	game.h	/^typedef struct GameState {$/;"	s
+GameState	game.h	/^} GameState;$/;"	t	typeref:struct:GameState
+LINE_BUFFER	util.c	8;"	d	file:
+NULL_CARD	deck.h	6;"	d
+NUM_HAND	game.h	10;"	d
+NUM_PLAYERS	game.h	9;"	d
+UTIL_H	util.h	2;"	d
+assert_on_board	board.c	/^void assert_on_board(BoardState* boardState, int r, int c) {$/;"	f
+board	board.h	/^    Card* board;$/;"	m	struct:BoardState
+boardState	game.h	/^    BoardState* boardState;$/;"	m	struct:GameState
+cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
+currPlayer	game.h	/^    int currPlayer;$/;"	m	struct:GameState
+deck	game.h	/^    Deck* deck;$/;"	m	struct:GameState
+deckFile	game.h	/^    char* deckFile;$/;"	m	struct:GameState
+fmt_card	deck.c	/^char* fmt_card(Card card) {$/;"	f
+fmt_card_c	deck.c	/^char* fmt_card_c(Card card, char fillChar) {$/;"	f
+height	board.h	/^    int height;$/;"	m	struct:BoardState
+init_board	board.c	/^void init_board(BoardState* boardState, int width, int height) {$/;"	f
+init_game_state	game.c	/^void init_game_state(GameState* gameState) {$/;"	f
+is_card	deck.c	/^bool is_card(char* cardStr) {$/;"	f
+load_board_row	board.c	/^int load_board_row(BoardState* boardState, int row, char* rowText) {$/;"	f
+load_deck_file	deck.c	/^bool load_deck_file(Deck* deck, char* deckFile) {$/;"	f
+load_game_file	game.c	/^bool load_game_file(GameState* gameState, char* saveFile) {$/;"	f
+main	main.c	/^int main(int argc, char** argv) {$/;"	f
+num	deck.h	/^    int num;$/;"	m	struct:Card
+numCards	deck.h	/^    int numCards;$/;"	m	struct:Deck
+numDrawn	game.h	/^    int numDrawn;$/;"	m	struct:GameState
+parse_all_hands	game.c	/^bool parse_all_hands(FILE* file, GameState* gameState) {$/;"	f
+parse_int	util.c	/^int parse_int(char* str) {$/;"	f
+parse_player_hand	game.c	/^bool parse_player_hand(FILE* file, Card* hand, int numExpected) {$/;"	f
+parse_top_line	game.c	/^bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {$/;"	f
+place_card	board.c	/^int place_card(BoardState* boardState, int row, int col, Card card) {$/;"	f
+playerHands	game.h	/^    Card playerHands[NUM_PLAYERS*NUM_HAND];$/;"	m	struct:GameState
+print_board	board.c	/^void print_board(BoardState* boardState) {$/;"	f
+print_hand	game.c	/^void print_hand(GameState* gameState, int playerIndex) {$/;"	f
+safe_read_line	util.c	/^int safe_read_line(FILE* file, char** output) {$/;"	f
+std	Makefile	/^	gcc -D DEBUG -std=c99 -Wall -pedantic $^ -o bark$/;"	m
+suit	deck.h	/^    char suit;$/;"	m	struct:Card
+to_card	deck.c	/^Card to_card(char* cardStr) {$/;"	f
+width	board.h	/^    int width;$/;"	m	struct:BoardState
