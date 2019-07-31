@@ -4,10 +4,11 @@
 
 #include "deck.h"
 #include "board.h"
+#include "util.h"
 
 void assert_on_board(BoardState* boardState, int r, int c) {
     assert(0 <= r && r < boardState->height);
-    assert(0 <= c && c < boardState->width); 
+    assert(0 <= c && c < boardState->width);
 }
 
 void init_board(BoardState* boardState, int width, int height) {
@@ -16,15 +17,12 @@ void init_board(BoardState* boardState, int width, int height) {
     boardState->height = height;
     
     for (int i = 0; i < width*height; i++) {
-        boardState->board[i] = (Card) { 0, '!' };
-    } 
+        // printf("initialising %d to null\n", i);
+        boardState->board[i] = NULL_CARD;
+    }
 }
 
-int load_board_row(BoardState* boardState, int row, char* rowText) {
-    // a
-}
-
-int place_card(BoardState* boardState, int row, int col, Card card) {
+bool place_card(BoardState* boardState, int row, int col, Card card) {
     int w = boardState->width;
     assert_on_board(boardState, row, col);
     boardState->board[row*w + col] = card;

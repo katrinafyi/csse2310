@@ -31,6 +31,10 @@ bool load_deck_file(Deck* deck, char* deckFile) {
         deck->cards[i] = to_card(line);
         free(line);
     }
+    if (fgetc(file) != EOF) {
+        DEBUG_PRINT("junk at end of deck");
+        return false;
+    }
     fclose(file);
     deck->numCards = numCards;
     return true;

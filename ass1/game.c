@@ -9,7 +9,7 @@ void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
     gameState->deck = NULL;
-    gameState->boardState = NULL;
+    gameState->boardState = malloc(sizeof(BoardState));
 }
 
 bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
@@ -56,7 +56,7 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     return true;
 }
 
-bool parse_player_hand(FILE* file, Card* hand, int numExpected) {
+bool parse_card_row(FILE* file, Card* cards, int numExpected) {
     char* line;
     // ensure line length is even.
     if (!safe_read_line(file, &line) || strlen(line) % 2 == 1) {
@@ -70,17 +70,17 @@ bool parse_player_hand(FILE* file, Card* hand, int numExpected) {
             free(line);
             return false;
         }
-        hand[num] = to_card(line+i);
+        cards[num] = to_card(line+i);
         num++;
     }
     free(line);
     if (num < numExpected) {
         return false;
     }
-    // fill in the remaining cards in the hand as 
+    // fill in the remaining cards in the hand as
     // null cards.
     for (; num < NUM_HAND; num++) {
-        hand[num] = NULL_CARD;
+        cards[num] = NULL_CARD;
     }
     return true;
 }
@@ -90,7 +90,7 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
     for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
         Card* playerHand = gameState->playerHands + NUM_HAND*playerIndex;
         int expectedCards = NUM_HAND - (playerIndex==currPlayer ? 0 : 1);
-        if (!parse_player_hand(file, playerHand, expectedCards)) {
+        if (!parse_card_row(file, playerHand, expectedCards)) {
             DEBUG_PRINT("invalid player hand");
             return false;
         }
@@ -118,10 +118,27 @@ bool load_game_file(GameState* gameState, char* saveFile) {
     if (!safe_read_line(file, &(gameState->deckFile))) {
         return false;
     }
-    printf("deck file is %s\n", gameState->deckFile);
+    // printf("deck file is %s\n", gameState->deckFile);
     if (!parse_all_hands(file, gameState)) {
         return false;
     }
+    DEBUG_PRINT("init board");
+    init_board(gameState->boardState, w, h);
+    Card* boardCards = gameState->boardState->board;
+    for (int row = 0; row < h; row++) {
+        DEBUG_PRINT("row parsing");
+        if (!parse_card_row(file, boardCards+row*w, w)) {
+            DEBUG_PRINT("invalid board row");
+            return false;
+        }
+    }
+    print_board(gameState->boardState);
+    if (fgetc(file) != EOF) {
+        DEBUG_PRINT("extra junk at eof");
+        return false;
+    }
+    DEBUG_PRINT("game file load done");
+
 }
 
 void print_hand(GameState* gameState, int playerIndex) {

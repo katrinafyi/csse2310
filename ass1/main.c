@@ -35,8 +35,11 @@ int main(int argc, char** argv) {
     if (!isNewGame && !load_game_file(&gameState, argv[1])) {
         fprintf(stderr, "Unable to parse savefile\n");
         return EXIT_SAVE_ERROR;
+    } else { // else, we are starting a new game.
+        gameState.deckFile = argv[1];
     }
-    if (!load_deck_file(&deck, isNewGame ? argv[1] : gameState.deckFile)) {
+
+    if (!load_deck_file(&deck, gameState.deckFile)) {
         fprintf(stderr, "Unable to parse deckfile\n");
         return EXIT_DECK_ERROR;
     }
