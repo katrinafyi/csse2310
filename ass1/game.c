@@ -4,18 +4,20 @@
 
 #include "game.h"
 #include "util.h"
+#include "exitCodes.h"
 
 void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
     gameState->deck = NULL;
     gameState->boardState = malloc(sizeof(BoardState));
+    gameState->deck = malloc(sizeof(Deck));
 }
 
 bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     char* topLine;
     if (!safe_read_line(file, &topLine)) {
-        printf("error top line\n");
+        DEBUG_PRINT("error top line of savefile");
         return false;
     }
     // note that we INCLUDE the trailing \0 in the for loop
@@ -56,7 +58,8 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     return true;
 }
 
-bool parse_card_row(FILE* file, Card* cards, int numExpected) {
+bool parse_card_row(FILE* file, Card* cards, int numExpected,
+        bool hasBlanks) {
     char* line;
     // ensure line length is even.
     if (!safe_read_line(file, &line) || strlen(line) % 2 == 1) {
@@ -66,11 +69,12 @@ bool parse_card_row(FILE* file, Card* cards, int numExpected) {
     int num = 0;
     // iterate in blocks of 2 characters.
     for (i = 0; i < strlen(line); i += 2) {
-        if (!is_card(line+i) || num >= numExpected) {
+        bool valid = is_card(line+i) || (hasBlanks && is_blank(line+i));
+        if (!valid || num >= numExpected) {
             free(line);
             return false;
         }
-        cards[num] = to_card(line+i);
+        cards[num] = is_card(line+i) ? to_card(line+i) : NULL_CARD;
         num++;
     }
     free(line);
@@ -89,8 +93,9 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
     int currPlayer = gameState->currPlayer;
     for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
         Card* playerHand = gameState->playerHands + NUM_HAND*playerIndex;
+        // the current player is expected to have 1 more than others.
         int expectedCards = NUM_HAND - (playerIndex==currPlayer ? 0 : 1);
-        if (!parse_card_row(file, playerHand, expectedCards)) {
+        if (!parse_card_row(file, playerHand, expectedCards, false)) {
             DEBUG_PRINT("invalid player hand");
             return false;
         }
@@ -127,18 +132,18 @@ bool load_game_file(GameState* gameState, char* saveFile) {
     Card* boardCards = gameState->boardState->board;
     for (int row = 0; row < h; row++) {
         DEBUG_PRINT("row parsing");
-        if (!parse_card_row(file, boardCards+row*w, w)) {
+        if (!parse_card_row(file, boardCards+row*w, w, true)) {
             DEBUG_PRINT("invalid board row");
             return false;
         }
     }
-    print_board(gameState->boardState);
     if (fgetc(file) != EOF) {
         DEBUG_PRINT("extra junk at eof");
         return false;
     }
     DEBUG_PRINT("game file load done");
-
+    fclose(file);
+    return true;
 }
 
 void print_hand(GameState* gameState, int playerIndex) {
@@ -146,10 +151,88 @@ void print_hand(GameState* gameState, int playerIndex) {
     for (int i = 0; i < NUM_HAND; i++) {
         Card card = firstCard[i];
         if (card.num == 0) {
-            continue;
+            break;
         }
         char* str = fmt_card(card);
-        printf("%d: %s\n", i, str);
+        if (i > 0) {
+            printf(" ");
+        }
+        printf("%s", str);
         free(str);
     }
+    printf("\n");
+}
+
+bool deal_cards(GameState* gameState) {
+    for (int p = 0; p < NUM_PLAYERS; p++) {
+        DEBUG_PRINT("distributing cards");
+        Card* hand = gameState->playerHands + p*NUM_HAND;
+        // note NUM_HAND-1 because no player is 'playing' yet
+        for (int i = 0; i < NUM_HAND; i++) {
+            if (i == NUM_HAND-1) { // set last card to null.
+                *(hand+i) = NULL_CARD;
+                continue;
+            }
+            Card card = draw_card(gameState);;
+            DEBUG_PRINTF("card %s\n", fmt_card(card));
+            if (card.num == 0) {
+                return false;
+            }
+            *(hand+i) = card;
+        }
+    }
+    return true;
+}
+
+Card draw_card(GameState* gameState) {
+    int n = gameState->numDrawn;
+    DEBUG_PRINTF("drawing the %d-th card\n", n);
+    if (gameState->numDrawn >= gameState->deck->numCards) {
+        DEBUG_PRINT("no more cards");
+        return NULL_CARD;
+    }
+    gameState->numDrawn++;
+    return gameState->deck->cards[n];
+}
+
+
+
+bool prompt_move(GameState* gameState) {
+    while (1) {
+        printf("Move? ");
+        fflush(stdout);
+        char* input;
+        if (!safe_read_line(stdin, &input) || getchar() == EOF) {
+            DEBUG_PRINT("error reading human input")
+            return false;
+        }
+    }
+}
+
+int exec_main_loop(GameState* gameState, char* playerTypes) {
+    DEBUG_PRINTF("starting game loop with player types %c %c\n", playerTypes[0], playerTypes[1]);
+    
+    // print_hand(gameState, 0);
+    // print_hand(gameState, 1);
+    GameState* gs = gameState;
+    while (1) {
+        print_board(gs->boardState);
+        if (is_board_full(gs->boardState)) {
+            break;
+        }
+        bool isHuman = playerTypes[gs->currPlayer] == 'h';
+        if (isHuman) {
+            printf("Hand(%d): ", gs->currPlayer+1);
+            print_hand(gs, gs->currPlayer);
+            if (!prompt_move(gameState)) {
+                return EXIT_EOF;
+            }
+        } else {
+            printf("Hand: ");
+            print_hand(gs, gs->currPlayer);
+        }
+        getchar();
+    }
+    DEBUG_PRINT("game ended");
+    return 0;
 }

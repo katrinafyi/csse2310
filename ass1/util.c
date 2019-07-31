@@ -25,9 +25,9 @@ int parse_int(char* str) {
     return num;
 }
 
-int safe_read_line(FILE* file, char** output) {
+bool safe_read_line(FILE* file, char** output) {
     if (file == NULL) {
-        return 0;
+        return false;
     }
     int allocated = LINE_BUFFER;
     *output = malloc(sizeof(char)*allocated);
@@ -54,5 +54,25 @@ int safe_read_line(FILE* file, char** output) {
     // flags invalid line if line contains nulls
     // or an error occured.
     return errno == 0 && strlen(*output) == position;
+}
+
+int tokenise(char* line, int** indexes) {
+    int len = strlen(line);
+    int numTokens = 1;
+    *indexes = malloc(sizeof(int) * numTokens);
+    (*indexes)[0] = 0;
+    DEBUG_PRINTF("tokenising: |%s|\n", line);
+    for (int i = 0; i <= len; i++) {
+        char c = line[i];
+        if (c == ' ') {
+            line[i] = '\0';
+            DEBUG_PRINTF("token at %d\n", i);
+            *indexes = realloc(*indexes, sizeof(int) * (numTokens+1));
+            (*indexes)[numTokens] = i+1;
+            line[i] = '\0';
+            numTokens++;
+        }
+    }
+    return numTokens;
 }
 

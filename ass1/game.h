@@ -24,10 +24,10 @@ void init_game_state(GameState* gameState);
 bool save_game_file(GameState* gameState, char* saveFile);
 bool deal_cards(GameState* gameState);
 Card draw_card(GameState* gameState);
-int main_loop(GameState* gameState, char* playerTypes);
+int exec_main_loop(GameState* gameState, char* playerTypes);
 void print_hand(GameState* gameState, int playerIndex);
-void prompt_move();
-void play_auto_turn();
+bool prompt_move(GameState* gameState);
+void play_auto_turn(GameState* gameState);
 
 #endif
 

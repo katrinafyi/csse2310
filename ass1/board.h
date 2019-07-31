@@ -14,6 +14,7 @@ typedef struct BoardState {
 void init_board(BoardState* boardState, int width, int height);
 bool place_card(BoardState* boardState, int row, int col, Card card);
 void print_board(BoardState* boardState);
+bool is_board_full(BoardState* boardState);
 int compute_longest_path(BoardState* boardState, char suit);
 
 #endif

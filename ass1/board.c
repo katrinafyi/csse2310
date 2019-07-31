@@ -6,27 +6,59 @@
 #include "board.h"
 #include "util.h"
 
-void assert_on_board(BoardState* boardState, int r, int c) {
-    assert(0 <= r && r < boardState->height);
-    assert(0 <= c && c < boardState->width);
+bool is_on_board(BoardState* boardState, int r, int c) {
+    return (0 <= r && r < boardState->height)
+        && (0 <= c && c < boardState->width);
+
 }
 
 void init_board(BoardState* boardState, int width, int height) {
     boardState->board = malloc(sizeof(Card)*width*height);
     boardState->width = width;
     boardState->height = height;
-    
+
     for (int i = 0; i < width*height; i++) {
         // printf("initialising %d to null\n", i);
         boardState->board[i] = NULL_CARD;
     }
 }
 
+bool has_card_at(BoardState* boardState, int row, int col) {
+    return boardState->board[row*boardState->width + col].num != 0;
+}
+
+// WARNING: lazy implementation. for negatives, only valid up to -d.
+int mod(int x, int d) {
+    if (x < 0) {
+        return x + d;
+    } else {
+        return x % d;
+    }
+}
+
+bool has_adjacent(BoardState* boardState, int row, int col) {
+    if (!is_on_board(boardState, row, col)) {
+        return false; // surely not if card is not even on board.
+    }
+    int w = boardState->width;
+    int h = boardState->height;
+    // because board wraps around, we use mod.
+    return has_card_at(boardState, mod(row-1, h), mod(col, w))
+        || has_card_at(boardState, mod(row+1, h), mod(col, w))
+        || has_card_at(boardState, mod(row, h), mod(col-1, w))
+        || has_card_at(boardState, mod(row, h), mod(col+1, w));
+}
+
 bool place_card(BoardState* boardState, int row, int col, Card card) {
     int w = boardState->width;
-    assert_on_board(boardState, row, col);
+    if (!is_on_board(boardState, row, col)
+            || has_card_at(boardState, row, col)
+            || !has_adjacent(boardState, row, col)) {
+        return false;
+    }
     boardState->board[row*w + col] = card;
-}   
+    return true;
+}
 
 void print_board(BoardState* boardState) {
     int w = boardState->width;
@@ -39,4 +71,13 @@ void print_board(BoardState* boardState) {
             printf("\n");
         }
     }
+}
+
+bool is_board_full(BoardState* boardState) {
+    for (int i = 0; i < boardState->width * boardState->height; i++) {
+        if (boardState->board[i].num == 0) {
+            return false;
+        }
+    }
+    return true;
 }

@@ -9,6 +9,7 @@
 bool load_deck_file(Deck* deck, char* deckFile) {
     deck->numCards = 0; // just in case.
     FILE* file = fopen(deckFile, "r");
+    DEBUG_PRINTF("deck file loading: %s\n", deckFile);
     char* numLine;
     if (!safe_read_line(file, &numLine)) {
         return false;
@@ -45,6 +46,10 @@ bool is_card(char* cardStr) {
         && 'A' <= *(cardStr+1) && *(cardStr+1) <= 'Z';
 }
 
+bool is_blank(char* cardStr) {
+    return cardStr[0] == BLANK_CHAR_SAVED && cardStr[1] == BLANK_CHAR_SAVED;
+}
+
 Card to_card(char* cardStr) {
     return (Card) { *cardStr-'1'+1, *(cardStr+1) };
 }
@@ -60,5 +65,5 @@ char* fmt_card_c(Card card, char fillChar) {
 }
 
 char* fmt_card(Card card) {
-    return fmt_card_c(card, '.');
+    return fmt_card_c(card, BLANK_CHAR_PRINT);
 }
