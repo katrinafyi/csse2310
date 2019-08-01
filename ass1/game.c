@@ -13,9 +13,8 @@
 void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
+    gameState->boardState = NULL;
     gameState->deck = NULL;
-    gameState->boardState = malloc(sizeof(BoardState));
-    gameState->deck = malloc(sizeof(Deck));
     for (int i = 0; i < NUM_HAND*NUM_PLAYERS; i++) {
         gameState->playerHands[i] = NULL_CARD;
     }
@@ -168,7 +167,7 @@ bool deal_cards(GameState* gameState) {
                 continue;
             }
             Card card = draw_card(gameState);;
-            DEBUG_PRINTF("card %s\n", fmt_card(card));
+            // DEBUG_PRINTF("card %s\n", fmt_card(card));
             if (card.num == 0) {
                 return false;
             }

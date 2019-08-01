@@ -25,8 +25,11 @@ int exec_main(int argc, char** argv) {
     }
 
     GameState gameState;
+    BoardState boardState;
+    Deck deck;
     init_game_state(&gameState);
-    Deck* deck = gameState.deck;
+    gameState.deck = &deck;
+    gameState.boardState = &boardState;
     if (!isNewGame) { // loading save file.
         if (!load_game_file(&gameState, argv[1])) {
             return EXIT_SAVE_ERROR;
@@ -40,13 +43,18 @@ int exec_main(int argc, char** argv) {
         gameState.deckFile = argv[1];
         init_board(gameState.boardState, w, h);
     }
-    if (!load_deck_file(deck, gameState.deckFile)) {
+    if (!load_deck_file(&deck, gameState.deckFile)) {
         return EXIT_DECK_ERROR;
     }
     if (isNewGame && !deal_cards(&gameState)) {
         return EXIT_DECK_SHORT;
     }
-    return exec_game_loop(&gameState, playerTypes);
+    int ret = exec_game_loop(&gameState, playerTypes);
+    // a lazy effort to clean up memory. obviously if we errored
+    // earlier, this memory would not be freed.
+    free(boardState.board);
+    free(deck.cards);
+    return ret;
 }
 
 int main(int argc, char** argv) {

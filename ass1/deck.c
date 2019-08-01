@@ -8,6 +8,7 @@
 
 bool load_deck_file(Deck* deck, char* deckFile) {
     deck->numCards = 0; // just in case.
+    deck->cards = NULL;
     FILE* file = fopen(deckFile, "r");
     DEBUG_PRINTF("deck file loading: %s\n", deckFile);
     char* numLine;
@@ -18,6 +19,7 @@ bool load_deck_file(Deck* deck, char* deckFile) {
     if (numCards <= 0) {
         return false;
     }
+    free(numLine);
     // printf("%d cards deteced\n", numCards);
     deck->cards = malloc(sizeof(Card)*numCards);
     for (int i = 0; i < numCards; i++) {
