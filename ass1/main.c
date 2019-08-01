@@ -51,7 +51,7 @@ int exec_main(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     int ret = exec_main(argc, argv);
-    char* error;
+    char* error = "";
     switch (ret) {
         case EXIT_SUCCESS:
             DEBUG_PRINT("exit normally");

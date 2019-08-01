@@ -7,12 +7,17 @@
 #include "exitCodes.h"
 #include "longestPath.h"
 
+#define ENSURE_NONNEG(x) if (x < 0) return false;
+
 void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
     gameState->deck = NULL;
     gameState->boardState = malloc(sizeof(BoardState));
     gameState->deck = malloc(sizeof(Deck));
+    for (int i = 0; i < NUM_HAND*NUM_PLAYERS; i++) {
+        gameState->playerHands[i] = NULL_CARD;
+    }
 }
 
 bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
@@ -71,11 +76,6 @@ bool parse_card_row(FILE* file, Card* cards, int numExpected,
     if (num < numExpected) {
         return false;
     }
-    // fill in the remaining cards in the hand as
-    // null cards.
-    for (; num < NUM_HAND; num++) {
-        cards[num] = NULL_CARD;
-    }
     return true;
 }
 
@@ -89,7 +89,6 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
             DEBUG_PRINT("invalid player hand");
             return false;
         }
-        print_hand(gameState, playerIndex);
     }
     return true;
 }
@@ -140,12 +139,12 @@ bool load_game_file(GameState* gameState, char* saveFile) {
     return true;
 }
 
-void print_hand(GameState* gameState, int playerIndex) {
-    Card* firstCard = gameState->playerHands + NUM_HAND*playerIndex;
+void print_hand(GameState* gameState) {
+    Card* firstCard = gameState->playerHands
+        + NUM_HAND*gameState->currPlayer;
     for (int i = 0; i < NUM_HAND; i++) {
         Card card = firstCard[i];
         if (card.num == 0) {
-            break;
         }
         char* str = fmt_card(card);
         if (i > 0) {
@@ -189,9 +188,56 @@ Card draw_card(GameState* gameState) {
     return gameState->deck->cards[n];
 }
 
+bool save_game_file(GameState* gameState, char* saveFile) {
+    GameState* gs = gameState;
+    BoardState* bs = gs->boardState;
+    DEBUG_PRINTF("attempting to save to |%s|\n", saveFile);
+    FILE* file = fopen(saveFile, "w");
+    if (file == NULL) {
+        return false;
+    }
+    ENSURE_NONNEG(fprintf(file, "%d %d %d %d\n%s\n", bs->width, bs->height,
+            gs->numDrawn, gs->currPlayer+1, gs->deckFile));
+    char* str;
+    for (int p = 0; p < NUM_PLAYERS; p++) {
+        for (int i = 0; i < NUM_HAND; i++) {
+            Card card = gs->playerHands[p*NUM_HAND + i];
+            if (card.num == 0) {
+                break;
+            }
+            str = fmt_card(card);
+            ENSURE_NONNEG(fprintf(file, "%s", str));
+            free(str);
+        }
+        ENSURE_NONNEG(fprintf(file, "\n"));
+    }
+    int w = bs->width;
+    int h = bs->height;
+    char* str2;
+    for (int r = 0; r < h; r++) {
+        for (int c = 0; c < w; c++) {
+            Card card = bs->board[w*r + c];
+            str2 = fmt_card_c(card, BLANK_CHAR_SAVED);
+            ENSURE_NONNEG(fprintf(file, "%s", str2));
+            free(str2);
+        }
+        ENSURE_NONNEG(fprintf(file, "\n"));
+    }
+    DEBUG_PRINT("closing file");
+    fclose(file);
+    return true;
+}
 
+void remove_card_from_hand(GameState* gameState, int cardNum) {
+    Card* hand = gameState->playerHands + gameState->currPlayer*NUM_HAND;
+    for (int i = cardNum; i < NUM_HAND-1; i++) {
+        hand[i] = hand[i+1];
+    }
+    hand[NUM_HAND-1] = NULL_CARD;
+}
 
 bool prompt_move(GameState* gameState) {
+    GameState* gs = gameState;
     while (1) {
         printf("Move? ");
         fflush(stdout);
@@ -200,37 +246,123 @@ bool prompt_move(GameState* gameState) {
             DEBUG_PRINT("error reading human input")
             return false;
         }
+        if (strncmp(input, "SAVE", 4) == 0 && strlen(input) > 4) {
+            // skip "SAVE" to get filename.
+            if (!save_game_file(gameState, input+4)) {
+                printf("Unable to save\n");
+            }
+            continue;
+        }
+        int* indexes;
+        int numTokens = tokenise(input, &indexes);
+        if (numTokens != 3) {
+            DEBUG_PRINT("invalid number of tokens");
+            continue;
+        }
+        int cardNum = parse_int(input+indexes[0])-1; // shift to 0-indexed
+        int col = parse_int(input+indexes[1])-1;
+        int row = parse_int(input+indexes[2])-1;
+        free(indexes);
+        if (cardNum < 0 || cardNum >= NUM_HAND
+                || !is_on_board(gs->boardState, row, col)) {
+            DEBUG_PRINT("move number outside of range");
+            continue;
+        }
+        Card card = gs->playerHands[gs->currPlayer*NUM_HAND + cardNum];
+        if (card.num == 0) {
+            DEBUG_PRINT("card num is 0 in hand. should never happen.");
+            continue;
+        }
+        if (!place_card(gs->boardState, row, col, card)) {
+            DEBUG_PRINT("cannot put card here");
+            continue;
+        }
+        remove_card_from_hand(gameState, cardNum);
         return true;
     }
 }
 
+void play_auto_turn(GameState* gameState) {
+    DEBUG_PRINT("playing auto turn");
+}
+
+void print_points(GameState* gameState) {
+    BoardState* bs = gameState->boardState;
+    int w = bs->width;
+    int h = bs->height;
+    int playerPoints[NUM_PLAYERS];
+    for (int p = 0; p < NUM_PLAYERS; p++) {
+        playerPoints[p] = 0; // better initialise these...
+    }
+    int letterPoints[26]; // running longest path of each letter.
+    for (int l = 0; l < 26; l++) {
+        letterPoints[l] = 0;
+    }
+    for (int r = 0; r < h; r++) {
+        for (int c = 0; c < w; c++) {
+            Card card = bs->board[w*r + c];
+            if (card.num == 0) {
+                continue;
+            }
+            int points = 1 + compute_longest_path(bs, card.suit,
+                    (Position) {r, c}, 0);
+            int l = card.suit - 'A';
+            DEBUG_PRINTF("%d points from (%d,%d) : %d%c\n", points, r, c, card.num, card.suit);
+            if (points > letterPoints[l]) {
+                letterPoints[l] = points;
+            }
+        }
+    }
+    for (int l = 0; l < 26; l++) {
+        int p = l % NUM_PLAYERS; // p = 0 when letter is A (0)
+        if (letterPoints[l] > playerPoints[p]) {
+            playerPoints[p] = letterPoints[l];
+        }
+    }
+    for (int p = 0; p < NUM_PLAYERS; p++) {
+        if (p > 0) {
+            printf(" ");
+        }
+        printf("Player %d=%d", p+1, playerPoints[p]);
+    }
+    printf("\n");
+}
+
 int exec_game_loop(GameState* gameState, char* playerTypes) {
-    DEBUG_PRINTF("starting game loop with player types %c %c\n", playerTypes[0], playerTypes[1]);
-    // print_hand(gameState, 0);
-    // print_hand(gameState, 1);
+    DEBUG_PRINTF("starting game loop with player types %c %c\n",
+            playerTypes[0], playerTypes[1]);
     GameState* gs = gameState;
     while (1) {
         print_board(gs->boardState);
-        DEBUG_PRINTF("longest path %d\n", compute_longest_path(
-                    gs->boardState, 'A', (Position) {3, 1}, 0));
         if (is_board_full(gs->boardState)) {
             break;
+        }
+        Card* playerHand = gs->playerHands + gs->currPlayer*NUM_HAND;
+        if (playerHand[NUM_HAND-1].num == 0) { // draw 6th card for currplayer
+            Card drawnCard = draw_card(gs);
+            if (drawnCard.num == 0) {
+                break; // no more cards in deck. exit normally.
+            } 
+            // assumes there will be either NUM_HAND or NUM_HAND-1 cards
+            // at all times.
+            playerHand[NUM_HAND-1] = drawnCard;
         }
         bool isHuman = playerTypes[gs->currPlayer] == 'h';
         if (isHuman) {
             printf("Hand(%d): ", gs->currPlayer+1);
-            print_hand(gs, gs->currPlayer);
+            print_hand(gs);
             if (!prompt_move(gameState)) {
                 return EXIT_EOF;
             }
         } else {
             printf("Hand: ");
-            print_hand(gs, gs->currPlayer);
+            print_hand(gs);
+            printf("pausing AI player\n");
+            getchar();
         }
-        printf("getchar\n");
-        getchar();
         gs->currPlayer = (gs->currPlayer+1) % NUM_PLAYERS;
     }
-    DEBUG_PRINT("game ended");
+    DEBUG_PRINT("game ended, computing points");
+    print_points(gs);
     return 0;
 }

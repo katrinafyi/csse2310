@@ -52,8 +52,11 @@ bool has_adjacent(BoardState* boardState, int row, int col) {
 bool place_card(BoardState* boardState, int row, int col, Card card) {
     int w = boardState->width;
     if (!is_on_board(boardState, row, col)
-            || has_card_at(boardState, row, col)
-            || !has_adjacent(boardState, row, col)) {
+            || has_card_at(boardState, row, col)) {
+        return false;
+    }
+    if (!has_adjacent(boardState, row, col) && !is_board_empty(boardState)) {
+        // has no adjacent cards and board is not empty.
         return false;
     }
     boardState->board[row*w + col] = card;
@@ -76,6 +79,17 @@ void print_board(BoardState* boardState) {
 bool is_board_full(BoardState* boardState) {
     for (int i = 0; i < boardState->width * boardState->height; i++) {
         if (boardState->board[i].num == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool is_board_empty(BoardState* boardState) {
+    int w = boardState->width;
+    int h = boardState->height;
+    for (int i = 0; i < w*h; i++) {
+        if (boardState->board[i].num != 0) {
             return false;
         }
     }

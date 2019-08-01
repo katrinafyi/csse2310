@@ -1,7 +1,7 @@
 #ifndef EXITCODES_H
 #define EXITCODES_H
 
-#define EXIT_SUCCESS 0
+// EXIT_SUCCESS is already defined as 0
 #define EXIT_INCORRECT_ARGS 1
 #define EXIT_INCORRECT_ARG_TYPES 2
 #define EXIT_DECK_ERROR 3

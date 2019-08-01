@@ -2,6 +2,7 @@
 #define BOARD_H
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "deck.h"
 
@@ -17,7 +18,9 @@ typedef struct BoardState {
 void init_board(BoardState* boardState, int width, int height);
 bool place_card(BoardState* boardState, int row, int col, Card card);
 void print_board(BoardState* boardState);
+bool is_on_board(BoardState* boardState, int r, int c);
 bool is_board_full(BoardState* boardState);
+bool is_board_empty(BoardState* boardState);
 bool is_size_valid(int width, int height);
 int mod(int x, int d);
 
