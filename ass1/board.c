@@ -81,3 +81,8 @@ bool is_board_full(BoardState* boardState) {
     }
     return true;
 }
+
+bool is_size_valid(int width, int height) {
+    return MIN_SIZE <= width && width <= MAX_SIZE 
+        && MIN_SIZE <= height && height <= MAX_SIZE;
+}

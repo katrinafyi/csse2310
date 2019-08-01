@@ -65,11 +65,14 @@ int tokenise(char* line, int** indexes) {
     for (int i = 0; i <= len; i++) {
         char c = line[i];
         if (c == ' ') {
+            // replace space with \0.
+            // each token can be viewed as its own null terminated string.
             line[i] = '\0';
             DEBUG_PRINTF("token at %d\n", i);
+            // number of tokens should be small enough that realloc'ing
+            // every token is fine.
             *indexes = realloc(*indexes, sizeof(int) * (numTokens+1));
             (*indexes)[numTokens] = i+1;
-            line[i] = '\0';
             numTokens++;
         }
     }

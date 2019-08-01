@@ -5,6 +5,7 @@
 #include "game.h"
 #include "util.h"
 #include "exitCodes.h"
+#include "longestPath.h"
 
 void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
@@ -106,8 +107,12 @@ bool load_game_file(GameState* gameState, char* saveFile) {
     if (!parse_top_line(file, &w, &h, &n, &v)) {
         return false;
     }
+    if (!is_size_valid(w, h) || n <= 0 || v <= 0 || v > NUM_PLAYERS) {
+        DEBUG_PRINT("integer out of range");
+        return false;
+    }
     gameState->numDrawn = n;
-    gameState->currPlayer = v;
+    gameState->currPlayer = v-1; // shift to 0-indexed
     DEBUG_PRINT("top line parsed");
     if (!safe_read_line(file, &(gameState->deckFile))) {
         return false;
@@ -191,21 +196,23 @@ bool prompt_move(GameState* gameState) {
         printf("Move? ");
         fflush(stdout);
         char* input;
-        if (!safe_read_line(stdin, &input) || getchar() == EOF) {
+        if (!safe_read_line(stdin, &input) || feof(stdin)) {
             DEBUG_PRINT("error reading human input")
             return false;
         }
+        return true;
     }
 }
 
-int exec_main_loop(GameState* gameState, char* playerTypes) {
+int exec_game_loop(GameState* gameState, char* playerTypes) {
     DEBUG_PRINTF("starting game loop with player types %c %c\n", playerTypes[0], playerTypes[1]);
-    
     // print_hand(gameState, 0);
     // print_hand(gameState, 1);
     GameState* gs = gameState;
     while (1) {
         print_board(gs->boardState);
+        DEBUG_PRINTF("longest path %d\n", compute_longest_path(
+                    gs->boardState, 'A', (Position) {3, 1}, 0));
         if (is_board_full(gs->boardState)) {
             break;
         }
@@ -220,7 +227,9 @@ int exec_main_loop(GameState* gameState, char* playerTypes) {
             printf("Hand: ");
             print_hand(gs, gs->currPlayer);
         }
+        printf("getchar\n");
         getchar();
+        gs->currPlayer = (gs->currPlayer+1) % NUM_PLAYERS;
     }
     DEBUG_PRINT("game ended");
     return 0;

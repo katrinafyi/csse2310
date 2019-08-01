@@ -1,4 +1,4 @@
-bark: main.c deck.c board.c game.c util.c
+bark: main.c deck.c board.c game.c util.c longestPath.c
 	gcc -g -D DEBUG -std=c99 -Wall -pedantic $^ -o bark
 
 build:

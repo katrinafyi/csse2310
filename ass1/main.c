@@ -14,7 +14,6 @@ int exec_main(int argc, char** argv) {
     }
     int isNewGame = argc == 6 ? 1 : 0;
     char playerTypes[NUM_PLAYERS];
-    bool argError = false;
     for (int i = 0; i < NUM_PLAYERS; i++) {
         // type arguments are 4,5 for new game and 2,3 for save file.
         char* typeArg = argv[2 + i + 2*isNewGame];
@@ -35,21 +34,19 @@ int exec_main(int argc, char** argv) {
     } else { // else, we are starting a new game.
         int w = parse_int(argv[2]);
         int h = parse_int(argv[3]);
-        if (w < 0 || h < 0) {
+        if (!is_size_valid(w, h)) {
             return EXIT_INCORRECT_ARG_TYPES;
         }
         gameState.deckFile = argv[1];
         init_board(gameState.boardState, w, h);
     }
-
     if (!load_deck_file(deck, gameState.deckFile)) {
         return EXIT_DECK_ERROR;
     }
-    printf("numCards %d\n", deck->numCards);
     if (isNewGame && !deal_cards(&gameState)) {
         return EXIT_DECK_SHORT;
     }
-    return exec_main_loop(&gameState, playerTypes);
+    return exec_game_loop(&gameState, playerTypes);
 }
 
 int main(int argc, char** argv) {
