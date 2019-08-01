@@ -246,9 +246,9 @@ bool prompt_move(GameState* gameState) {
             DEBUG_PRINT("error reading human input")
             return false;
         }
-        if (strncmp(input, "SAVE", 4) == 0 && strlen(input) > 4) {
+        if (strncmp(input, "SAVE", 4) == 0) {
             // skip "SAVE" to get filename.
-            if (!save_game_file(gameState, input+4)) {
+            if (strlen(input) <= 4 || !save_game_file(gameState, input+4)) {
                 printf("Unable to save\n");
             }
             continue;
@@ -263,6 +263,7 @@ bool prompt_move(GameState* gameState) {
         int col = parse_int(input+indexes[1])-1;
         int row = parse_int(input+indexes[2])-1;
         free(indexes);
+        free(input);
         if (cardNum < 0 || cardNum >= NUM_HAND
                 || !is_on_board(gs->boardState, row, col)) {
             DEBUG_PRINT("move number outside of range");

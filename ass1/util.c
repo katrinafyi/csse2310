@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <string.h>
 
-#define LINE_BUFFER 80
+#define LINE_BUFFER 10
 
 int parse_int(char* str) {
     // reject unless leading char is digit or +
