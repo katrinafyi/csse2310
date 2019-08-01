@@ -173,7 +173,7 @@ bool deal_cards(GameState* gameState) {
             }
             *(hand+i) = card;
         }
-    }
+    
     return true;
 }
 
@@ -247,7 +247,7 @@ bool prompt_move(GameState* gameState) {
             return false;
         }
         if (strncmp(input, "SAVE", 4) == 0) {
-            // skip "SAVE" to get filename.
+            // must have > 4 chars. skip "SAVE" to get filename.
             if (strlen(input) <= 4 || !save_game_file(gameState, input+4)) {
                 printf("Unable to save\n");
             }
@@ -297,7 +297,7 @@ void play_auto_turn(GameState* gameState) {
     int w = bs->width;
     int h = bs->height;
     DEBUG_PRINT("playing auto turn");
-    Card card = gs->playerHands[gs->currPlayer*NUM_HAND];
+    Card card = gs->playerHands[gs->currPlayer*NUM_HAND]; // get first card
     if (is_board_empty(bs)) {
         int r = (h+1)/2-1;
         int c = (w+1)/2-1;
@@ -307,9 +307,7 @@ void play_auto_turn(GameState* gameState) {
         finish_auto_turn(gs, card, r, c);
         return;
     }
-    // this is the ONLY code which requires NUM_PLAYERS==2
-    assert(NUM_PLAYERS == 2);
-    bool p1 = gameState->currPlayer == 0;
+    bool p1 = gameState->currPlayer % 2 == 0; // generalise to N players
     // generalising the for loops based on their start and the direction they
     // iterate in.
     int startRow = p1 ? 0 : h-1;
@@ -335,11 +333,11 @@ void print_points(GameState* gameState) {
     for (int p = 0; p < NUM_PLAYERS; p++) {
         playerPoints[p] = 0; // better initialise these...
     }
-    int letterPoints[26]; // running longest path of each letter.
+    int letterPoints[26]; // longest path of each letter.
     for (int l = 0; l < 26; l++) {
         letterPoints[l] = 0;
     }
-    // this is just a lot of maxisation calculations.
+    // this is just a lot of maximisation calculations.
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
             Card card = bs->board[w*r + c];
