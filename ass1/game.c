@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "game.h"
 #include "util.h"
@@ -282,8 +283,48 @@ bool prompt_move(GameState* gameState) {
     }
 }
 
+void finish_auto_turn(GameState* gameState, Card card, int row, int col) {
+    char* str = fmt_card(card);
+    printf("Player %d plays %s in column %d row %d\n",
+            gameState->currPlayer+1, str, col+1, row+1);
+    free(str);
+    remove_card_from_hand(gameState, 0);
+}
+
 void play_auto_turn(GameState* gameState) {
+    GameState* gs = gameState;
+    BoardState* bs = gameState->boardState;
+    int w = bs->width;
+    int h = bs->height;
     DEBUG_PRINT("playing auto turn");
+    Card card = gs->playerHands[gs->currPlayer*NUM_HAND];
+    if (is_board_empty(bs)) {
+        int r = (h+1)/2-1;
+        int c = (w+1)/2-1;
+        if (!place_card(bs, r, c, card)) {
+            DEBUG_PRINT("catastrophic failure placing first auto card");
+        }
+        finish_auto_turn(gs, card, r, c);
+        return;
+    }
+    // this is the ONLY code which requires NUM_PLAYERS==2
+    assert(NUM_PLAYERS == 2);
+    bool p1 = gameState->currPlayer == 0;
+    // generalising the for loops based on their start and the direction they
+    // iterate in.
+    int startRow = p1 ? 0 : h-1;
+    int dr = p1 ? 1 : -1;
+    int startCol = p1 ? 0 : w-1;
+    int dc = p1 ? 1 : -1;
+    for (int r = startRow; 0 <= r && r < h; r += dr) {
+        for (int c = startCol; 0 <= c && c < w; c += dc) {
+            if (place_card(bs, r, c, card)) {
+                finish_auto_turn(gs, card, r, c);
+                return;
+            }
+        }
+    }
+    DEBUG_PRINT("failed to play move. should never happen.");
 }
 
 void print_points(GameState* gameState) {
@@ -298,6 +339,7 @@ void print_points(GameState* gameState) {
     for (int l = 0; l < 26; l++) {
         letterPoints[l] = 0;
     }
+    // this is just a lot of maxisation calculations.
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
             Card card = bs->board[w*r + c];
@@ -307,7 +349,8 @@ void print_points(GameState* gameState) {
             int points = 1 + compute_longest_path(bs, card.suit,
                     (Position) {r, c}, 0);
             int l = card.suit - 'A';
-            DEBUG_PRINTF("%d points from (%d,%d) : %d%c\n", points, r, c, card.num, card.suit);
+            DEBUG_PRINTF("%d points from (%d,%d) : %d%c\n", 
+                    points, r, c, card.num, card.suit);
             if (points > letterPoints[l]) {
                 letterPoints[l] = points;
             }
@@ -342,7 +385,7 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
             Card drawnCard = draw_card(gs);
             if (drawnCard.num == 0) {
                 break; // no more cards in deck. exit normally.
-            } 
+            }
             // assumes there will be either NUM_HAND or NUM_HAND-1 cards
             // at all times.
             playerHand[NUM_HAND-1] = drawnCard;
@@ -357,12 +400,11 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
         } else {
             printf("Hand: ");
             print_hand(gs);
-            printf("pausing AI player\n");
-            getchar();
+            play_auto_turn(gs);
         }
         gs->currPlayer = (gs->currPlayer+1) % NUM_PLAYERS;
     }
     DEBUG_PRINT("game ended, computing points");
     print_points(gs);
-    return 0;
+    return EXIT_SUCCESS;
 }
