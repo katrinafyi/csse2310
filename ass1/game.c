@@ -153,17 +153,17 @@ void print_hand(GameState* gameState) {
             continue;
         }
         char str[3];
-        fmt_card(str, card);
-        printf("%s ", str);
+        printf("%s ", fmt_card(str, card));
     }
     printf("\n");
 }
 
 bool deal_cards(GameState* gameState) {
+    // draw cards for each players sequentially, not alternating players
     for (int p = 0; p < NUM_PLAYERS; p++) {
         DEBUG_PRINT("distributing cards");
         Card* hand = get_hand(gameState, p);
-        // draws NUM_HAND-1 cards because no player is 'playing' yet
+        // draws NUM_HAND-1 actual cards because no player is 'playing' yet
         for (int i = 0; i < NUM_HAND; i++) {
             if (i == NUM_HAND-1) { // set last card to null.
                 hand[i] = NULL_CARD;
@@ -207,8 +207,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
             if (is_null_card(card)) {
                 break;
             }
-            fmt_card(str, card);
-            ENSURE_NONNEG(fprintf(file, "%s", str));
+            ENSURE_NONNEG(fprintf(file, "%s", fmt_card(str, card)));
         }
         ENSURE_NONNEG(fprintf(file, "\n"));
     }
@@ -217,8 +216,8 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
             Card card = bs->board[w*r + c];
-            fmt_card_c(str, card, BLANK_CHAR_SAVED);
-            ENSURE_NONNEG(fprintf(file, "%s", str));
+            ENSURE_NONNEG(fprintf(file, "%s",
+                    fmt_card_c(str, card, BLANK_CHAR_SAVED)));
         }
         ENSURE_NONNEG(fprintf(file, "\n"));
     }
@@ -284,10 +283,9 @@ bool prompt_move(GameState* gameState) {
 
 void finish_auto_turn(GameState* gameState, Card card, int row, int col) {
     char str[3];
-    fmt_card(str, card);
     printf("Player %d plays %s in column %d row %d\n",
-            gameState->currPlayer+1, str, col+1, row+1);
-    remove_card_from_hand(gameState, 0);
+            gameState->currPlayer+1, fmt_card(str, card), col+1, row+1);
+    remove_card_from_hand(gameState, 0); // assuming always plays first card
 }
 
 void play_auto_turn(GameState* gameState) {

@@ -61,15 +61,16 @@ Card to_card(char* cardStr) {
     return (Card) { *cardStr-'1'+1, *(cardStr+1) };
 }
 
-void fmt_card_c(char* str, Card card, char fillChar) {
+char* fmt_card_c(char* str, Card card, char fillChar) {
     if (is_null_card(card)) {
         snprintf(str, 3, "%c%c", fillChar, fillChar);
     } else {
         assert(1 <= card.num && card.num <= 9);
         snprintf(str, 3, "%d%c", card.num, card.suit);
     }
+    return str;
 }
 
-void fmt_card(char* str, Card card) {
-    fmt_card_c(str, card, BLANK_CHAR_PRINT);
+char* fmt_card(char* str, Card card) {
+    return fmt_card_c(str, card, BLANK_CHAR_PRINT);
 }

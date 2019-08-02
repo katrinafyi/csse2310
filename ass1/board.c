@@ -68,8 +68,7 @@ void print_board(BoardState* boardState) {
     int h = boardState->height;
     for (int i = 0; i < w*h; i++) {
         char str[3];
-        fmt_card(str, boardState->board[i]);
-        printf("%s", str);
+        printf("%s", fmt_card(str, boardState->board[i]));
         if ((i+1) % w == 0) {
             printf("\n");
         }

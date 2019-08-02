@@ -8,6 +8,7 @@
 #include "exitCodes.h"
 #include "util.h"
 
+// barely exceeds 50 lines. pls forgive, this bootstraps everything.
 int exec_main(int argc, char** argv) {
     if (!(argc == 4 || argc == 6)) {
         return EXIT_INCORRECT_ARGS;
@@ -23,15 +24,18 @@ int exec_main(int argc, char** argv) {
         }
         playerTypes[i] = *typeArg;
     }
-    GameState gameState; // initialise structs on the stack
+    GameState gameState; // store structs on the stack
     BoardState boardState;
     Deck deck;
-    init_game_state(&gameState);
+    init_game_state(&gameState); // initialises gameState struct
     gameState.deck = &deck;
     gameState.boardState = &boardState;
     if (!isNewGame) { // loading save file.
         if (!load_game_file(&gameState, argv[1])) {
             return EXIT_SAVE_ERROR;
+        }
+        if (is_board_full(&boardState)) {
+            return EXIT_BOARD_FULL;
         }
     } else { // else, we are starting a new game.
         int w = parse_int(argv[2]);
@@ -49,10 +53,9 @@ int exec_main(int argc, char** argv) {
         return EXIT_DECK_SHORT;
     }
     int ret = exec_game_loop(&gameState, playerTypes);
-    if (!isNewGame) { // if new game, deckFile is on the stack.
-        free(gameState.deckFile);
-    }
-    free(boardState.board);   // obviously if we returned earlier, this
+    // if new game, deckFile is on the stack and shouldn't be freed.
+    free(!isNewGame ? gameState.deckFile : NULL);
+    free(boardState.board);   // obviously if we returned earlier, these
     free(deck.cards);         // would not be freed.
     return ret;
 }
