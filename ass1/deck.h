@@ -19,10 +19,11 @@ typedef struct Deck {
 
 bool load_deck_file(Deck* deck, char* deckFile);
 bool is_card(char* cardStr);
+bool is_null_card(Card card);
 bool is_blank(char* cardStr);
 Card to_card(char* cardStr);
-char* fmt_card_c(Card card, char fillChar);
-char* fmt_card(Card card);
+void fmt_card_c(char* str, Card card, char fillChar);
+void fmt_card(char* str, Card card);
 
 #endif
 

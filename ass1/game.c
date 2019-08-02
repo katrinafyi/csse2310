@@ -99,10 +99,7 @@ bool load_game_file(GameState* gameState, char* saveFile) {
         DEBUG_PRINT("error opening savefile");
         return false;
     }
-    int w;
-    int h;
-    int n;
-    int v;
+    int w, h, n, v;
     if (!parse_top_line(file, &w, &h, &n, &v)) {
         return false;
     }
@@ -147,9 +144,9 @@ void print_hand(GameState* gameState) {
         if (card.num == 0) {
             continue;
         }
-        char* str = fmt_card(card);
+        char str[3];
+        fmt_card(str, card);
         printf("%s ", str);
-        free(str);
     }
     printf("\n");
 }
@@ -165,7 +162,6 @@ bool deal_cards(GameState* gameState) {
                 continue;
             }
             Card card = draw_card(gameState);;
-            // DEBUG_PRINTF("card %s\n", fmt_card(card));
             if (card.num == 0) {
                 return false;
             }
@@ -196,28 +192,25 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     }
     ENSURE_NONNEG(fprintf(file, "%d %d %d %d\n%s\n", bs->width, bs->height,
             gs->numDrawn, gs->currPlayer+1, gs->deckFile));
-    char* str;
+    char str[3];
     for (int p = 0; p < NUM_PLAYERS; p++) {
         for (int i = 0; i < NUM_HAND; i++) {
             Card card = gs->playerHands[p*NUM_HAND + i];
             if (card.num == 0) {
                 break;
             }
-            str = fmt_card(card);
+            fmt_card(str, card);
             ENSURE_NONNEG(fprintf(file, "%s", str));
-            free(str);
         }
         ENSURE_NONNEG(fprintf(file, "\n"));
     }
     int w = bs->width;
     int h = bs->height;
-    char* str2;
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
             Card card = bs->board[w*r + c];
-            str2 = fmt_card_c(card, BLANK_CHAR_SAVED);
-            ENSURE_NONNEG(fprintf(file, "%s", str2));
-            free(str2);
+            fmt_card_c(str, card, BLANK_CHAR_SAVED);
+            ENSURE_NONNEG(fprintf(file, "%s", str));
         }
         ENSURE_NONNEG(fprintf(file, "\n"));
     }
@@ -241,7 +234,7 @@ bool prompt_move(GameState* gameState) {
         fflush(stdout);
         char* input;
         if (!safe_read_line(stdin, &input) || feof(stdin)) {
-            DEBUG_PRINT("error reading human input")
+            DEBUG_PRINT("error reading human input");
             return false;
         }
         if (strncmp(input, "SAVE", 4) == 0) {
@@ -282,10 +275,10 @@ bool prompt_move(GameState* gameState) {
 }
 
 void finish_auto_turn(GameState* gameState, Card card, int row, int col) {
-    char* str = fmt_card(card);
+    char str[3];
+    fmt_card(str, card);
     printf("Player %d plays %s in column %d row %d\n",
             gameState->currPlayer+1, str, col+1, row+1);
-    free(str);
     remove_card_from_hand(gameState, 0);
 }
 

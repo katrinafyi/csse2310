@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "deck.h"
 #include "util.h"
@@ -48,6 +49,10 @@ bool is_card(char* cardStr) {
         && 'A' <= *(cardStr+1) && *(cardStr+1) <= 'Z';
 }
 
+bool is_null_card(Card card) {
+    return card.num == 0;
+}
+
 bool is_blank(char* cardStr) {
     return cardStr[0] == BLANK_CHAR_SAVED && cardStr[1] == BLANK_CHAR_SAVED;
 }
@@ -56,16 +61,15 @@ Card to_card(char* cardStr) {
     return (Card) { *cardStr-'1'+1, *(cardStr+1) };
 }
 
-char* fmt_card_c(Card card, char fillChar) {
-    char* str = malloc(sizeof(char)*3);
+void fmt_card_c(char* str, Card card, char fillChar) {
     if (card.num == 0) {
-        sprintf(str, "%c%c", fillChar, fillChar);
+        snprintf(str, 3, "%c%c", fillChar, fillChar);
     } else {
-        sprintf(str, "%d%c", card.num, card.suit);
+        assert(1 <= card.num && card.num <= 9);
+        snprintf(str, 3, "%d%c", card.num, card.suit);
     }
-    return str;
 }
 
-char* fmt_card(Card card) {
-    return fmt_card_c(card, BLANK_CHAR_PRINT);
+void fmt_card(char* str, Card card) {
+    fmt_card_c(str, card, BLANK_CHAR_PRINT);
 }
