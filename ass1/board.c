@@ -78,7 +78,7 @@ void print_board(BoardState* boardState) {
 
 bool is_board_full(BoardState* boardState) {
     for (int i = 0; i < boardState->width * boardState->height; i++) {
-        if (boardState->board[i].num == 0) {
+        if (is_null_card(boardState->board[i])) {
             return false;
         }
     }
@@ -89,7 +89,7 @@ bool is_board_empty(BoardState* boardState) {
     int w = boardState->width;
     int h = boardState->height;
     for (int i = 0; i < w*h; i++) {
-        if (boardState->board[i].num != 0) {
+        if (!is_null_card(boardState->board[i])) {
             return false;
         }
     }
@@ -97,6 +97,6 @@ bool is_board_empty(BoardState* boardState) {
 }
 
 bool is_size_valid(int width, int height) {
-    return MIN_SIZE <= width && width <= MAX_SIZE 
+    return MIN_SIZE <= width && width <= MAX_SIZE
         && MIN_SIZE <= height && height <= MAX_SIZE;
 }

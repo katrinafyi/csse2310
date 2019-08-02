@@ -141,7 +141,7 @@ void print_hand(GameState* gameState) {
         + NUM_HAND*gameState->currPlayer;
     for (int i = 0; i < NUM_HAND; i++) {
         Card card = firstCard[i];
-        if (card.num == 0) {
+        if (is_null_card(card)) {
             continue;
         }
         char str[3];
@@ -162,7 +162,7 @@ bool deal_cards(GameState* gameState) {
                 continue;
             }
             Card card = draw_card(gameState);;
-            if (card.num == 0) {
+            if (is_null_card(card)) {
                 return false;
             }
             *(hand+i) = card;
@@ -196,7 +196,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     for (int p = 0; p < NUM_PLAYERS; p++) {
         for (int i = 0; i < NUM_HAND; i++) {
             Card card = gs->playerHands[p*NUM_HAND + i];
-            if (card.num == 0) {
+            if (is_null_card(card)) {
                 break;
             }
             fmt_card(str, card);
@@ -261,7 +261,7 @@ bool prompt_move(GameState* gameState) {
             continue;
         }
         Card card = gs->playerHands[gs->currPlayer*NUM_HAND + cardNum];
-        if (card.num == 0) {
+        if (is_null_card(card)) {
             DEBUG_PRINT("card num is 0 in hand. should never happen.");
             continue;
         }
@@ -332,7 +332,7 @@ void print_points(GameState* gameState) {
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
             Card card = bs->board[w*r + c];
-            if (card.num == 0) {
+            if (is_null_card(card)) {
                 continue;
             }
             int points = 1 + compute_longest_path(bs, card.suit,
@@ -370,9 +370,10 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
             break;
         }
         Card* playerHand = gs->playerHands + gs->currPlayer*NUM_HAND;
-        if (playerHand[NUM_HAND-1].num == 0) { // draw 6th card for currplayer
+        // if currPlayer has <6 cards, draw one more card.
+        if (is_null_card(playerHand[NUM_HAND-1])) {
             Card drawnCard = draw_card(gs);
-            if (drawnCard.num == 0) {
+            if (is_null_card(drawnCard)) {
                 break; // no more cards in deck. exit normally.
             }
             // assumes there will be either NUM_HAND or NUM_HAND-1 cards

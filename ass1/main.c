@@ -62,7 +62,6 @@ int main(int argc, char** argv) {
     char* error = "";
     switch (ret) {
         case EXIT_SUCCESS:
-            DEBUG_PRINT("exit normally");
             break;
         case EXIT_INCORRECT_ARGS:
             error = "Usage: bark savefile p1type p2type\n"
@@ -90,5 +89,6 @@ int main(int argc, char** argv) {
             error = "UNKNOWN EXIT CODE\n";
     }
     fprintf(stderr, "%s", error);
+    DEBUG_PRINTF("exiting with code %d\n", ret);
     return ret;
 }

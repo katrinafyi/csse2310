@@ -12,8 +12,7 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
         int length) {
     BoardState* bs = boardState;
     Card thisCard = get_card_at(bs, pos);
-    // DEBUG_PRINTF("this card %s\n", fmt_card(thisCard));
-    int m = 0; // running max of length
+    int m = 0; // 0 unless this card is valid endpoint or path exists.
     if (thisCard.num != 0 && thisCard.suit == target) {
         m = length; // this pos would be a valid endpoint.
     }
@@ -25,19 +24,16 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
             }
             // DEBUG_PRINTF("testing shift dr %d, dc %d\n", dr, dc);
             Position newPos = pos;
-            // mod wraps around
-            newPos.r = mod(newPos.r + dr, bs->height);
+            newPos.r = mod(newPos.r + dr, bs->height); // wrap around board
             newPos.c = mod(newPos.c + dc, bs->width);
             Card newCard = get_card_at(bs, newPos);
             // don't move to null cards or cards <= this card.
-            if (newCard.num == 0 || newCard.num <= thisCard.num) {
+            if (is_null_card(newCard) || newCard.num <= thisCard.num) {
                 continue;
             }
             int l = compute_longest_path(bs, target, newPos, length+1);
             // DEBUG_PRINTF("len %d\n", l);
-            if (l > m) {
-                m = l;
-            }
+            m = (l > m) ? l : m;
         }
     }
     return m;

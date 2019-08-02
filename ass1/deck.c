@@ -50,7 +50,7 @@ bool is_card(char* cardStr) {
 }
 
 bool is_null_card(Card card) {
-    return card.num == 0;
+    return card.num == 0; // define num == 0 iff card is NULL
 }
 
 bool is_blank(char* cardStr) {
@@ -62,7 +62,7 @@ Card to_card(char* cardStr) {
 }
 
 void fmt_card_c(char* str, Card card, char fillChar) {
-    if (card.num == 0) {
+    if (is_null_card(card)) {
         snprintf(str, 3, "%c%c", fillChar, fillChar);
     } else {
         assert(1 <= card.num && card.num <= 9);
