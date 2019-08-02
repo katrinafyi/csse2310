@@ -23,8 +23,7 @@ int exec_main(int argc, char** argv) {
         }
         playerTypes[i] = *typeArg;
     }
-
-    GameState gameState;
+    GameState gameState; // initialise structs on the stack
     BoardState boardState;
     Deck deck;
     init_game_state(&gameState);
@@ -50,11 +49,11 @@ int exec_main(int argc, char** argv) {
         return EXIT_DECK_SHORT;
     }
     int ret = exec_game_loop(&gameState, playerTypes);
-    // a lazy effort to clean up memory. obviously if we errored
-    // earlier, this memory would not be freed.
-    free(gameState.deckFile);
-    free(boardState.board);
-    free(deck.cards);
+    if (!isNewGame) { // if new game, deckFile is on the stack.
+        free(gameState.deckFile);
+    }
+    free(boardState.board);   // obviously if we returned earlier, this
+    free(deck.cards);         // would not be freed.
     return ret;
 }
 
