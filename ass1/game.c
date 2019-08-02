@@ -145,12 +145,10 @@ void print_hand(GameState* gameState) {
     for (int i = 0; i < NUM_HAND; i++) {
         Card card = firstCard[i];
         if (card.num == 0) {
+            continue;
         }
         char* str = fmt_card(card);
-        if (i > 0) {
-            printf(" ");
-        }
-        printf("%s", str);
+        printf("%s ", str);
         free(str);
     }
     printf("\n");
@@ -173,7 +171,7 @@ bool deal_cards(GameState* gameState) {
             }
             *(hand+i) = card;
         }
-    
+    }
     return true;
 }
 
