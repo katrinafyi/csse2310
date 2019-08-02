@@ -34,7 +34,7 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
             }
             int l = compute_longest_path(bs, target, newPos, length+1);
             // DEBUG_PRINTF("len %d\n", l);
-            m = (l > m) ? l : m;
+            m = (l > m) ? l : m; // m = max(m, l)
         }
     }
     return m;

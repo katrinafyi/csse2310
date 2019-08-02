@@ -236,12 +236,15 @@ void remove_card_from_hand(GameState* gameState, int cardNum) {
 
 bool prompt_move(GameState* gameState) {
     GameState* gs = gameState;
+    char* input = NULL;
     while (1) {
+        free(input); // free input line from previous prompt.
+        input = NULL;
         printf("Move? ");
         fflush(stdout);
-        char* input;
         if (!safe_read_line(stdin, &input) || feof(stdin)) {
             DEBUG_PRINT("error reading human input");
+            free(input);
             return false;
         }
         if (strncmp(input, "SAVE", 4) == 0) {
@@ -255,6 +258,7 @@ bool prompt_move(GameState* gameState) {
         int numTokens = tokenise(input, &indexes);
         if (numTokens != 3) {
             DEBUG_PRINT("invalid number of tokens");
+            free(indexes);
             continue;
         }
         int cardNum = parse_int(input+indexes[0])-1; // shift to 0-indexed
@@ -262,16 +266,14 @@ bool prompt_move(GameState* gameState) {
         int row = parse_int(input+indexes[2])-1;
         free(indexes);
         free(input);
+        input = NULL;
         if (cardNum < 0 || cardNum >= NUM_HAND
                 || !is_on_board(gs->boardState, row, col)) {
-            DEBUG_PRINT("move number outside of range");
+            DEBUG_PRINT("card or row/col number outside of range");
             continue;
         }
         Card card = get_player_hand(gs)[cardNum];
-        if (is_null_card(card)) {
-            DEBUG_PRINT("card num is 0 in hand. should never happen.");
-            continue;
-        }
+        assert(!is_null_card(card)); // player should always have 6 cards.
         if (!place_card(gs->boardState, row, col, card)) {
             DEBUG_PRINT("cannot put card here");
             continue;
