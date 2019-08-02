@@ -6,7 +6,7 @@
 #include "game.h"
 #include "util.h"
 #include "exitCodes.h"
-#include "longestPath.h"
+#include "scoring.h"
 
 #define ENSURE_NONNEG(x) if (x < 0) return false;
 
@@ -46,6 +46,7 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
         topLineNums[i] = parsed;
     }
     free(topLine);
+    free(indexes);
     *w = topLineNums[0];
     *h = topLineNums[1];
     *n = topLineNums[2];
@@ -79,13 +80,21 @@ bool parse_card_row(FILE* file, Card* cards, int numExpected,
     return true;
 }
 
+Card* get_hand(GameState* gameState, int playerIndex) {
+    return gameState->playerHands + NUM_HAND*playerIndex; // get_hand()
+}
+
+Card* get_player_hand(GameState* gameState) {
+    return get_hand(gameState, gameState->currPlayer);
+}
+
 bool parse_all_hands(FILE* file, GameState* gameState) {
     int currPlayer = gameState->currPlayer;
     for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
-        Card* playerHand = gameState->playerHands + NUM_HAND*playerIndex;
+        Card* hand = get_hand(gameState, playerIndex);
         // the current player is expected to have 1 more than others.
         int expectedCards = NUM_HAND - (playerIndex==currPlayer ? 0 : 1);
-        if (!parse_card_row(file, playerHand, expectedCards, false)) {
+        if (!parse_card_row(file, hand, expectedCards, false)) {
             DEBUG_PRINT("invalid player hand");
             return false;
         }
@@ -137,10 +146,9 @@ bool load_game_file(GameState* gameState, char* saveFile) {
 }
 
 void print_hand(GameState* gameState) {
-    Card* firstCard = gameState->playerHands
-        + NUM_HAND*gameState->currPlayer;
+    Card* hand = get_player_hand(gameState);
     for (int i = 0; i < NUM_HAND; i++) {
-        Card card = firstCard[i];
+        Card card = hand[i];
         if (is_null_card(card)) {
             continue;
         }
@@ -154,18 +162,18 @@ void print_hand(GameState* gameState) {
 bool deal_cards(GameState* gameState) {
     for (int p = 0; p < NUM_PLAYERS; p++) {
         DEBUG_PRINT("distributing cards");
-        Card* hand = gameState->playerHands + p*NUM_HAND;
-        // note NUM_HAND-1 because no player is 'playing' yet
+        Card* hand = get_hand(gameState, p);
+        // draws NUM_HAND-1 cards because no player is 'playing' yet
         for (int i = 0; i < NUM_HAND; i++) {
             if (i == NUM_HAND-1) { // set last card to null.
-                *(hand+i) = NULL_CARD;
+                hand[i] = NULL_CARD;
                 continue;
             }
             Card card = draw_card(gameState);;
             if (is_null_card(card)) {
                 return false;
             }
-            *(hand+i) = card;
+            hand[i] = card;
         }
     }
     return true;
@@ -195,7 +203,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     char str[3];
     for (int p = 0; p < NUM_PLAYERS; p++) {
         for (int i = 0; i < NUM_HAND; i++) {
-            Card card = gs->playerHands[p*NUM_HAND + i];
+            Card card = get_hand(gs, p)[i];
             if (is_null_card(card)) {
                 break;
             }
@@ -220,11 +228,11 @@ bool save_game_file(GameState* gameState, char* saveFile) {
 }
 
 void remove_card_from_hand(GameState* gameState, int cardNum) {
-    Card* hand = gameState->playerHands + gameState->currPlayer*NUM_HAND;
+    Card* hand = get_player_hand(gameState);
     for (int i = cardNum; i < NUM_HAND-1; i++) {
-        hand[i] = hand[i+1];
+        hand[i] = hand[i+1]; // shuffle subsequent cards to the left.
     }
-    hand[NUM_HAND-1] = NULL_CARD;
+    hand[NUM_HAND-1] = NULL_CARD; // insert null card at end.
 }
 
 bool prompt_move(GameState* gameState) {
@@ -260,7 +268,7 @@ bool prompt_move(GameState* gameState) {
             DEBUG_PRINT("move number outside of range");
             continue;
         }
-        Card card = gs->playerHands[gs->currPlayer*NUM_HAND + cardNum];
+        Card card = get_player_hand(gs)[cardNum];
         if (is_null_card(card)) {
             DEBUG_PRINT("card num is 0 in hand. should never happen.");
             continue;
@@ -288,7 +296,7 @@ void play_auto_turn(GameState* gameState) {
     int w = bs->width;
     int h = bs->height;
     DEBUG_PRINT("playing auto turn");
-    Card card = gs->playerHands[gs->currPlayer*NUM_HAND]; // get first card
+    Card card = get_player_hand(gs)[0]; // get first card
     if (is_board_empty(bs)) {
         int r = (h+1)/2-1;
         int c = (w+1)/2-1;
@@ -317,38 +325,16 @@ void play_auto_turn(GameState* gameState) {
 }
 
 void print_points(GameState* gameState) {
-    BoardState* bs = gameState->boardState;
-    int w = bs->width;
-    int h = bs->height;
-    int playerPoints[NUM_PLAYERS];
-    for (int p = 0; p < NUM_PLAYERS; p++) {
-        playerPoints[p] = 0; // better initialise these...
-    }
-    int letterPoints[26]; // longest path of each letter.
-    for (int l = 0; l < 26; l++) {
-        letterPoints[l] = 0;
-    }
-    // this is just a lot of maximisation calculations.
-    for (int r = 0; r < h; r++) {
-        for (int c = 0; c < w; c++) {
-            Card card = bs->board[w*r + c];
-            if (is_null_card(card)) {
-                continue;
-            }
-            int points = 1 + compute_longest_path(bs, card.suit,
-                    (Position) {r, c}, 0);
-            int l = card.suit - 'A';
-            DEBUG_PRINTF("%d points from (%d,%d) : %d%c\n", 
-                    points, r, c, card.num, card.suit);
-            if (points > letterPoints[l]) {
-                letterPoints[l] = points;
-            }
-        }
-    }
-    for (int l = 0; l < 26; l++) {
+    int letterLengths[NUM_LETTERS]; // length of longest path of each letter.
+    longest_letter_paths(gameState->boardState, letterLengths);
+
+    int playerPoints[NUM_PLAYERS]; // longest path for each player.
+    memset(playerPoints, 0, sizeof(int)*NUM_PLAYERS); // initialise to 0
+    for (int l = 0; l < NUM_LETTERS; l++) {
         int p = l % NUM_PLAYERS; // p = 0 when letter is A (0)
-        if (letterPoints[l] > playerPoints[p]) {
-            playerPoints[p] = letterPoints[l];
+        if (letterLengths[l]+1 > playerPoints[p]) {
+            // IMPORTANT: score is path length + 1 (i.e. number of cards)
+            playerPoints[p] = letterLengths[l]+1;
         }
     }
     for (int p = 0; p < NUM_PLAYERS; p++) {
@@ -369,7 +355,7 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
         if (is_board_full(gs->boardState)) {
             break;
         }
-        Card* playerHand = gs->playerHands + gs->currPlayer*NUM_HAND;
+        Card* playerHand = get_player_hand(gs);
         // if currPlayer has <6 cards, draw one more card.
         if (is_null_card(playerHand[NUM_HAND-1])) {
             Card drawnCard = draw_card(gs);

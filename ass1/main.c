@@ -52,6 +52,7 @@ int exec_main(int argc, char** argv) {
     int ret = exec_game_loop(&gameState, playerTypes);
     // a lazy effort to clean up memory. obviously if we errored
     // earlier, this memory would not be freed.
+    free(gameState.deckFile);
     free(boardState.board);
     free(deck.cards);
     return ret;

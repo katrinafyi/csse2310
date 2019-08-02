@@ -24,7 +24,7 @@ void init_board(BoardState* boardState, int width, int height) {
 }
 
 bool has_card_at(BoardState* boardState, int row, int col) {
-    return boardState->board[row*boardState->width + col].num != 0;
+    return !is_null_card(boardState->board[row*boardState->width + col]);
 }
 
 // WARNING: lazy implementation. for negatives, only valid up to -d.

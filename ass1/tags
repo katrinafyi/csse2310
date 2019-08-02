@@ -4,6 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
+Assignment1	tests/grum.py	/^class Assignment1(marks.TestCase):$/;"	c
 BLANK_CHAR_PRINT	deck.h	8;"	d
 BLANK_CHAR_SAVED	deck.h	7;"	d
 BOARD_H	board.h	2;"	d
@@ -13,14 +14,13 @@ CC	Makefile	/^CC?=gcc$/;"	m
 COMPILE	tests/grum.py	/^COMPILE = "make"$/;"	v
 Card	deck.h	/^typedef struct Card {$/;"	s
 Card	deck.h	/^} Card;$/;"	t	typeref:struct:Card
-DEBUG_FLAG	util.h	11;"	d
-DEBUG_FLAG	util.h	9;"	d
-DEBUG_PRINT	util.h	14;"	d
-DEBUG_PRINTF	util.h	15;"	d
+DEBUG_PRINT	util.h	15;"	d
+DEBUG_PRINT	util.h	9;"	d
+DEBUG_PRINTF	util.h	11;"	d
+DEBUG_PRINTF	util.h	16;"	d
 DECK_H	deck.h	2;"	d
 Deck	deck.h	/^typedef struct Deck {$/;"	s
 Deck	deck.h	/^} Deck;$/;"	t	typeref:struct:Deck
-Demo	tests/grum.py	/^class Demo(marks.TestCase):$/;"	c
 ENSURE_NONNEG	game.c	11;"	d	file:
 EXITCODES_H	exitCodes.h	2;"	d
 EXIT_BOARD_FULL	exitCodes.h	10;"	d
@@ -34,21 +34,22 @@ GAME_H	game.h	2;"	d
 GameState	game.h	/^typedef struct GameState {$/;"	s
 GameState	game.h	/^} GameState;$/;"	t	typeref:struct:GameState
 LINE_BUFFER	util.c	8;"	d	file:
-LONGESTPATH_H	longestPath.h	2;"	d
+LONGESTPATH_H	scoring.h	2;"	d
 MAX_SIZE	board.h	10;"	d
 MIN_SIZE	board.h	9;"	d
 NULL_CARD	deck.h	6;"	d
 NUM_HAND	game.h	10;"	d
+NUM_LETTERS	scoring.h	6;"	d
 NUM_PLAYERS	game.h	9;"	d
-Position	longestPath.h	/^typedef struct Position {$/;"	s
-Position	longestPath.h	/^} Position;$/;"	t	typeref:struct:Position
-TEST_LOCATION	tests/grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/test_tool\/tests\/'$/;"	v
+Position	scoring.h	/^typedef struct Position {$/;"	s
+Position	scoring.h	/^} Position;$/;"	t	typeref:struct:Position
+TEST_LOCATION	tests/grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/2019\/ptesta1'$/;"	v
 UTIL_H	util.h	2;"	d
 board	board.h	/^    Card* board;$/;"	m	struct:BoardState
 boardState	game.h	/^    BoardState* boardState;$/;"	m	struct:GameState
-c	longestPath.h	/^    int c;$/;"	m	struct:Position
+c	scoring.h	/^    int c;$/;"	m	struct:Position
 cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
-compute_longest_path	longestPath.c	/^int compute_longest_path(BoardState* boardState, char target, Position pos,$/;"	f
+compute_longest_path	scoring.c	/^int compute_longest_path(BoardState* boardState, char target, Position pos,$/;"	f
 currPlayer	game.h	/^    int currPlayer;$/;"	m	struct:GameState
 deal_cards	game.c	/^bool deal_cards(GameState* gameState) {$/;"	f
 deck	game.h	/^    Deck* deck;$/;"	m	struct:GameState
@@ -57,9 +58,11 @@ draw_card	game.c	/^Card draw_card(GameState* gameState) {$/;"	f
 exec_game_loop	game.c	/^int exec_game_loop(GameState* gameState, char* playerTypes) {$/;"	f
 exec_main	main.c	/^int exec_main(int argc, char** argv) {$/;"	f
 finish_auto_turn	game.c	/^void finish_auto_turn(GameState* gameState, Card card, int row, int col) {$/;"	f
-fmt_card	deck.c	/^char* fmt_card(Card card) {$/;"	f
-fmt_card_c	deck.c	/^char* fmt_card_c(Card card, char fillChar) {$/;"	f
-get_card_at	longestPath.c	/^Card get_card_at(BoardState* bs, Position pos) {$/;"	f
+fmt_card	deck.c	/^void fmt_card(char* str, Card card) {$/;"	f
+fmt_card_c	deck.c	/^void fmt_card_c(char* str, Card card, char fillChar) {$/;"	f
+get_card_at	scoring.c	/^Card get_card_at(BoardState* bs, Position pos) {$/;"	f
+get_hand	game.c	/^Card* get_hand(GameState* gameState, int playerIndex) {$/;"	f
+get_player_hand	game.c	/^Card* get_player_hand(GameState* gameState) {$/;"	f
 has_adjacent	board.c	/^bool has_adjacent(BoardState* boardState, int row, int col) {$/;"	f
 has_card_at	board.c	/^bool has_card_at(BoardState* boardState, int row, int col) {$/;"	f
 height	board.h	/^    int height;$/;"	m	struct:BoardState
@@ -70,10 +73,12 @@ is_blank	deck.c	/^bool is_blank(char* cardStr) {$/;"	f
 is_board_empty	board.c	/^bool is_board_empty(BoardState* boardState) {$/;"	f
 is_board_full	board.c	/^bool is_board_full(BoardState* boardState) {$/;"	f
 is_card	deck.c	/^bool is_card(char* cardStr) {$/;"	f
+is_null_card	deck.c	/^bool is_null_card(Card card) {$/;"	f
 is_on_board	board.c	/^bool is_on_board(BoardState* boardState, int r, int c) {$/;"	f
 is_size_valid	board.c	/^bool is_size_valid(int width, int height) {$/;"	f
 load_deck_file	deck.c	/^bool load_deck_file(Deck* deck, char* deckFile) {$/;"	f
 load_game_file	game.c	/^bool load_game_file(GameState* gameState, char* saveFile) {$/;"	f
+longest_letter_paths	scoring.c	/^void longest_letter_paths(BoardState* boardState, int* letterLengths) {$/;"	f
 main	main.c	/^int main(int argc, char** argv) {$/;"	f
 marks	tests/grum.py	/^import marks$/;"	i
 mod	board.c	/^int mod(int x, int d) {$/;"	f
@@ -94,21 +99,38 @@ print_function	tests/grum.py	/^from __future__ import print_function$/;"	i
 print_hand	game.c	/^void print_hand(GameState* gameState) {$/;"	f
 print_points	game.c	/^void print_points(GameState* gameState) {$/;"	f
 prompt_move	game.c	/^bool prompt_move(GameState* gameState) {$/;"	f
-r	longestPath.h	/^    int r;$/;"	m	struct:Position
+r	scoring.h	/^    int r;$/;"	m	struct:Position
 remove_card_from_hand	game.c	/^void remove_card_from_hand(GameState* gameState, int cardNum) {$/;"	f
 safe_read_line	util.c	/^bool safe_read_line(FILE* file, char** output) {$/;"	f
 save_game_file	game.c	/^bool save_game_file(GameState* gameState, char* saveFile) {$/;"	f
-setup_class	tests/grum.py	/^  def setup_class(cls):$/;"	m	class:Demo
+setup_class	tests/grum.py	/^  def setup_class(cls):$/;"	m	class:Assignment1
 suit	deck.h	/^    char suit;$/;"	m	struct:Card
 sys	tests/grum.py	/^import sys$/;"	i
-test_ops1	tests/grum.py	/^  def test_ops1(self):$/;"	m	class:Demo
-test_ops2	tests/grum.py	/^  def test_ops2(self):$/;"	m	class:Demo
-test_ops3	tests/grum.py	/^  def test_ops3(self):$/;"	m	class:Demo
-test_unop1	tests/grum.py	/^  def test_unop1(self):$/;"	m	class:Demo
-test_unop2	tests/grum.py	/^  def test_unop2(self):$/;"	m	class:Demo
-test_usage1	tests/grum.py	/^  def test_usage1(self):$/;"	m	class:Demo
-test_usage2	tests/grum.py	/^  def test_usage2(self):$/;"	m	class:Demo
-timeout	tests/grum.py	/^  timeout = 12 $/;"	v	class:Demo
+test_1auto1	tests/grum.py	/^  def test_1auto1(self):$/;"	m	class:Assignment1
+test_1auto2	tests/grum.py	/^  def test_1auto2(self):$/;"	m	class:Assignment1
+test_1hum2	tests/grum.py	/^  def test_1hum2(self):$/;"	m	class:Assignment1
+test_2auto1	tests/grum.py	/^  def test_2auto1(self):$/;"	m	class:Assignment1
+test_2hum2	tests/grum.py	/^  def test_2hum2(self):$/;"	m	class:Assignment1
+test_any1	tests/grum.py	/^  def test_any1(self):$/;"	m	class:Assignment1
+test_any2	tests/grum.py	/^  def test_any2(self):$/;"	m	class:Assignment1
+test_bad_deck1	tests/grum.py	/^  def test_bad_deck1(self):$/;"	m	class:Assignment1
+test_bad_deck2	tests/grum.py	/^  def test_bad_deck2(self):$/;"	m	class:Assignment1
+test_bad_sf1	tests/grum.py	/^  def test_bad_sf1(self):$/;"	m	class:Assignment1
+test_bad_sf2	tests/grum.py	/^  def test_bad_sf2(self):$/;"	m	class:Assignment1
+test_bad_type1	tests/grum.py	/^  def test_bad_type1(self):$/;"	m	class:Assignment1
+test_bad_type2	tests/grum.py	/^  def test_bad_type2(self):$/;"	m	class:Assignment1
+test_hs1	tests/grum.py	/^  def test_hs1(self):$/;"	m	class:Assignment1
+test_hs2	tests/grum.py	/^  def test_hs2(self):$/;"	m	class:Assignment1
+test_huma2	tests/grum.py	/^  def test_huma2(self):$/;"	m	class:Assignment1
+test_humgames1	tests/grum.py	/^  def test_humgames1(self):$/;"	m	class:Assignment1
+test_humgames2	tests/grum.py	/^  def test_humgames2(self):$/;"	m	class:Assignment1
+test_init1	tests/grum.py	/^  def test_init1(self):$/;"	m	class:Assignment1
+test_init2	tests/grum.py	/^  def test_init2(self):$/;"	m	class:Assignment1
+test_loaddisplay1	tests/grum.py	/^  def test_loaddisplay1(self):$/;"	m	class:Assignment1
+test_loadfirst1	tests/grum.py	/^  def test_loadfirst1(self):$/;"	m	class:Assignment1
+test_usage1	tests/grum.py	/^  def test_usage1(self):$/;"	m	class:Assignment1
+test_usage2	tests/grum.py	/^  def test_usage2(self):$/;"	m	class:Assignment1
+timeout	tests/grum.py	/^  timeout = 12 $/;"	v	class:Assignment1
 to_card	deck.c	/^Card to_card(char* cardStr) {$/;"	f
 tokenise	util.c	/^int tokenise(char* line, int** indexes) {$/;"	f
 width	board.h	/^    int width;$/;"	m	struct:BoardState
