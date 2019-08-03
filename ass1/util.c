@@ -56,7 +56,7 @@ bool safe_read_line(FILE* file, char** output) {
     return errno == 0 && strlen(*output) == position;
 }
 
-int tokenise(char* line, int** indexes) {
+int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
     int len = strlen(line);
     int numTokens = 1;
     *indexes = malloc(sizeof(int) * numTokens);

@@ -26,9 +26,6 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
         DEBUG_PRINT("error top line of savefile");
         return false;
     }
-    // note that we INCLUDE the trailing \0 in the for loop
-    // safe_read_line() guarantees our line contains no \0
-    // in the middle.
     int topLineNums[4];
     int* indexes;
     int numTokens = tokenise(topLine, &indexes);
@@ -39,7 +36,7 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     for (int i = 0; i < numTokens; i++) {
         int parsed = parse_int(topLine+indexes[i]);
         if (parsed < 0) {
-            DEBUG_PRINT("invalid integer top line");
+            DEBUG_PRINT("invalid integer on top line");
             free(topLine);
             return false;
         }
@@ -58,19 +55,20 @@ bool parse_card_row(FILE* file, Card* cards, int numExpected,
         bool hasBlanks) {
     char* line;
     // ensure line length is even.
-    if (!safe_read_line(file, &line) || strlen(line) % 2 == 1) {
+    if (!safe_read_line(file, &line) || strlen(line) % 2 != 0) {
         return false;
     }
-    int i;
     int num = 0;
     // iterate in blocks of 2 characters.
-    for (i = 0; i < strlen(line); i += 2) {
-        bool valid = is_card(line+i) || (hasBlanks && is_blank(line+i));
+    for (int i = 0; i < strlen(line); i += 2) {
+        char* cardStr = line + i;
+        bool valid = is_card(cardStr) || (hasBlanks && is_blank(cardStr));
+        // check >= numExpected to avoid incorrectly indexing cards
         if (!valid || num >= numExpected) {
             free(line);
             return false;
         }
-        cards[num] = is_card(line+i) ? to_card(line+i) : NULL_CARD;
+        cards[num] = is_card(cardStr) ? to_card(cardStr) : NULL_CARD;
         num++;
     }
     free(line);
@@ -127,11 +125,11 @@ bool load_game_file(GameState* gameState, char* saveFile) {
         return false;
     }
     DEBUG_PRINT("init board");
-    init_board(gameState->boardState, w, h);
-    Card* boardCards = gameState->boardState->board;
+    BoardState* bs = gameState->boardState;
+    init_board(bs, w, h);
     for (int row = 0; row < h; row++) {
         DEBUG_PRINT("row parsing");
-        if (!parse_card_row(file, boardCards+row*w, w, true)) {
+        if (!parse_card_row(file, get_board_cell(bs, row, 0), w, true)) {
             DEBUG_PRINT("invalid board row");
             return false;
         }
@@ -150,7 +148,7 @@ void print_hand(GameState* gameState) {
     for (int i = 0; i < NUM_HAND; i++) {
         Card card = hand[i];
         if (is_null_card(card)) {
-            continue;
+            break;
         }
         char str[3];
         printf("%s ", fmt_card(str, card));
@@ -164,17 +162,14 @@ bool deal_cards(GameState* gameState) {
         DEBUG_PRINT("distributing cards");
         Card* hand = get_hand(gameState, p);
         // draws NUM_HAND-1 actual cards because no player is 'playing' yet
-        for (int i = 0; i < NUM_HAND; i++) {
-            if (i == NUM_HAND-1) { // set last card to null.
-                hand[i] = NULL_CARD;
-                continue;
-            }
+        for (int i = 0; i < NUM_HAND-1; i++) {
             Card card = draw_card(gameState);;
             if (is_null_card(card)) {
                 return false;
             }
             hand[i] = card;
         }
+        hand[NUM_HAND-1] = NULL_CARD; // set last card to null
     }
     return true;
 }
@@ -182,12 +177,12 @@ bool deal_cards(GameState* gameState) {
 Card draw_card(GameState* gameState) {
     int n = gameState->numDrawn;
     DEBUG_PRINTF("drawing the %d-th card\n", n);
-    if (gameState->numDrawn >= gameState->deck->numCards) {
+    if (n >= gameState->deck->numCards) {
         DEBUG_PRINT("no more cards");
         return NULL_CARD;
     }
     gameState->numDrawn++;
-    return gameState->deck->cards[n];
+    return gameState->deck->cards[n]; // at this point, n == numDrawn-1
 }
 
 bool save_game_file(GameState* gameState, char* saveFile) {
@@ -198,6 +193,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     if (file == NULL) {
         return false;
     }
+    // write player number as 1-indexed
     ENSURE_NONNEG(fprintf(file, "%d %d %d %d\n%s\n", bs->width, bs->height,
             gs->numDrawn, gs->currPlayer+1, gs->deckFile));
     char str[3];
@@ -215,7 +211,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     int h = bs->height;
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
-            Card card = bs->board[w*r + c];
+            Card card = *get_board_cell(bs, r, c);
             ENSURE_NONNEG(fprintf(file, "%s",
                     fmt_card_c(str, card, BLANK_CHAR_SAVED)));
         }
@@ -227,6 +223,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
 }
 
 void remove_card_from_hand(GameState* gameState, int cardNum) {
+    assert(0 <= cardNum && cardNum < NUM_HAND);
     Card* hand = get_player_hand(gameState);
     for (int i = cardNum; i < NUM_HAND-1; i++) {
         hand[i] = hand[i+1]; // shuffle subsequent cards to the left.
@@ -353,7 +350,7 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
     while (1) {
         print_board(gs->boardState);
         if (is_board_full(gs->boardState)) {
-            break;
+            break; // exit normally as board is full.
         }
         Card* playerHand = get_player_hand(gs);
         // if currPlayer has <6 cards, draw one more card.

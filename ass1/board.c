@@ -22,12 +22,13 @@ void init_board(BoardState* boardState, int width, int height) {
     }
 }
 
-Card* get_card_ptr(BoardState* boardState, int row, int col) {
+Card* get_board_cell(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
-    return boardState->board + row*boardState->width + col;
+    return boardState->board + row*boardState->width + col; // get_board_cell
 }
 bool has_card_at(BoardState* boardState, int row, int col) {
-    return !is_null_card(*get_card_ptr(boardState, row, col));
+    assert(is_on_board(boardState, row, col));
+    return !is_null_card(*get_board_cell(boardState, row, col));
 }
 
 // WARNING: lazy implementation. for negatives, only valid up to -d.
@@ -40,9 +41,7 @@ int mod(int x, int d) {
 }
 
 bool has_adjacent(BoardState* boardState, int row, int col) {
-    if (!is_on_board(boardState, row, col)) {
-        return false; // surely not if card is not even on board.
-    }
+    assert(is_on_board(boardState, row, col));
     int w = boardState->width;
     int h = boardState->height;
     // because board wraps around, we use mod.
@@ -53,19 +52,21 @@ bool has_adjacent(BoardState* boardState, int row, int col) {
 }
 
 bool place_card(BoardState* boardState, int row, int col, Card card) {
-    int w = boardState->width;
-    if (!is_on_board(boardState, row, col)
-            || has_card_at(boardState, row, col)) {
+    assert(is_on_board(boardState, row, col));
+    // if already card at this pos, fail.
+    if (has_card_at(boardState, row, col)) {
         return false;
     }
+    // require either adjacent card or board is empty.
     if (!has_adjacent(boardState, row, col) && !is_board_empty(boardState)) {
         return false;
     }
-    boardState->board[row*w + col] = card;
+    *get_board_cell(boardState, row, col) = card;
     return true;
 }
 
-void print_board(BoardState* boardState) {
+void print_board(BoardState* boardState) { 
+    // TODO: accept FILE* and fillChar params for print_board
     int w = boardState->width;
     int h = boardState->height;
     for (int i = 0; i < w*h; i++) {

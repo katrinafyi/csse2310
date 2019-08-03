@@ -19,10 +19,10 @@ int exec_main(int argc, char** argv) {
         // type arguments are 4,5 for new game and 2,3 for save file.
         char* typeArg = argv[2 + i + 2*isNewGame];
         // recall that strcmp returns 0 on equal
-        if (strcmp(typeArg, "a") && strcmp(typeArg, "h")) {
+        if (!(strcmp(typeArg, "a") == 0 || strcmp(typeArg, "h") == 0)) {
             return EXIT_INCORRECT_ARG_TYPES;
         }
-        playerTypes[i] = *typeArg;
+        playerTypes[i] = *typeArg; // grab first char of arg.
     }
     GameState gameState; // store structs on the stack
     BoardState boardState;
@@ -49,7 +49,7 @@ int exec_main(int argc, char** argv) {
     if (!load_deck_file(&deck, gameState.deckFile)) {
         return EXIT_DECK_ERROR;
     }
-    if (isNewGame && !deal_cards(&gameState)) {
+    if (isNewGame && !deal_cards(&gameState)) { // draws first 10 cards
         return EXIT_DECK_SHORT;
     }
     int ret = exec_game_loop(&gameState, playerTypes);

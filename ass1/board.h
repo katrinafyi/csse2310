@@ -16,7 +16,7 @@ typedef struct BoardState {
 } BoardState;
 
 void init_board(BoardState* boardState, int width, int height);
-Card* get_card_ptr(BoardState* boardState, int row, int col);
+Card* get_board_cell(BoardState* boardState, int row, int col);
 bool place_card(BoardState* boardState, int row, int col, Card card);
 void print_board(BoardState* boardState);
 bool is_on_board(BoardState* boardState, int r, int c);
