@@ -22,8 +22,12 @@ void init_board(BoardState* boardState, int width, int height) {
     }
 }
 
+Card* get_card_ptr(BoardState* boardState, int row, int col) {
+    assert(is_on_board(boardState, row, col));
+    return boardState->board + row*boardState->width + col;
+}
 bool has_card_at(BoardState* boardState, int row, int col) {
-    return !is_null_card(boardState->board[row*boardState->width + col]);
+    return !is_null_card(*get_card_ptr(boardState, row, col));
 }
 
 // WARNING: lazy implementation. for negatives, only valid up to -d.
