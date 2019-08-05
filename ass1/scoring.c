@@ -6,7 +6,7 @@
 #include "util.h"
 
 Card get_card_at(BoardState* bs, Position pos) {
-    return bs->board[pos.r*bs->width + pos.c];
+    return *get_board_cell(bs, pos.r, pos.c);
 }
 
 int compute_longest_path(BoardState* boardState, char target, Position pos,
@@ -53,6 +53,7 @@ void longest_letter_paths(BoardState* boardState, int* letterLengths) {
             }
             int len = compute_longest_path(bs, card.suit,
                     (Position) {r, c}, 0);
+            // assumes card.suit is always valid.
             int letter = card.suit - 'A';
             DEBUG_PRINTF("%d length from (%d,%d) : %d%c\n",
                     len, r, c, card.num, card.suit);

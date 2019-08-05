@@ -58,7 +58,10 @@ bool is_blank(char* cardStr) {
 }
 
 Card to_card(char* cardStr) {
-    return (Card) { *cardStr-'1'+1, *(cardStr+1) };
+    int num = cardStr[0] - '1' + 1;
+    char suit = cardStr[1];
+    assert(1 <= num && num <= 9 && 'A' <= suit && suit <= 'Z');
+    return (Card) { num, suit };
 }
 
 char* fmt_card_c(char* str, Card card, char fillChar) {

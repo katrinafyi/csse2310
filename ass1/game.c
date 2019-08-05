@@ -15,6 +15,7 @@ void init_game_state(GameState* gameState) {
     gameState->numDrawn = 0;
     gameState->boardState = NULL;
     gameState->deck = NULL;
+    gameState->deckFile = NULL;
     for (int i = 0; i < NUM_HAND*NUM_PLAYERS; i++) {
         gameState->playerHands[i] = NULL_CARD;
     }
@@ -106,6 +107,7 @@ bool load_game_file(GameState* gameState, char* saveFile) {
         DEBUG_PRINT("error opening savefile");
         return false;
     }
+    // width, height, num drawn and curr player as they appear in the file.
     int w, h, n, v;
     if (!parse_top_line(file, &w, &h, &n, &v)) {
         return false;
@@ -150,8 +152,11 @@ void print_hand(GameState* gameState) {
         if (is_null_card(card)) {
             break;
         }
+        if (i > 0) {
+            printf(" ");
+        }
         char str[3];
-        printf("%s ", fmt_card(str, card));
+        printf("%s", fmt_card(str, card));
     }
     printf("\n");
 }
@@ -178,7 +183,7 @@ Card draw_card(GameState* gameState) {
     int n = gameState->numDrawn;
     DEBUG_PRINTF("drawing the %d-th card\n", n);
     if (n >= gameState->deck->numCards) {
-        DEBUG_PRINT("no more cards");
+        DEBUG_PRINT("but there are no more cards");
         return NULL_CARD;
     }
     gameState->numDrawn++;
