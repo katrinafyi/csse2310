@@ -30,7 +30,7 @@ bool safe_read_line(FILE* file, char** output) {
         return false;
     }
     int allocated = LINE_BUFFER;
-    *output = malloc(sizeof(char)*allocated);
+    *output = malloc(sizeof(char) * allocated);
     int position = 0;
     int next;
     while (1) {
@@ -46,11 +46,11 @@ bool safe_read_line(FILE* file, char** output) {
             if (position >= allocated) {
                 allocated += LINE_BUFFER;
                 // printf("allocating to %d\n", allocated);
-                *output = realloc(*output, sizeof(char)*allocated);
+                *output = realloc(*output, sizeof(char) * allocated);
             }
         }
     }
-    *output = realloc(*output, sizeof(char)*(position+1));
+    *output = realloc(*output, sizeof(char) * (position + 1));
     // flags invalid line if line contains nulls
     // or an error occured.
     return errno == 0 && strlen(*output) == position;
@@ -71,8 +71,8 @@ int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
             // DEBUG_PRINTF("token at %d\n", i);
             // number of tokens should be small enough that realloc'ing
             // every token is fine.
-            *indexes = realloc(*indexes, sizeof(int) * (numTokens+1));
-            (*indexes)[numTokens] = i+1;
+            *indexes = realloc(*indexes, sizeof(int) * (numTokens + 1));
+            (*indexes)[numTokens] = i + 1;
             numTokens++;
         }
     }

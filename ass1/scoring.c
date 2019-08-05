@@ -34,7 +34,7 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
             if (is_null_card(newCard) || newCard.num <= thisCard.num) {
                 continue;
             }
-            int l = compute_longest_path(bs, target, newPos, length+1);
+            int l = compute_longest_path(bs, target, newPos, length + 1);
             // DEBUG_PRINTF("len %d\n", l);
             m = (l > m) ? l : m; // m = max(m, l)
         }
@@ -43,13 +43,13 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
 }
 
 void longest_letter_paths(BoardState* boardState, int* letterLengths) {
-    memset(letterLengths, 0, sizeof(int)*NUM_LETTERS);
+    memset(letterLengths, 0, sizeof(int) * NUM_LETTERS);
     BoardState* bs = boardState;
     int w = bs->width;
     int h = bs->height;
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
-            Card card = bs->board[w*r + c];
+            Card card = *get_board_cell(bs, r, c);
             if (is_null_card(card)) {
                 continue;
             }

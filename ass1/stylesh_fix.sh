@@ -2,8 +2,8 @@
 
 set -e
 
-#tmp="$(mktemp -d)"
-tmp="tmp"
+tmp="$(mktemp -d)"
+#tmp="tmp"
 cp *.c *.h "$tmp"
 echo "$tmp"
 cd "$tmp"
@@ -18,6 +18,8 @@ sed -r -i 's|#define (DEBUG_[A-Z_]+)\(.*|#define \1\(...\) do {} while \(0\)|g' 
 sed -r -i 's|^.*// style_deleteme.*$||g' *.c *.h
 
 # you know what? just delete all DEBUG_ statements
-sed -r -i 's|(DEBUG_PRINTF?)|//debug:|g' *.c 
+sed -r -i 's|(DEBUG_PRINTF?)|//debug:|g' *.c
 
-style.sh | grep -E -v '(THIS IS NOT|THE STYLE)'
+style.sh | grep -E -v '(THIS IS NOT|THE STYLE)' | grep -v 'No errors found'
+
+rm -r "$tmp"

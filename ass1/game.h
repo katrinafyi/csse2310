@@ -15,7 +15,7 @@
 typedef struct GameState {
     int currPlayer;
     int numDrawn;
-    Card playerHands[NUM_PLAYERS*NUM_HAND];
+    Card playerHands[NUM_PLAYERS * NUM_HAND];
     char* deckFile;
     Deck* deck;
 

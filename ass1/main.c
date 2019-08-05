@@ -17,7 +17,7 @@ int exec_main(int argc, char** argv) {
     char playerTypes[NUM_PLAYERS];
     for (int i = 0; i < NUM_PLAYERS; i++) {
         // type arguments are 4,5 for new game and 2,3 for save file.
-        char* typeArg = argv[2 + i + 2*isNewGame];
+        char* typeArg = argv[2 + i + 2 * isNewGame];
         // recall that strcmp returns 0 on equal
         if (!(strcmp(typeArg, "a") == 0 || strcmp(typeArg, "h") == 0)) {
             return EXIT_INCORRECT_ARG_TYPES;
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
             break;
         case EXIT_INCORRECT_ARGS:
             error = "Usage: bark savefile p1type p2type\n"
-                "bark deck width height p1type p2type\n";
+                    "bark deck width height p1type p2type\n";
             break;
         case EXIT_INCORRECT_ARG_TYPES:
             error = "Incorrect arg types\n";

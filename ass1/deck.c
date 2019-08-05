@@ -22,7 +22,7 @@ bool load_deck_file(Deck* deck, char* deckFile) {
     }
     free(numLine);
     // printf("%d cards deteced\n", numCards);
-    deck->cards = malloc(sizeof(Card)*numCards);
+    deck->cards = malloc(sizeof(Card) * numCards);
     for (int i = 0; i < numCards; i++) {
         char* line;
         if (!safe_read_line(file, &line)) {
@@ -44,29 +44,29 @@ bool load_deck_file(Deck* deck, char* deckFile) {
     return true;
 }
 
-bool is_card(char* cardStr) {
-    return '1' <= *cardStr && *cardStr <= '9'
-        && 'A' <= *(cardStr+1) && *(cardStr+1) <= 'Z';
+bool is_card(char* str) {
+    return '1' <= str[0] && str[0] <= '9'
+            && 'A' <= str[1] && str[1] <= 'Z';
 }
 
 bool is_null_card(Card card) {
     return card.num == 0; // define num == 0 iff card is NULL
 }
 
-bool is_blank(char* cardStr) {
-    return cardStr[0] == BLANK_CHAR_SAVED && cardStr[1] == BLANK_CHAR_SAVED;
+bool is_blank(char* str) {
+    return str[0] == BLANK_CHAR_SAVED && str[1] == BLANK_CHAR_SAVED;
 }
 
-Card to_card(char* cardStr) {
-    int num = cardStr[0] - '1' + 1;
-    char suit = cardStr[1];
+Card to_card(char* str) {
+    int num = str[0] - '1' + 1;
+    char suit = str[1];
     assert(1 <= num && num <= 9 && 'A' <= suit && suit <= 'Z');
-    return (Card) { num, suit };
+    return (Card) {num, suit};
 }
 
-char* fmt_card_c(char* str, Card card, char fillChar) {
+char* fmt_card_c(char* str, Card card, char blank) {
     if (is_null_card(card)) {
-        snprintf(str, 3, "%c%c", fillChar, fillChar);
+        snprintf(str, 3, "%c%c", blank, blank);
     } else {
         assert(1 <= card.num && card.num <= 9);
         snprintf(str, 3, "%d%c", card.num, card.suit);

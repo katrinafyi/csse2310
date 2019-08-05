@@ -31,27 +31,27 @@ typedef struct Deck {
  * File structure assumptions are described in the implementation.
  */
 bool load_deck_file(Deck* deck, char* deckFile);
-/* Returns true if cardStr points to a valid non-blank card.
- * cardStr need not be null-terminated but must have >= 2 characters.
+/* Returns true if str points to a valid non-blank card.
+ * str need not be null-terminated but must have >= 2 characters.
  */
-bool is_card(char* cardStr);
+bool is_card(char* str);
 /* Returns true if the card struct is a null value.
  * That is, it should be treated as a blank or missing card.
  */
 bool is_null_card(Card card);
-/* Returns true if cardStr points to a blank card. That is, if it points to
+/* Returns true if str points to a blank card. That is, if it points to
  * two BLANK_CHAR_SAVED characters.
  */
-bool is_blank(char* cardStr);
+bool is_blank(char* str);
 /* Parses the given string into a Card struct, returning the struct.
- * cardStr must be a non-null card.
+ * str must be a non-null card.
  */
-Card to_card(char* cardStr);
+Card to_card(char* str);
 /* Formats the given card into the given string, replacing null cards with
- * the given fillChar.
+ * the given blank.
  * str contain space for at least 3 characters.
  */
-char* fmt_card_c(char* str, Card card, char fillChar);
+char* fmt_card_c(char* str, Card card, char blank);
 /* Formats the given card into the given string, replacing null cards with
  * 2 of BLANK_CHAR_PRINT.
  */
