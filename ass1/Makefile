@@ -6,5 +6,8 @@ bark: main.c deck.c board.c game.c util.c scoring.c
 one:
 	gcc -c $(CCFLAGS) ${FILE} -o bark
 
+stylesh: bark
+	./stylesh_fix.sh
+
 debug: CCFLAGS += -D DEBUG
 debug: bark
