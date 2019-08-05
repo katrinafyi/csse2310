@@ -7,9 +7,9 @@
 
 #ifdef DEBUG
 #define DEBUG_PRINT(str) fprintf(stderr, "%s:%d %s\n", __func__, __LINE__, \
-        str);
+        str); // style_deleteme
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "%s:%d "fmt, __func__, __LINE__, __VA_ARGS__);
+        "%s:%d "fmt, __func__, __LINE__, __VA_ARGS__); // style_deleteme
 
 #else
 #define DEBUG_PRINT(str) do {} while (0)

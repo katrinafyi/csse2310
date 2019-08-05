@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "deck.h"
+#include "board.h"
 #include "scoring.h"
 #include "util.h"
 
@@ -56,7 +58,7 @@ void longest_letter_paths(BoardState* boardState, int* letterLengths) {
             // assumes card.suit is always valid.
             int letter = card.suit - 'A';
             DEBUG_PRINTF("%d length from (%d,%d) : %d%c\n",
-                    len, r, c, card.num, card.suit);
+                    len, r, c, card.num, card.suit); // style_deleteme
             if (len > letterLengths[letter]) {
                 letterLengths[letter] = len;
             }
