@@ -8,7 +8,6 @@
 #include "exitCodes.h"
 #include "util.h"
 
-// barely exceeds 50 lines. pls forgive, this bootstraps everything.
 int exec_main(int argc, char** argv) {
     if (!(argc == 4 || argc == 6)) {
         return EXIT_INCORRECT_ARGS;

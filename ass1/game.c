@@ -162,6 +162,14 @@ void print_hand(GameState* gameState) {
 }
 
 bool deal_cards(GameState* gameState) {
+    // we need enough cards for each player to draw NUM_HAND-1 and the first
+    // player to draw one more.
+    // this function only draws the NUM_HAND-1 cards for each player but
+    // ensures that the required number are present.
+    if (gameState->deck->numCards < NUM_PLAYERS * (NUM_HAND - 1) + 1) {
+        return false;
+    }
+
     // draw cards for each players sequentially, not alternating players
     for (int p = 0; p < NUM_PLAYERS; p++) {
         DEBUG_PRINT("distributing cards");
@@ -237,14 +245,13 @@ void remove_card_from_hand(GameState* gameState, int cardNum) {
 }
 
 bool prompt_move(GameState* gameState) {
-    GameState* gs = gameState;
     char* input = NULL;
-    while (1) {
+    while (!feof(stdin)) { // TODO: leaks last line of input
         free(input); // free input line from previous prompt.
         input = NULL;
         printf("Move? ");
         fflush(stdout);
-        if (!safe_read_line(stdin, &input) || feof(stdin)) {
+        if (!safe_read_line(stdin, &input)) {
             DEBUG_PRINT("error reading human input");
             free(input);
             return false;
@@ -256,7 +263,7 @@ bool prompt_move(GameState* gameState) {
             }
             continue;
         }
-        int* indexes;
+        int* indexes = NULL;
         int numTokens = tokenise(input, &indexes);
         if (numTokens != 3) {
             DEBUG_PRINT("invalid number of tokens");
@@ -270,19 +277,20 @@ bool prompt_move(GameState* gameState) {
         free(input);
         input = NULL;
         if (cardNum < 0 || cardNum >= NUM_HAND ||
-                !is_on_board(gs->boardState, row, col)) {
+                !is_on_board(gameState->boardState, row, col)) {
             DEBUG_PRINT("card or row/col number outside of range");
             continue;
         }
-        Card card = get_player_hand(gs)[cardNum];
+        Card card = get_player_hand(gameState)[cardNum];
         assert(!is_null_card(card)); // player should always have 6 cards.
-        if (!place_card(gs->boardState, row, col, card)) {
+        if (!place_card(gameState->boardState, row, col, card)) {
             DEBUG_PRINT("cannot put card here");
             continue;
         }
         remove_card_from_hand(gameState, cardNum);
         return true;
     }
+    return false;
 }
 
 void finish_auto_turn(GameState* gameState, Card card, int row, int col) {
