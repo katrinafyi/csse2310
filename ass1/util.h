@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#define INSTANT_SEGFAULT *((int*)0) = 42
+
 #ifdef DEBUG
 #define DEBUG_PRINT(str) fprintf(stderr, "%s:%d %s\n", __func__, __LINE__, \
         str); // style_deleteme

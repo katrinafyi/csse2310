@@ -1,0 +1,80 @@
+........
+........
+........
+........
+Hand(1): 1A 2A 3A 4A 1B 3C
+Move? ........
+........
+........
+....1A..
+Hand(2): 2B 3B 4B 5B 2C 4C
+Move? Move? Move? Move? Move? ........
+........
+....3B..
+....1A..
+Hand(1): 2A 3A 4A 1B 3C 5C
+Move? Move? ........
+........
+....3B..
+....1A2A
+Hand(2): 2B 4B 5B 2C 4C 6C
+Move? Move? ........
+....2B..
+....3B..
+....1A2A
+Hand(1): 3A 4A 1B 3C 5C 7C
+Move? Move? ........
+....2B..
+....3B..
+3C..1A2A
+Hand(2): 4B 5B 2C 4C 6C 8C
+Move? Move? ........
+....2B..
+....3B..
+3C4C1A2A
+Hand(1): 3A 4A 1B 5C 7C 1D
+Move? ....3A..
+....2B..
+....3B..
+3C4C1A2A
+Hand(2): 4B 5B 2C 6C 8C 2D
+Move? 4B..3A..
+....2B..
+....3B..
+3C4C1A2A
+Hand(1): 4A 1B 5C 7C 1D 3D
+Move? 4B4A3A..
+....2B..
+....3B..
+3C4C1A2A
+Hand(2): 5B 2C 6C 8C 2D 4D
+Move? Move? 4B4A3A5B
+....2B..
+....3B..
+3C4C1A2A
+Hand(1): 1B 5C 7C 1D 3D 5D
+Move? 4B4A3A5B
+5C..2B..
+....3B..
+3C4C1A2A
+Hand(2): 2C 6C 8C 2D 4D 7D
+Move? 4B4A3A5B
+5C6C2B..
+....3B..
+3C4C1A2A
+Hand(1): 1B 7C 1D 3D 5D 1E
+Move? 4B4A3A5B
+5C6C2B7C
+....3B..
+3C4C1A2A
+Hand(2): 2C 8C 2D 4D 7D 2E
+Move? 4B4A3A5B
+5C6C2B7C
+....3B2D
+3C4C1A2A
+Hand(1): 1B 1D 3D 5D 1E 3E
+Move? 4B4A3A5B
+5C6C2B7C
+3D..3B2D
+3C4C1A2A
+Player 1=4 Player 2=3
