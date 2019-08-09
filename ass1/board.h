@@ -16,6 +16,7 @@
 typedef struct BoardState {
     int width;
     int height;
+    int numPlaced;
     Card* board;
 } BoardState;
 

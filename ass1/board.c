@@ -15,6 +15,7 @@ void init_board(BoardState* boardState, int width, int height) {
     boardState->board = malloc(sizeof(Card) * width * height);
     boardState->width = width;
     boardState->height = height;
+    boardState->numPlaced = 0;
 
     for (int i = 0; i < width * height; i++) {
         // printf("initialising %d to null\n", i);
@@ -63,10 +64,11 @@ bool place_card(BoardState* boardState, int row, int col, Card card) {
         return false;
     }
     *get_board_cell(boardState, row, col) = card;
+    boardState->numPlaced++;
     return true;
 }
 
-void print_board(BoardState* boardState) { 
+void print_board(BoardState* boardState) {
     // TODO: accept FILE* and blank params for print_board
     int w = boardState->width;
     int h = boardState->height;
@@ -80,21 +82,12 @@ void print_board(BoardState* boardState) {
 }
 
 bool is_board_full(BoardState* boardState) {
-    for (int i = 0; i < boardState->width * boardState->height; i++) {
-        if (is_null_card(boardState->board[i])) {
-            return false;
-        }
-    }
-    return true;
+    // efficient checking using number of cards placed
+    return boardState->numPlaced == boardState->width * boardState->height;
 }
 
 bool is_board_empty(BoardState* boardState) {
-    for (int i = 0; i < boardState->width * boardState->height; i++) {
-        if (!is_null_card(boardState->board[i])) {
-            return false;
-        }
-    }
-    return true;
+    return boardState->numPlaced == 0;
 }
 
 bool is_size_valid(int width, int height) {
