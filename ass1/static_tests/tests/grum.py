@@ -309,6 +309,12 @@ class Assignment1(marks.TestCase):
     self.assert_stderr_matches_file(p, 'tests/empty')
     self.assert_exit_status(p, 0)
 
+  def test_savefile_empty_deck(self):
+    p = self.process([self.prog] + ['tests/save_3x3', 'h', 'h'])
+    p.finish_input()
+    self.assert_stdout_matches_file(p, 'tests/out_3x3')
+    self.assert_stderr_matches_file(p, 'tests/eof')
+    self.assert_exit_status(p, 7)
 
 if __name__ == '__main__':
     marks.main()

@@ -14,10 +14,12 @@ bool load_deck_file(Deck* deck, char* deckFile) {
     DEBUG_PRINTF("deck file loading: %s\n", deckFile);
     char* numLine;
     if (!safe_read_line(file, &numLine)) {
+        DEBUG_PRINT("failed to read number line");
         return false;
     }
     int numCards = parse_int(numLine);
-    if (numCards <= 0) {
+    if (numCards < 0) {
+        DEBUG_PRINT("number of cards invalid");
         return false;
     }
     free(numLine);
