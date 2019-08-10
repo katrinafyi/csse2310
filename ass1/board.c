@@ -23,26 +23,27 @@ void init_board(BoardState* boardState, int width, int height) {
     }
 }
 
+bool has_card_at(BoardState* boardState, int row, int col) {
+    assert(is_on_board(boardState, row, col));
+    return !is_null_card(*get_board_cell(boardState, row, col));
+}
+
 void count_cards(BoardState* boardState) {
     int count = 0;
     for (int r = 0; r < boardState->height; r++) {
         for (int c = 0; c < boardState->width; c++) {
             if (has_card_at(boardState, r, c)) {
-                count++:
+                count++;
             }
         }
     }
+    DEBUG_PRINTF("counted %d cards on board\n", count);
     boardState->numPlaced = count;
 }
 
 Card* get_board_cell(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
     return boardState->board + row * boardState->width + col; // get_board_cell
-}
-
-bool has_card_at(BoardState* boardState, int row, int col) {
-    assert(is_on_board(boardState, row, col));
-    return !is_null_card(*get_board_cell(boardState, row, col));
 }
 
 // WARNING: lazy implementation. for negatives, only valid up to -d.
