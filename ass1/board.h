@@ -25,6 +25,10 @@ typedef struct BoardState {
  */
 void init_board(BoardState* boardState, int width, int height);
 
+/* Recounts the number of cards currently placed on the board,
+ * storing it into the numPlaced member. */
+void count_cards(BoardState* boardState);
+
 /* Returns a pointer to the card at the given row/col.
  * Adding to the returned pointer moves right along the current row
  * then wrapping around to the next row.

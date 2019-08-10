@@ -23,6 +23,18 @@ void init_board(BoardState* boardState, int width, int height) {
     }
 }
 
+void count_cards(BoardState* boardState) {
+    int count = 0;
+    for (int r = 0; r < boardState->height; r++) {
+        for (int c = 0; c < boardState->width; c++) {
+            if (has_card_at(boardState, r, c)) {
+                count++:
+            }
+        }
+    }
+    boardState->numPlaced = count;
+}
+
 Card* get_board_cell(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
     return boardState->board + row * boardState->width + col; // get_board_cell

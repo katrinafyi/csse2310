@@ -136,6 +136,7 @@ bool load_game_file(GameState* gameState, char* saveFile) {
             return false;
         }
     }
+    count_cards(bs);
     if (fgetc(file) != EOF) {
         DEBUG_PRINT("extra junk at eof");
         return false;
