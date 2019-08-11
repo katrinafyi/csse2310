@@ -6,7 +6,7 @@
 #include "deck.h"
 #include "board.h"
 
-// theoretically, game adapt to any number of players.
+// theoretically, game can adapt to any number of players.
 #define NUM_PLAYERS 2
 // this is the number of cards in the CURRENT player's hand, so we can
 // allocate arrays without using +1 all the time.

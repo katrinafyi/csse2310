@@ -20,7 +20,7 @@ int exec_main(int argc, char** argv) {
     if (!(argc == 2 + NUM_PLAYERS || argc == 4 + NUM_PLAYERS)) {
         return EXIT_INCORRECT_ARGS;
     }
-    int isNewGame = argc == 6 ? 1 : 0;
+    int isNewGame = argc == 4 + NUM_PLAYERS ? 1 : 0;
     char playerTypes[NUM_PLAYERS];
     for (int i = 0; i < NUM_PLAYERS; i++) {
         // type arguments are 4,5 for new game and 2,3 for save file.
