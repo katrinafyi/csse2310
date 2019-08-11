@@ -7,15 +7,24 @@
 #include "scoring.h"
 #include "util.h"
 
+/* Returns the card at the given position. Thin wrapper around get_board_cell.
+ */
 Card get_card_at(BoardState* bs, Position pos) {
     return *get_board_cell(bs, pos.r, pos.c);
 }
 
 int compute_longest_path(BoardState* boardState, char target, Position pos,
         int length) {
+    /* the path restrictions in the spec impose a directed acyclic graph
+     * structure on the board. this means the longest path algorithm is very
+     * easy, we just need to check starting and ending suits. this is a
+     * recursive DP implementation of longest path for DAG.
+     */
     BoardState* bs = boardState;
     Card thisCard = get_card_at(bs, pos);
-    int m = 0; // 0 unless this card is valid endpoint or path exists.
+    // m is currently the length of the longest path to THIS card and will
+    // be returned if there are no possible paths from this card.
+    int m = 0; // start at 0, assuming no other paths and differing  suit.
     if (!is_null_card(thisCard) && thisCard.suit == target) {
         m = length; // this pos would be a valid endpoint.
     }
@@ -23,7 +32,7 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
     for (int dr = -1; dr <= 1; dr++) {
         for (int dc = -1; dc <= 1; dc++) {
             if (abs(dc) == abs(dr)) {
-                continue; // ignore shifts on diagonals
+                continue; // ignore 5 shifts on diagonals. TODO: probably slow
             }
             // DEBUG_PRINTF("testing shift dr %d, dc %d\n", dr, dc);
             Position newPos = pos;
@@ -35,14 +44,16 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
                 continue;
             }
             int l = compute_longest_path(bs, target, newPos, length + 1);
-            // DEBUG_PRINTF("len %d\n", l);
             m = (l > m) ? l : m; // m = max(m, l)
         }
     }
     return m;
 }
 
+// iterates over every starting position and looks for longest path from
+// that position to any card of the same suit.
 void longest_letter_paths(BoardState* boardState, int* letterLengths) {
+    // because we use letterLengths in comparisons, zero it first.
     memset(letterLengths, 0, sizeof(int) * NUM_LETTERS);
     BoardState* bs = boardState;
     int w = bs->width;
@@ -64,5 +75,5 @@ void longest_letter_paths(BoardState* boardState, int* letterLengths) {
             }
         }
     }
-
+    // result stored into letterLengths array.
 }
