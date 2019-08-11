@@ -7,6 +7,7 @@
 
 #define LINE_BUFFER 10
 
+// see header
 int parse_int(char* str) {
     // reject unless leading char is digit or +
     if (!(isdigit(*str) || *str == '+')) {
@@ -25,11 +26,12 @@ int parse_int(char* str) {
     return num;
 }
 
+// see header
 bool safe_read_line(FILE* file, char** output) {
     if (file == NULL) {
         return false;
     }
-    int allocated = LINE_BUFFER;
+    int allocated = LINE_BUFFER; // allocates space in LINE_BUFFER chunks
     *output = malloc(sizeof(char) * allocated);
     int position = 0;
     int next;
@@ -50,12 +52,19 @@ bool safe_read_line(FILE* file, char** output) {
             }
         }
     }
+    // free up space we don't need
     *output = realloc(*output, sizeof(char) * (position + 1));
-    // flags invalid line if line contains nulls
-    // or an error occured.
-    return errno == 0 && strlen(*output) == position;
+    // if line contains nulls, strlen will be < position.
+    bool isValid = errno == 0 && strlen(*output) == position;
+    if (!isValid) {
+        // discard line if input is invalid.
+        free(*output);
+        *output = NULL;
+    }
+    return isValid;
 }
 
+// see header
 int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
     int len = strlen(line);
     int numTokens = 1;
@@ -69,6 +78,7 @@ int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
             // each token can be viewed as its own null terminated string.
             line[i] = '\0';
             // DEBUG_PRINTF("token at %d\n", i);
+
             // number of tokens should be small enough that realloc'ing
             // every token is fine.
             *indexes = realloc(*indexes, sizeof(int) * (numTokens + 1));

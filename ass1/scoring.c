@@ -13,6 +13,7 @@ Card get_card_at(BoardState* bs, Position pos) {
     return *get_board_cell(bs, pos.r, pos.c);
 }
 
+// see header
 int compute_longest_path(BoardState* boardState, char target, Position pos,
         int length) {
     /* the path restrictions in the spec impose a directed acyclic graph

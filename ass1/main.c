@@ -8,8 +8,16 @@
 #include "exitCodes.h"
 #include "util.h"
 
+/* Executes the main functionality of the game. Intended to be called directly
+ * from main(), with the same arguments. Returns an integer to be used as
+ * exit code.
+ *
+ * Arguments look like:
+ * bark save a a
+ * bark deck 10 10 a a
+ */
 int exec_main(int argc, char** argv) {
-    if (!(argc == 4 || argc == 6)) {
+    if (!(argc == 2 + NUM_PLAYERS || argc == 4 + NUM_PLAYERS)) {
         return EXIT_INCORRECT_ARGS;
     }
     int isNewGame = argc == 6 ? 1 : 0;
@@ -21,7 +29,7 @@ int exec_main(int argc, char** argv) {
         if (!(strcmp(typeArg, "a") == 0 || strcmp(typeArg, "h") == 0)) {
             return EXIT_INCORRECT_ARG_TYPES;
         }
-        playerTypes[i] = *typeArg; // grab first char of arg.
+        playerTypes[i] = *typeArg; // grab first and only char of arg.
     }
     GameState gameState; // store structs on the stack
     BoardState boardState;
@@ -46,7 +54,7 @@ int exec_main(int argc, char** argv) {
         init_board(gameState.boardState, w, h);
     }
     if (!load_deck_file(&deck, gameState.deckFile)) {
-        return EXIT_DECK_ERROR;
+        return EXIT_DECK_ERROR; // checks deck AFTER save, contrary to spec
     }
     if (isNewGame && !deal_cards(&gameState)) { // draws first 10 cards
         return EXIT_DECK_SHORT;
@@ -59,6 +67,9 @@ int exec_main(int argc, char** argv) {
     return ret;
 }
 
+/* Entry point of game. This offloads the work to exec_main() and just
+ * translates exit codes to their corresponding messages.
+ */
 int main(int argc, char** argv) {
     int ret = exec_main(argc, argv);
     char* error = "";
@@ -88,7 +99,7 @@ int main(int argc, char** argv) {
             error = "End of input\n";
             break;
         default:
-            error = "UNKNOWN EXIT CODE\n";
+            error = "UNKNOWN EXIT CODE\n"; // obviously should never happen
     }
     fprintf(stderr, "%s", error);
     DEBUG_PRINTF("exiting with code %d\n", ret);

@@ -6,6 +6,7 @@
 #include "deck.h"
 #include "board.h"
 
+// theoretically, game adapt to any number of players.
 #define NUM_PLAYERS 2
 #define NUM_HAND 6
 

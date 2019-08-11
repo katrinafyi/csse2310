@@ -8,11 +8,16 @@
 #include "exitCodes.h"
 #include "scoring.h"
 
-#define ENSURE_NONNEG(x) if (x < 0) return false;
+// style guide xd
+#define ENSURE_NONNEG(x) if (x < 0) { \
+   return false; \
+}
 
+// see header
 void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
+    // nested structs are initialised externally.
     gameState->boardState = NULL;
     gameState->deck = NULL;
     gameState->deckFile = NULL;
@@ -21,6 +26,15 @@ void init_game_state(GameState* gameState) {
     }
 }
 
+/* Parses the top line of the file which contains w, h, n, v.
+ * w, h = width, height. n = num cards darn. v = player number.
+ *
+ * Stores w, h, n, v into the given pointers. Returns false if the format
+ * is invalid.
+ *
+ * Note: Performs no range validation on the integers apart from ensuring they
+ * are integers.
+ */
 bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     char* topLine;
     if (!safe_read_line(file, &topLine)) {
