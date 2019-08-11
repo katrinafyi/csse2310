@@ -9,11 +9,12 @@
 #include "scoring.h"
 
 // style guide xd
-#define ENSURE_NONNEG(x) if (x < 0) { \
-   return false; \
+#define ENSURE_NONNEG(x) if (x < 0) {\
+    return false;\
 }
 
 // see header
+// style.sh flags a whitespace error here for some reason.
 void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
@@ -27,7 +28,7 @@ void init_game_state(GameState* gameState) {
 }
 
 /* Parses the top line of the file which contains w, h, n, v.
- * w, h = width, height. n = num cards darn. v = player number.
+ * w, h = width, height. n = num cards drawn. v = player number.
  *
  * Stores w, h, n, v into the given pointers. Returns false if the format
  * is invalid.
