@@ -82,6 +82,8 @@ int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
             // number of tokens should be small enough that realloc'ing
             // every token is fine.
             *indexes = realloc(*indexes, sizeof(int) * (numTokens + 1));
+            // next token starts after this space.
+            // if line ends with a space, last token will be an empty string.
             (*indexes)[numTokens] = i + 1;
             numTokens++;
         }

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+// used as an assert(false) which can't be disabled.
+// for BIG mistakes.
 #define INSTANT_SEGFAULT *((int*)0) = 42
 
 #ifdef DEBUG

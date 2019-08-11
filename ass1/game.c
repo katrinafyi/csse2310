@@ -66,6 +66,13 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     return true;
 }
 
+/* Parses a row of cards from the given file, storing it into the array given
+ * by cards. Expects exactly numExpected cards, accepts blank cards if
+ * hasBlanks is true.
+ *
+ * Returns false if the line does not have exactly numExpected valid cards.
+ * If hasBlanks is true, accepts blanks using BLANK_CHAR_SAVED only.
+ */
 bool parse_card_row(FILE* file, Card* cards, int numExpected,
         bool hasBlanks) {
     char* line;
@@ -76,7 +83,7 @@ bool parse_card_row(FILE* file, Card* cards, int numExpected,
     int num = 0;
     // iterate in blocks of 2 characters.
     for (int i = 0; i < strlen(line); i += 2) {
-        char* str = line + i;
+        char* str = line + i; // pointer to start of this card in the line.
         bool valid = is_card(str) || (hasBlanks && is_blank(str));
         // check >= numExpected to avoid incorrectly indexing cards
         if (!valid || num >= numExpected) {
@@ -87,20 +94,21 @@ bool parse_card_row(FILE* file, Card* cards, int numExpected,
         num++;
     }
     free(line);
-    if (num < numExpected) {
-        return false;
-    }
-    return true;
+    return num == numExpected; // catches cases with less than expected.
 }
 
+/* Returns a pointer to the start of the given player's hand. */
 Card* get_hand(GameState* gameState, int playerIndex) {
     return gameState->playerHands + NUM_HAND * playerIndex; // get_hand()
 }
 
+/* Returns a pointer to the start of the current player's hand. */
 Card* get_player_hand(GameState* gameState) {
     return get_hand(gameState, gameState->currPlayer);
 }
 
+/* Parses all player hands from the given file, storing in the given struct.
+ */
 bool parse_all_hands(FILE* file, GameState* gameState) {
     int currPlayer = gameState->currPlayer;
     for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
@@ -115,6 +123,7 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
     return true;
 }
 
+// see header
 bool load_game_file(GameState* gameState, char* saveFile) {
     FILE* file = fopen(saveFile, "r");
     if (file == NULL) {
@@ -126,40 +135,41 @@ bool load_game_file(GameState* gameState, char* saveFile) {
     if (!parse_top_line(file, &w, &h, &n, &v)) {
         return false;
     }
-    if (!is_size_valid(w, h) || n <= 0 || v <= 0 || v > NUM_PLAYERS) {
+    if (!is_size_valid(w, h) || n < 0 || v <= 0 || v > NUM_PLAYERS) {
         DEBUG_PRINT("integer out of range");
         return false;
     }
     gameState->numDrawn = n;
     gameState->currPlayer = v - 1; // shift to 0-indexed
     DEBUG_PRINT("top line parsed");
-    if (!safe_read_line(file, &(gameState->deckFile))) {
+    if (!safe_read_line(file, &(gameState->deckFile))) { // read deckfile path
         return false;
     }
     // printf("deck file is %s\n", gameState->deckFile);
     if (!parse_all_hands(file, gameState)) {
         return false;
     }
-    DEBUG_PRINT("init board");
+    DEBUG_PRINT("reading board");
     BoardState* bs = gameState->boardState;
     init_board(bs, w, h);
     for (int row = 0; row < h; row++) {
-        DEBUG_PRINT("row parsing");
+        DEBUG_PRINTF("row parsing, row %d\n", row);
         if (!parse_card_row(file, get_board_cell(bs, row, 0), w, true)) {
             DEBUG_PRINT("invalid board row");
             return false;
         }
     }
-    count_cards(bs);
+    //count_cards(bs); // updates count of cards on board.
     if (fgetc(file) != EOF) {
         DEBUG_PRINT("extra junk at eof");
         return false;
     }
-    DEBUG_PRINT("game file load done");
+    DEBUG_PRINT("game file load successful");
     fclose(file);
     return true;
 }
 
+// see header
 void print_hand(GameState* gameState) {
     Card* hand = get_player_hand(gameState);
     for (int i = 0; i < NUM_HAND; i++) {
@@ -167,7 +177,7 @@ void print_hand(GameState* gameState) {
         if (is_null_card(card)) {
             break;
         }
-        if (i > 0) {
+        if (i > 0) { // separate with spaces.
             printf(" ");
         }
         char str[3];
@@ -176,6 +186,7 @@ void print_hand(GameState* gameState) {
     printf("\n");
 }
 
+// see header.
 bool deal_cards(GameState* gameState) {
     // we need enough cards for each player to draw NUM_HAND-1 and the first
     // player to draw one more.
@@ -202,6 +213,7 @@ bool deal_cards(GameState* gameState) {
     return true;
 }
 
+// see header.
 Card draw_card(GameState* gameState) {
     int n = gameState->numDrawn;
     DEBUG_PRINTF("drawing the %d-th card\n", n);
@@ -213,6 +225,7 @@ Card draw_card(GameState* gameState) {
     return gameState->deck->cards[n]; // at this point, n == numDrawn - 1
 }
 
+// see header
 bool save_game_file(GameState* gameState, char* saveFile) {
     GameState* gs = gameState;
     BoardState* bs = gs->boardState;
@@ -250,6 +263,9 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     return true;
 }
 
+/* Removes the cardNum-th card from the current player's hand.
+ * Shifts cards after the removed card left by one.
+ */
 void remove_card_from_hand(GameState* gameState, int cardNum) {
     assert(0 <= cardNum && cardNum < NUM_HAND);
     Card* hand = get_player_hand(gameState);
@@ -259,6 +275,9 @@ void remove_card_from_hand(GameState* gameState, int cardNum) {
     hand[NUM_HAND - 1] = NULL_CARD; // insert null card at end.
 }
 
+/* Prompt and validate a human player's move.
+ * Returns true if a valid move was made, false on EOF. 
+ */
 bool prompt_move(GameState* gameState) {
     char* input = NULL;
     while (!feof(stdin)) { // TODO: leaks last line of input
@@ -308,6 +327,7 @@ bool prompt_move(GameState* gameState) {
     return false;
 }
 
+/* Prints message for auto player and removes card from their hand. */
 void finish_auto_turn(GameState* gameState, Card card, int row, int col) {
     char str[3];
     printf("Player %d plays %s in column %d row %d\n",
@@ -315,6 +335,7 @@ void finish_auto_turn(GameState* gameState, Card card, int row, int col) {
     remove_card_from_hand(gameState, 0); // assuming always plays first card
 }
 
+// see header
 void play_auto_turn(GameState* gameState) {
     GameState* gs = gameState;
     BoardState* bs = gameState->boardState;
@@ -327,6 +348,7 @@ void play_auto_turn(GameState* gameState) {
         int c = (w + 1) / 2 - 1;
         if (!place_card(bs, r, c, card)) {
             DEBUG_PRINT("catastrophic failure placing first auto card");
+            assert(false);
         }
         finish_auto_turn(gs, card, r, c);
         return;
@@ -346,7 +368,8 @@ void play_auto_turn(GameState* gameState) {
             }
         }
     }
-    DEBUG_PRINT("failed to play move. should never happen.");
+    DEBUG_PRINT("failed to play auto move. should never happen.");
+    assert(false);
 }
 
 void print_points(GameState* gameState) {

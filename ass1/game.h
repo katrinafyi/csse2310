@@ -8,6 +8,8 @@
 
 // theoretically, game adapt to any number of players.
 #define NUM_PLAYERS 2
+// this is the number of cards in the CURRENT player's hand, so we can
+// allocate arrays without using +1 all the time.
 #define NUM_HAND 6
 
 /* Struct for all of the game state. Completely describes a game's current
