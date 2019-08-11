@@ -159,7 +159,7 @@ bool load_game_file(GameState* gameState, char* saveFile) {
             return false;
         }
     }
-    //count_cards(bs); // updates count of cards on board.
+    count_cards(bs); // updates count of cards on board.
     if (fgetc(file) != EOF) {
         DEBUG_PRINT("extra junk at eof");
         return false;
@@ -347,8 +347,7 @@ void play_auto_turn(GameState* gameState) {
         int r = (h + 1) / 2 - 1;
         int c = (w + 1) / 2 - 1;
         if (!place_card(bs, r, c, card)) {
-            DEBUG_PRINT("catastrophic failure placing first auto card");
-            assert(false);
+            assert(false); // first move should always be valid.
         }
         finish_auto_turn(gs, card, r, c);
         return;
@@ -368,12 +367,15 @@ void play_auto_turn(GameState* gameState) {
             }
         }
     }
-    DEBUG_PRINT("failed to play auto move. should never happen.");
+    // failed to play auto move. should never happen because we ensure the
+    // board is non-empty before.
     assert(false);
 }
 
+/* Computes and prints the points earned by each player. */
 void print_points(GameState* gameState) {
-    int letterLengths[NUM_LETTERS]; // length of longest path of each letter.
+    int letterLengths[NUM_LETTERS];
+    // compute longest path for each letter.
     longest_letter_paths(gameState->boardState, letterLengths);
 
     int playerPoints[NUM_PLAYERS]; // longest path for each player.
@@ -394,6 +396,7 @@ void print_points(GameState* gameState) {
     printf("\n");
 }
 
+// see header.
 int exec_game_loop(GameState* gameState, char* playerTypes) {
     DEBUG_PRINTF("starting game loop with player types %c %c\n",
             playerTypes[0], playerTypes[1]); // style_deleteme
@@ -414,6 +417,7 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
             // at all times.
             playerHand[NUM_HAND - 1] = drawnCard;
         }
+        // could probably enum these player types.
         bool isHuman = playerTypes[gs->currPlayer] == 'h';
         if (isHuman) {
             printf("Hand(%d): ", gs->currPlayer + 1);
