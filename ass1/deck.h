@@ -33,7 +33,7 @@ typedef struct Deck {
 bool load_deck_file(Deck* deck, char* deckFile);
 
 /* Returns true if str points to a valid non-blank card.
- * str need not be null-terminated but must have >= 2 characters.
+ * str need not be null-terminated but must have at least 2 characters.
  */
 bool is_card(char* str);
 
@@ -41,6 +41,7 @@ bool is_card(char* str);
  * That is, it should be treated as a blank or missing card.
  */
 bool is_null_card(Card card);
+// yes, these 2 functions are probably named too similarly.
 
 /* Returns true if str points to a blank card. That is, if it points to
  * two BLANK_CHAR_SAVED characters.
@@ -53,13 +54,13 @@ bool is_blank(char* str);
 Card to_card(char* str);
 
 /* Formats the given card into the given string, replacing null cards with
- * the given blank.
- * str contain space for at least 3 characters.
+ * the given blank character.
+ * str contain space for at least 3 characters (including \0).
  */
 char* fmt_card_c(char* str, Card card, char blank);
 
 /* Formats the given card into the given string, replacing null cards with
- * 2 of BLANK_CHAR_PRINT.
+ * 2 of BLANK_CHAR_PRINT and \0 terminating the string.
  */
 char* fmt_card(char* str, Card card);
 

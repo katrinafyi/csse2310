@@ -61,6 +61,7 @@ bool is_board_full(BoardState* boardState);
 
 /* Returns true if the board contains no cards. */
 bool is_board_empty(BoardState* boardState);
+
 /* Returns true if the given width/height are within the bounds specified
  * by the spec. That is, both dimensions must be >= MIN_SIZE and <= MAX_SIZE.
  */

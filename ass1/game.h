@@ -43,17 +43,18 @@ void init_game_state(GameState* gameState);
  */
 bool save_game_file(GameState* gameState, char* saveFile);
 
-/* Deals the intial cards. That is, NUM_HAND-1 to each player sequentially,
- * all p1's, then p2's, etc.
- * Returns false if the deck does not have enough cards.
+/* Deals the intial cards. That is, NUM_HAND-1 to each player sequentially.
+ * (all p1's, then p2's, etc.)
+ * Returns false if the deck does not have at least (NUM_HAND-1)*NUM_PLAYERS+1
+ * cards (initial dealing, then 1 for first player).
  */
 bool deal_cards(GameState* gameState);
 
 /* Draws a single card from the deck of gameState, returning the drawn card.
- * Updates numDrawn in the state.
  * Returns a null card if there are no more cards.
  */
 Card draw_card(GameState* gameState);
+
 /* Executes the main game loop with the given playerTypes.
  * playerTypes should contain NUM_PLAYERS characters,
  * 'h' for human and 'a' for auto players.

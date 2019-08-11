@@ -6,11 +6,13 @@
 #include "board.h"
 #include "util.h"
 
+// see header
 bool is_on_board(BoardState* boardState, int r, int c) {
     return (0 <= r && r < boardState->height)
             && (0 <= c && c < boardState->width);
 }
 
+// see header
 void init_board(BoardState* boardState, int width, int height) {
     boardState->board = malloc(sizeof(Card) * width * height);
     boardState->width = width;
@@ -23,11 +25,13 @@ void init_board(BoardState* boardState, int width, int height) {
     }
 }
 
+/* Returns true if there exists a card at the row/col. */
 bool has_card_at(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
     return !is_null_card(*get_board_cell(boardState, row, col));
 }
 
+// used when loading saved file.
 void count_cards(BoardState* boardState) {
     int count = 0;
     for (int r = 0; r < boardState->height; r++) {
@@ -41,12 +45,14 @@ void count_cards(BoardState* boardState) {
     boardState->numPlaced = count;
 }
 
+// pointer allows us to set the card the row/col cell.
 Card* get_board_cell(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
     return boardState->board + row * boardState->width + col; // get_board_cell
 }
 
 // WARNING: lazy implementation. for negatives, only valid up to -d.
+// This is fine for the uses here because we only use it to wrap around.
 int mod(int x, int d) {
     if (x < 0) {
         return x + d;
@@ -55,17 +61,20 @@ int mod(int x, int d) {
     }
 }
 
+/* Returns true if there exists a card adjacent to the given row/col. */
 bool has_adjacent(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
     int w = boardState->width;
     int h = boardState->height;
     // because board wraps around, we use mod.
+    // if this was python, i'd use an iterator.
     return has_card_at(boardState, mod(row - 1, h), mod(col, w))
             || has_card_at(boardState, mod(row + 1, h), mod(col, w))
             || has_card_at(boardState, mod(row, h), mod(col - 1, w))
             || has_card_at(boardState, mod(row, h), mod(col + 1, w));
 }
 
+// see header
 bool place_card(BoardState* boardState, int row, int col, Card card) {
     assert(is_on_board(boardState, row, col));
     // if already card at this pos, fail.
@@ -81,12 +90,14 @@ bool place_card(BoardState* boardState, int row, int col, Card card) {
     return true;
 }
 
+// see header
 void print_board(BoardState* boardState) {
     // TODO: accept FILE* and blank params for print_board
     int w = boardState->width;
     int h = boardState->height;
     for (int i = 0; i < w * h; i++) {
         char str[3];
+        // TODO: is this printinf slow?
         printf("%s", fmt_card(str, boardState->board[i]));
         if ((i + 1) % w == 0) {
             printf("\n");
@@ -94,15 +105,18 @@ void print_board(BoardState* boardState) {
     }
 }
 
+// see header
 bool is_board_full(BoardState* boardState) {
     // efficient checking using number of cards placed
     return boardState->numPlaced == boardState->width * boardState->height;
 }
 
+// see header
 bool is_board_empty(BoardState* boardState) {
     return boardState->numPlaced == 0;
 }
 
+// see header
 bool is_size_valid(int width, int height) {
     return MIN_SIZE <= width && width <= MAX_SIZE &&
             MIN_SIZE <= height && height <= MAX_SIZE;

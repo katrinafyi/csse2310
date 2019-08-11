@@ -60,7 +60,7 @@ int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
     int len = strlen(line);
     int numTokens = 1;
     *indexes = malloc(sizeof(int) * numTokens);
-    (*indexes)[0] = 0;
+    (*indexes)[0] = 0; // first token start at start of string.
     DEBUG_PRINTF("tokenising: |%s|\n", line);
     for (int i = 0; i <= len; i++) {
         char c = line[i];
