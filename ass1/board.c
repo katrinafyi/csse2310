@@ -92,17 +92,27 @@ bool place_card(BoardState* boardState, int row, int col, Card card) {
 
 // see header
 void print_board(BoardState* boardState) {
-    // TODO: accept FILE* and blank params for print_board
+    fprint_board(boardState, stdout, BLANK_CHAR_PRINT);
+}
+
+// see header
+bool fprint_board(BoardState* boardState, FILE* file, char blank) {
     int w = boardState->width;
     int h = boardState->height;
+    char str[3];
     for (int i = 0; i < w * h; i++) {
-        char str[3];
-        // TODO: is this printinf slow?
-        printf("%s", fmt_card(str, boardState->board[i]));
+        // TODO: is this printing slow?
+        fmt_card_c(str, boardState->board[i], blank);
+        if (fprintf(file, "%s", str) < 0) {
+            return false;
+        }
         if ((i + 1) % w == 0) {
-            printf("\n");
+            if (fprintf(file, "\n") < 0) {
+                return false;
+            }
         }
     }
+    return true;
 }
 
 // see header

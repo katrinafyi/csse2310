@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 set -e
+set +v
 
 tmp="$(mktemp -d --tmpdir=. tmp_style.XXXXXX)"
 #tmp="tmp"
@@ -18,7 +19,7 @@ cd "$tmp"
 
 # deletes the macro from places where its used, leaving a ("asdf%s", ...)
 # expression which is valid.
-sed -r -i 's|^(\s+)(DEBUG_PRINTF?)|\1|g' *.c
+sed -r -i 's|^(\s+)DEBUG(_PRINTF?)|\1|g' *.c
 
 style_output="$(style.sh)"
 
@@ -39,6 +40,6 @@ if [[ -n "$compile_errors" ]]; then
 fi
 
 cd ..
-rm -r "$tmp"
+# rm -r "$tmp"
 
 [[ -n "$errors" ]] && exit 1;

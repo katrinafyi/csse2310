@@ -49,7 +49,7 @@ bool save_game_file(GameState* gameState, char* saveFile);
 /* Deals the intial cards. That is, NUM_HAND-1 to each player sequentially.
  * (all p1's, then p2's, etc.)
  * Returns false if the deck does not have at least (NUM_HAND-1)*NUM_PLAYERS+1
- * cards (initial dealing, then 1 for first player).
+ * cards (enough for initial dealing, then 1 for first player).
  */
 bool deal_cards(GameState* gameState);
 
@@ -67,9 +67,16 @@ Card draw_card(GameState* gameState);
  */
 int exec_game_loop(GameState* gameState, char* playerTypes);
 
-/* Prints the cards in the hand of the current player, single space
- * separated with trailing \n.
- * Only prints the cards, not "Hand: " or similar.
+/* Prints the cards in the hand of the given player, separated by the given
+ * sep string to the given file.
+ * Only prints the cards, not "Hand: " or similar. Includes trailing \n.
+ * Returns true on success, false otherwise.
+ */
+bool fprint_hand(GameState* gameState, FILE* file, char* sep, int player);
+
+/* Prints the current player's hand to stdout, single space separated.
+ * Equivalent to
+ * fprint_hand(gameState, stdout, " ");
  */
 void print_hand(GameState* gameState);
 

@@ -49,6 +49,12 @@ bool place_card(BoardState* boardState, int row, int col, Card card);
  */
 void print_board(BoardState* boardState);
 
+/* Prints the board to the file given by file. Blank cards are filled in with
+ * the given blank character.
+ * Returns true on success, false on failure.
+ */
+bool fprint_board(BoardState* boardState, FILE* file, char blank);
+
 /* Returns true if the given row/col is a valid position for the
  * board.
  */

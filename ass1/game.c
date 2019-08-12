@@ -8,10 +8,7 @@
 #include "exitCodes.h"
 #include "scoring.h"
 
-// style guide xd
-#define ENSURE_NONNEG(x) if (x < 0) {\
-    return false;\
-}
+#define ENSURE_NONNEG(x) if (x < 0) { return false; }
 
 // see header
 // style.sh flags a whitespace error here for some reason.
@@ -171,20 +168,27 @@ bool load_game_file(GameState* gameState, char* saveFile) {
 }
 
 // see header
-void print_hand(GameState* gameState) {
-    Card* hand = get_player_hand(gameState);
+bool fprint_hand(GameState* gameState, FILE* file, char* sep, int player) {
+    Card* hand = get_hand(gameState, player);
     for (int i = 0; i < NUM_HAND; i++) {
         Card card = hand[i];
         if (is_null_card(card)) {
             break;
         }
-        if (i > 0) { // separate with spaces.
-            printf(" ");
+        if (i > 0 && fprintf(file, "%s", sep) < 0) { // separate with spaces.
+            return false;
         }
         char str[3];
-        printf("%s", fmt_card(str, card));
+        if (fprintf(file, "%s", fmt_card(str, card)) < 0) {
+            return false;
+        }
     }
-    printf("\n");
+    return fprintf(file, "\n") >= 0;
+}
+
+// see header
+void print_hand(GameState* gameState) {
+    fprint_hand(gameState, stdout, " ", gameState->currPlayer);
 }
 
 // see header.
@@ -236,28 +240,17 @@ bool save_game_file(GameState* gameState, char* saveFile) {
         return false;
     }
     // write player number as 1-indexed
-    ENSURE_NONNEG(fprintf(file, "%d %d %d %d\n%s\n", bs->width, bs->height,
-            gs->numDrawn, gs->currPlayer + 1, gs->deckFile));
-    char str[3];
-    for (int p = 0; p < NUM_PLAYERS; p++) {
-        for (int i = 0; i < NUM_HAND; i++) {
-            Card card = get_hand(gs, p)[i];
-            if (is_null_card(card)) {
-                break;
-            }
-            ENSURE_NONNEG(fprintf(file, "%s", fmt_card(str, card)));
-        }
-        ENSURE_NONNEG(fprintf(file, "\n"));
+    if (fprintf(file, "%d %d %d %d\n%s\n", bs->width, bs->height,
+            gs->numDrawn, gs->currPlayer + 1, gs->deckFile) < 0) {
+        return false;
     }
-    int w = bs->width;
-    int h = bs->height;
-    for (int r = 0; r < h; r++) {
-        for (int c = 0; c < w; c++) {
-            Card card = *get_board_cell(bs, r, c);
-            ENSURE_NONNEG(fprintf(file, "%s",
-                    fmt_card_c(str, card, BLANK_CHAR_SAVED)));
+    for (int p = 0; p < NUM_PLAYERS; p++) {
+        if (!fprint_hand(gs, file, "", p)) {
+            return false;
         }
-        ENSURE_NONNEG(fprintf(file, "\n"));
+    }
+    if (!fprint_board(bs, file, BLANK_CHAR_SAVED)) {
+        return false;
     }
     DEBUG_PRINT("closing file");
     fclose(file);

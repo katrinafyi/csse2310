@@ -16,14 +16,16 @@
         str);
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
         "%s:%d "fmt, __func__, __LINE__, __VA_ARGS__);
-
 #else
 // enforces semicolon after these macros
 #define DEBUG_PRINT(str) do {} while (0)
 #define DEBUG_PRINTF(fmt, ...) do {} while (0)
 #endif
 
-/* Parses the str into a non-negative integer, with the following 
+#define NOOP_PRINT(...) do {} while (0)
+#define NOOP_PRINTF(...) do {} while (0)
+
+/* Parses the str into a non-negative integer, with the following
  * requirements:
  *  - first character is + or a digit
  *  - contains decimal digits
