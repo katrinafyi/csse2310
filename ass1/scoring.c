@@ -29,23 +29,31 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
     if (!is_null_card(thisCard) && thisCard.suit == target) {
         m = length; // this pos would be a valid endpoint.
     }
-    // iterates over all 9 'shifts' from pos.
-    for (int dr = -1; dr <= 1; dr++) {
-        for (int dc = -1; dc <= 1; dc++) {
-            if (dc*dc == dr*dr) { // for x = 0, 1, -1, x*x == abs(x)
-                continue; // ignore 4 shifts on diagonals. TODO: probably slow
-            }
-            // DEBUG_PRINTF("testing shift dr %d, dc %d\n", dr, dc);
-            Position newPos = pos;
-            newPos.r = mod(newPos.r + dr, bs->height); // wrap around board
-            newPos.c = mod(newPos.c + dc, bs->width);
-            Card newCard = get_card_at(bs, newPos);
-            // don't move to null cards or cards <= this card.
-            if (is_null_card(newCard) || newCard.num <= thisCard.num) {
-                continue;
-            }
-            int l = compute_longest_path(bs, target, newPos, length + 1);
-            m = (l > m) ? l : m; // m = max(m, l)
+    int dr = 1;
+    int dc = 0;
+    int temp = 0;
+    // enumerates (0, 1) (0, -1) (1, 0) (-1, 0) by rotating the unit vector
+    // 90 degrees 4 times.
+    for (int i = 0; i < 4; i++) {
+        // for every iteration besides the first, rotate 90 degrees.
+        if (i > 0) {
+            // in 2d, this is done by x' = -y and y' = x.
+            temp = dc;
+            dc = -dr;    // x' = -y
+            dr = temp;   // y' = x
+        }
+        // DEBUG_PRINTF("testing shift dr %d, dc %d\n", dr, dc);
+        Position newPos = pos;
+        newPos.r = mod(newPos.r + dr, bs->height); // wrap around board
+        newPos.c = mod(newPos.c + dc, bs->width);
+        Card newCard = get_card_at(bs, newPos);
+        // don't move to null cards or cards <= this card.
+        if (is_null_card(newCard) || newCard.num <= thisCard.num) {
+            continue;
+        }
+        int l = compute_longest_path(bs, target, newPos, length + 1);
+        if (l > m) {
+            m = l; // if this path was longer, it is the running maximum.
         }
     }
     return m;
