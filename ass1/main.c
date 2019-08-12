@@ -62,8 +62,9 @@ int exec_main(int argc, char** argv) {
     int ret = exec_game_loop(&gameState, playerTypes);
     // if new game, deckFile is on the stack and shouldn't be freed.
     free(!isNewGame ? gameState.deckFile : NULL);
-    free(boardState.board);   // obviously if we returned earlier, these
-    free(deck.cards);         // would not be freed.
+    free(boardState.board); // obviously if we returned earlier, these leak.
+    free(boardState.printBuffer);
+    free(deck.cards);
     return ret;
 }
 

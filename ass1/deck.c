@@ -75,10 +75,14 @@ Card to_card(char* str) {
 // see header
 char* fmt_card_c(char* str, Card card, char blank) {
     if (is_null_card(card)) {
-        snprintf(str, 3, "%c%c", blank, blank);
+        str[0] = blank;
+        str[1] = blank;
+        str[2] = '\0';
     } else {
         assert(1 <= card.num && card.num <= 9);
-        snprintf(str, 3, "%d%c", card.num, card.suit);
+        str[0] = card.num + '0'; // convert int into character
+        str[1] = card.suit;
+        str[2] = '\0';
     }
     return str;
 }

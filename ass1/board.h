@@ -18,6 +18,8 @@ typedef struct BoardState {
     int height;
     int numPlaced;
     Card* board;
+
+    char* printBuffer;
 } BoardState;
 
 /* Initialises the board state with the given width and height.

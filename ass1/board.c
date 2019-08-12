@@ -19,6 +19,11 @@ void init_board(BoardState* boardState, int width, int height) {
     boardState->height = height;
     boardState->numPlaced = 0;
 
+    // buffer for storing a string of the board for printing.
+    // 2 chars per card on the board, one for newline per row and 1 for \0.
+    boardState->printBuffer = malloc(
+            sizeof(char) * 2 * width * height + height + 1);
+
     for (int i = 0; i < width * height; i++) {
         // printf("initialising %d to null\n", i);
         boardState->board[i] = NULL_CARD;
@@ -97,25 +102,26 @@ void print_board(BoardState* boardState) {
 
 // see header
 bool fprint_board(BoardState* boardState, FILE* file, char blank) {
+    // this is a hot codepath which is why everything is done at a low level
     int w = boardState->width;
     int h = boardState->height;
-    // this code is made to print fast, which is why it is so ugly.
-    // 2 chars per card on the board, one for newine per row and 1 for \0.
-    // TODO: malloc this once in the board struct.
-    char* str = malloc(sizeof(char) * 2 * w * h + h + 1);
+    char* str = boardState->printBuffer;
     int pos = 0; // keep track of our position through the allocated str.
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
-            fmt_card_c(str + pos,
-                    *get_board_cell(boardState, r, c), blank);
-            pos += 2;
+            Card card = boardState->board[r*w + c];
+            if (card.num == 0) {
+                str[pos++] = blank;
+                str[pos++] = blank;
+            } else {
+                str[pos++] = card.num + '0';
+                str[pos++] = card.suit;
+            }
         }
-        str[pos] = '\n';
-        pos++;
+        str[pos++] = '\n';
     }
     str[pos] = '\0';
     bool success = fprintf(file, "%s", str) >= 0;
-    free(str);
     return success;
 }
 
