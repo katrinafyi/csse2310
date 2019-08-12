@@ -99,20 +99,21 @@ void print_board(BoardState* boardState) {
 bool fprint_board(BoardState* boardState, FILE* file, char blank) {
     int w = boardState->width;
     int h = boardState->height;
-    char str[3];
-    for (int i = 0; i < w * h; i++) {
-        // TODO: is this printing slow?
-        fmt_card_c(str, boardState->board[i], blank);
-        if (fprintf(file, "%s", str) < 0) {
-            return false;
+    // this code is made to print fast, which is why it is so ugly.
+    // 2 chars per card on the board, one for newine per row and 1 for \0.
+    char* str = malloc(sizeof(char) * 2 * w * h + h + 1);
+    int pos = 0; // keep track of our position through the allocated str.
+    for (int r = 0; r < h; r++) {
+        for (int c = 0; c < w; c++) {
+            fmt_card_c(str + pos,
+                    *get_board_cell(boardState, r, c), BLANK_CHAR_PRINT);
+            pos += 2;
         }
-        if ((i + 1) % w == 0) {
-            if (fprintf(file, "\n") < 0) {
-                return false;
-            }
-        }
+        str[pos] = '\n';
+        pos++;
     }
-    return true;
+    str[pos] = '\0';
+    return fprintf(file, "%s", str) >= 0;
 }
 
 // see header
