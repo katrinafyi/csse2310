@@ -109,7 +109,7 @@ bool fprint_board(BoardState* boardState, FILE* file, char blank) {
     int pos = 0; // keep track of our position through the allocated str.
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
-            Card card = boardState->board[r*w + c];
+            Card card = boardState->board[r * w + c];
             if (card.num == 0) {
                 str[pos++] = blank;
                 str[pos++] = blank;
