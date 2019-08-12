@@ -13,9 +13,9 @@
 // macros to print a message along with function and line number.
 // unfortunately, these crash the style.sh
 #define DEBUG_PRINT(str) fprintf(stderr, "%s:%d %s\n", __func__, __LINE__, \
-        str); // style_deleteme
+        str);
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "%s:%d "fmt, __func__, __LINE__, __VA_ARGS__); // style_deleteme
+        "%s:%d "fmt, __func__, __LINE__, __VA_ARGS__);
 
 #else
 // enforces semicolon after these macros

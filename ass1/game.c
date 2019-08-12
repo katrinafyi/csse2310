@@ -400,7 +400,7 @@ void print_points(GameState* gameState) {
 // see header.
 int exec_game_loop(GameState* gameState, char* playerTypes) {
     DEBUG_PRINTF("starting game loop with player types %c %c\n",
-            playerTypes[0], playerTypes[1]); // style_deleteme
+            playerTypes[0], playerTypes[1]);
     GameState* gs = gameState;
     while (1) {
         print_board(gs->boardState);
