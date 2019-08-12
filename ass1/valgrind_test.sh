@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if ! which testa1.sh >/dev/null 2>&1; then
+    echo 'test script not found'
+    exit 1
+fi
+
 tests="$(testa1.sh explain | grep ./bark)"
 IFS='
 '
