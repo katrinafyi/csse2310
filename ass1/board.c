@@ -113,7 +113,9 @@ bool fprint_board(BoardState* boardState, FILE* file, char blank) {
         pos++;
     }
     str[pos] = '\0';
-    return fprintf(file, "%s", str) >= 0;
+    bool success = fprintf(file, "%s", str) >= 0;
+    free(str);
+    return success;
 }
 
 // see header
