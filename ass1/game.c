@@ -325,6 +325,7 @@ bool prompt_move(GameState* gameState) {
         remove_card_from_hand(gameState, cardNum);
         return true;
     }
+    free(input);
     return false;
 }
 
