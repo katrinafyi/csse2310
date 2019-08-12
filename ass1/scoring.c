@@ -32,8 +32,8 @@ int compute_longest_path(BoardState* boardState, char target, Position pos,
     // iterates over all 9 'shifts' from pos.
     for (int dr = -1; dr <= 1; dr++) {
         for (int dc = -1; dc <= 1; dc++) {
-            if (abs(dc) == abs(dr)) {
-                continue; // ignore 5 shifts on diagonals. TODO: probably slow
+            if (dc*dc == dr*dr) { // for x = 0, 1, -1, x*x == abs(x)
+                continue; // ignore 4 shifts on diagonals. TODO: probably slow
             }
             // DEBUG_PRINTF("testing shift dr %d, dc %d\n", dr, dc);
             Position newPos = pos;
