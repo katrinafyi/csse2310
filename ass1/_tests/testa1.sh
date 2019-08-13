@@ -49,5 +49,5 @@ then
     exit 1
 fi
 
-d="$(dirname $0)"; LD_LIBRARY_PATH="$d/lib:$LD_LIBRARY_PATH" PYTHONPATH="$d/lib:$PYTHONPATH" "$d"/tests/grum.py $args
+d="$(dirname $0)"; LD_LIBRARY_PATH="$d/lib:$d/lib/pyc:$LD_LIBRARY_PATH" PYTHONPATH="$d/lib:$PYTHONPATH" "$d"/tests/grum.py $args
 
