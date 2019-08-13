@@ -25,7 +25,7 @@ cd _tests
 cp -rvL ../tests .
 cp -v `which $test_sh` .
 
-mkdir -p ./lib/marks
+mkdir -p ./lib/marks/pyc
 py_libs=("${(f)strace}")
 for lib in $py_libs; do
     cp -v $lib ./lib/marks/pyc

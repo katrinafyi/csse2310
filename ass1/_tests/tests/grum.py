@@ -17,8 +17,7 @@ else:
 import marks
 
 COMPILE = "make"
-
-TEST_LOCATION = os.path.abspath('./tests')
+ 
  
 class Assignment1(marks.TestCase):
   timeout = 12 
