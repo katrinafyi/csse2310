@@ -28,7 +28,9 @@ cp -v `which $test_sh` .
 mkdir -p ./lib/marks
 py_libs=("${(f)strace}")
 for lib in $py_libs; do
-    cp -v $lib ./lib/marks
+    cp -v $lib ./lib/marks/pyc
 done
 
 sed -i 's|~uqjfenw1/public/2019/ptesta1/grum.py|d="$(dirname $0)"; LD_LIBRARY_PATH="$d/lib:$LD_LIBRARY_PATH" PYTHONPATH="$d/lib:$PYTHONPATH" "$d"/tests/grum.py|' $test_sh
+
+
