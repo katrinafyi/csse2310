@@ -19,8 +19,8 @@ fi
 
 
 
-mkdir -p 'static_tests'
-cd static_tests
+mkdir -p '_tests'
+cd _tests
 
 cp -rvL ../tests .
 cp -v `which $test_sh` .
@@ -31,4 +31,4 @@ for lib in $py_libs; do
     cp -v $lib ./lib/marks
 done
 
-sed -i 's|~uqjfenw1/public/2019/ptesta1/grum.py|d="$(dirname $0)"; PYTHONPATH="$d/lib:$PYTHONPATH" "$d"/tests/grum.py|' $test_sh
+sed -i 's|~uqjfenw1/public/2019/ptesta1/grum.py|d="$(dirname $0)"; LD_LIBRARY_PATH="$d/lib:$LD_LIBRARY_PATH" PYTHONPATH="$d/lib:$PYTHONPATH" "$d"/tests/grum.py|' $test_sh

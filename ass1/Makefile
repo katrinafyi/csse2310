@@ -11,3 +11,8 @@ stylesh: bark
 
 debug: CCFLAGS += -D DEBUG
 debug: bark
+
+fast: CCFLAGS += -O4
+fast: bark
+
+.PHONY: bark
