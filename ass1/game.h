@@ -30,6 +30,36 @@ typedef struct GameState {
  * the state struct as appropriate.
  */
 
+/* These initialisation functions are a mess. TODO for next time, actually use
+ * proper create/destroy patterns, appropriately encapsulate scope of each
+ * struct and use opaque structs.
+ *
+ * Unfortunately, the process of the game's state is somewhat
+ * convoluted. Ideally, I want to split the exit cases into individual
+ * functions which fail for exactly one reason, not multiple possible exit
+ * codes.
+ *
+ * 1. init
+ * 2. read arguments and player types, determine if loading save or new game
+ *    EXIT if player types are wrong.
+ * 
+ * 3. if new game, malloc empty board with dimensions given and initialise
+ *    game state to starting values. EXIT if dimensions wrong.
+ * 
+ * 4. if loading save, parse save file and EXIT if savefile errors occur.
+ * 5. during this process, we need to malloc the board. in general, 
+ *    game state will bootstrap init of the board.
+ * 
+ * 6. parse deck file, EXIT if deck file format wrong (yes, this is in the
+ *    wrong order compared to spec, the spec is dumb).
+ * 
+ * 7. if new game and < 11 cards, EXIT short deck. draw 10 cards.
+ * 8. if loading save and board full, EXIT board full.
+ *
+ * 9. start main game, EXIT eof on ^D or normally on game finish.
+ * 10. end
+ */
+
 /* Loads the given file into the given state struct, filling out all its
  * members.
  * Returns true on success, false on any save file formatting errors.

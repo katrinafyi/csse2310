@@ -3,27 +3,26 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
-ATTRIBUTES	static_tests/src/marks/util.py	/^ATTRIBUTES = dict(list(zip(('bold', 'dark', '', 'underline', 'blink', '', 'reverse',$/;"	v
-Assignment1	grum.py	/^class Assignment1(marks.TestCase):$/;"	c
-Assignment1	static_tests/tests/grum.py	/^class Assignment1(marks.TestCase):$/;"	c
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ATTRIBUTES	_tests/lib/marks/util.py	/^ATTRIBUTES = dict(list(zip(('bold', 'dark', '', 'underline', 'blink', '', 'reverse',$/;"	v
+Assignment1	_tests/grum.py	/^class Assignment1(marks.TestCase):$/;"	c
+Assignment1	_tests/tests/grum.py	/^class Assignment1(marks.TestCase):$/;"	c
 Assignment1	tests/grum.py	/^class Assignment1(marks.TestCase):$/;"	c
-BACKGROUND	static_tests/src/marks/util.py	/^BACKGROUND = dict(list(zip(COLOURS, list(range(40, 48)))))$/;"	v
+BACKGROUND	_tests/lib/marks/util.py	/^BACKGROUND = dict(list(zip(COLOURS, list(range(40, 48)))))$/;"	v
 BLANK_CHAR_PRINT	deck.h	8;"	d
 BLANK_CHAR_SAVED	deck.h	7;"	d
 BOARD_H	board.h	2;"	d
-BUFFER_SIZE	static_tests/src/marks/case.py	/^BUFFER_SIZE = 8 * 1024$/;"	v
-BasicTestRunner	static_tests/src/marks/marking.py	/^from .runner import BasicTestRunner, MarkingTestRunner$/;"	i
-BasicTestRunner	static_tests/src/marks/runner.py	/^class BasicTestRunner(object):$/;"	c
+BUFFER_SIZE	_tests/lib/marks/case.py	/^BUFFER_SIZE = 8 * 1024$/;"	v
+BasicTestRunner	_tests/lib/marks/runner.py	/^class BasicTestRunner(object):$/;"	c
 BoardState	board.h	/^typedef struct BoardState {$/;"	s
 BoardState	board.h	/^} BoardState;$/;"	t	typeref:struct:BoardState
 CCFLAGS	Makefile	/^CCFLAGS := -g -std=c99 -Wall -pedantic$/;"	m
-COLOURS	static_tests/src/marks/util.py	/^COLOURS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')$/;"	v
-COLOUR_FORMAT	static_tests/src/marks/util.py	/^COLOUR_FORMAT = '\\x1b[{0}m{1}'$/;"	v
-COMPILE	grum.py	/^COMPILE = "make"$/;"	v
-COMPILE	static_tests/tests/grum.py	/^COMPILE = "make"$/;"	v
+COLOURS	_tests/lib/marks/util.py	/^COLOURS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')$/;"	v
+COLOUR_FORMAT	_tests/lib/marks/util.py	/^COLOUR_FORMAT = '\\x1b[{0}m{1}'$/;"	v
+COMPILE	_tests/grum.py	/^COMPILE = "make"$/;"	v
+COMPILE	_tests/tests/grum.py	/^COMPILE = "make"$/;"	v
 COMPILE	tests/grum.py	/^COMPILE = "make"$/;"	v
-CONFIRMATION_MESSAGE	static_tests/src/marks/runner.py	/^CONFIRMATION_MESSAGE = '\\nPlease confirm that you want to update the output files in this test suite.\\n\\nNOTE: THIS PROCESS WILL MODIFY EXISTING FILES.\\n      PLEASE ENSURE YOU HAVE A BACKUP BEFORE PROCEEDING.\\n'$/;"	v
+CONFIRMATION_MESSAGE	_tests/lib/marks/runner.py	/^CONFIRMATION_MESSAGE = '\\nPlease confirm that you want to update the output files in this test suite.\\n\\nNOTE: THIS PROCESS WILL MODIFY EXISTING FILES.\\n      PLEASE ENSURE YOU HAVE A BACKUP BEFORE PROCEEDING.\\n'$/;"	v
 Card	deck.h	/^typedef struct Card {$/;"	s
 Card	deck.h	/^} Card;$/;"	t	typeref:struct:Card
 DEBUG_PRINT	util.h	15;"	d
@@ -31,8 +30,8 @@ DEBUG_PRINT	util.h	21;"	d
 DEBUG_PRINTF	util.h	17;"	d
 DEBUG_PRINTF	util.h	22;"	d
 DECK_H	deck.h	2;"	d
-DEFAULT_CLEANUP	static_tests/src/marks/runner.py	/^DEFAULT_CLEANUP = True$/;"	v
-DEFAULT_SILENT	static_tests/src/marks/runner.py	/^DEFAULT_SILENT = False$/;"	v
+DEFAULT_CLEANUP	_tests/lib/marks/runner.py	/^DEFAULT_CLEANUP = True$/;"	v
+DEFAULT_SILENT	_tests/lib/marks/runner.py	/^DEFAULT_SILENT = False$/;"	v
 Deck	deck.h	/^typedef struct Deck {$/;"	s
 Deck	deck.h	/^} Deck;$/;"	t	typeref:struct:Deck
 ENSURE_NONNEG	game.c	11;"	d	file:
@@ -44,210 +43,181 @@ EXIT_EOF	exitCodes.h	11;"	d
 EXIT_INCORRECT_ARGS	exitCodes.h	5;"	d
 EXIT_INCORRECT_ARG_TYPES	exitCodes.h	6;"	d
 EXIT_SAVE_ERROR	exitCodes.h	8;"	d
-ExplainProcess	static_tests/src/marks/case.py	/^class ExplainProcess(object):$/;"	c
-ExplainTestResult	static_tests/src/marks/result.py	/^class ExplainTestResult(TestResult):$/;"	c
-FOREGROUND	static_tests/src/marks/util.py	/^FOREGROUND = dict(list(zip(COLOURS, list(range(30, 38)))))$/;"	v
+ExplainProcess	_tests/lib/marks/case.py	/^class ExplainProcess(object):$/;"	c
+ExplainTestResult	_tests/lib/marks/result.py	/^class ExplainTestResult(TestResult):$/;"	c
+FOREGROUND	_tests/lib/marks/util.py	/^FOREGROUND = dict(list(zip(COLOURS, list(range(30, 38)))))$/;"	v
 GAME_H	game.h	2;"	d
 GameState	game.h	/^typedef struct GameState {$/;"	s
 GameState	game.h	/^} GameState;$/;"	t	typeref:struct:GameState
 INSTANT_SEGFAULT	util.h	10;"	d
 LINE_BUFFER	util.c	8;"	d	file:
 LONGESTPATH_H	scoring.h	2;"	d
-LogException	static_tests/src/marks/marking.py	/^class LogException(object):$/;"	c
-LoggingPool	static_tests/src/marks/marking.py	/^class LoggingPool(Pool):$/;"	c
+LogException	_tests/lib/marks/marking.py	/^class LogException(object):$/;"	c
+LoggingPool	_tests/lib/marks/marking.py	/^class LoggingPool(Pool):$/;"	c
 MAX_SIZE	board.h	10;"	d
 MIN_SIZE	board.h	9;"	d
-MarkingRunner	static_tests/src/marks/marking.py	/^class MarkingRunner(BasicTestRunner):$/;"	c
-MarkingTestResult	static_tests/src/marks/result.py	/^class MarkingTestResult(PrintedTestResult):$/;"	c
-MarkingTestRunner	static_tests/src/marks/marking.py	/^from .runner import BasicTestRunner, MarkingTestRunner$/;"	i
-MarkingTestRunner	static_tests/src/marks/runner.py	/^class MarkingTestRunner(BasicTestRunner):$/;"	c
+MarkingRunner	_tests/lib/marks/marking.py	/^class MarkingRunner(BasicTestRunner):$/;"	c
+MarkingTestResult	_tests/lib/marks/result.py	/^class MarkingTestResult(PrintedTestResult):$/;"	c
+MarkingTestRunner	_tests/lib/marks/runner.py	/^class MarkingTestRunner(BasicTestRunner):$/;"	c
 NOOP_PRINT	util.h	25;"	d
 NOOP_PRINTF	util.h	26;"	d
 NULL_CARD	deck.h	6;"	d
 NUM_HAND	game.h	13;"	d
 NUM_LETTERS	scoring.h	7;"	d
 NUM_PLAYERS	game.h	10;"	d
-NUM_PROCESSES	static_tests/src/marks/marking.py	/^NUM_PROCESSES = 4$/;"	v
-Pool	static_tests/src/marks/marking.py	/^from multiprocessing.pool import Pool$/;"	i
+NUM_PROCESSES	_tests/lib/marks/marking.py	/^NUM_PROCESSES = 4$/;"	v
 Position	scoring.h	/^typedef struct Position {$/;"	s
 Position	scoring.h	/^} Position;$/;"	t	typeref:struct:Position
-PrintedTestResult	static_tests/src/marks/result.py	/^class PrintedTestResult(TestResult):$/;"	c
-Process	static_tests/src/marks/__init__.py	/^from .process import Process, set_ld_preload, get_ld_preload$/;"	i
-Process	static_tests/src/marks/case.py	/^from .process import Process, TimeoutProcess, TracedProcess$/;"	i
-RESET	static_tests/src/marks/util.py	/^RESET = '\\x1b[0m'$/;"	v
-RESULT_ERROR	static_tests/src/marks/result.py	/^RESULT_ERROR = 0$/;"	v
-RESULT_FAILURE	static_tests/src/marks/result.py	/^RESULT_FAILURE = 0$/;"	v
-RESULT_SUCCESS	static_tests/src/marks/result.py	/^RESULT_SUCCESS = 1$/;"	v
-RESULT_TEMPLATE	static_tests/src/marks/result.py	/^RESULT_TEMPLATE = 'Ran {0} tests: {1} success, {2} errors, {3} failures'$/;"	v
-TEMP_PREFIX	static_tests/src/marks/runner.py	/^TEMP_PREFIX = 'testres'$/;"	v
-TEST_LOCATION	grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/2019\/ptesta1'$/;"	v
-TEST_LOCATION	static_tests/tests/grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/2019\/ptesta1'$/;"	v
+PrintedTestResult	_tests/lib/marks/result.py	/^class PrintedTestResult(TestResult):$/;"	c
+RESET	_tests/lib/marks/util.py	/^RESET = '\\x1b[0m'$/;"	v
+RESULT_ERROR	_tests/lib/marks/result.py	/^RESULT_ERROR = 0$/;"	v
+RESULT_FAILURE	_tests/lib/marks/result.py	/^RESULT_FAILURE = 0$/;"	v
+RESULT_SUCCESS	_tests/lib/marks/result.py	/^RESULT_SUCCESS = 1$/;"	v
+RESULT_TEMPLATE	_tests/lib/marks/result.py	/^RESULT_TEMPLATE = 'Ran {0} tests: {1} success, {2} errors, {3} failures'$/;"	v
+TEMP_PREFIX	_tests/lib/marks/runner.py	/^TEMP_PREFIX = 'testres'$/;"	v
+TEST_LOCATION	_tests/grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/2019\/ptesta1'$/;"	v
+TEST_LOCATION	_tests/grum.py	/^TEST_LOCATION = os.path.abspath('.\/tests')$/;"	v
+TEST_LOCATION	_tests/tests/grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/2019\/ptesta1'$/;"	v
+TEST_LOCATION	_tests/tests/grum.py	/^TEST_LOCATION = os.path.abspath('.\/tests')$/;"	v
 TEST_LOCATION	tests/grum.py	/^   TEST_LOCATION = '\/home\/users\/uqjfenw1\/public\/2019\/ptesta1'$/;"	v
-TestCase	static_tests/src/marks/__init__.py	/^from .case import TestCase, marks, ignore_result$/;"	i
-TestCase	static_tests/src/marks/case.py	/^class TestCase(object):$/;"	c
-TestCase	static_tests/src/marks/runner.py	/^from .case import TestCase$/;"	i
-TestLoader	static_tests/src/marks/__init__.py	/^from .loader import TestLoader, default_test_loader$/;"	i
-TestLoader	static_tests/src/marks/loader.py	/^class TestLoader(object):$/;"	c
-TestProgram	static_tests/src/marks/main.py	/^class TestProgram(object):$/;"	c
-TestResult	static_tests/src/marks/__init__.py	/^from .result import TestResult$/;"	i
-TestResult	static_tests/src/marks/case.py	/^from .result import TestResult$/;"	i
-TestResult	static_tests/src/marks/result.py	/^class TestResult(object):$/;"	c
-TestResult	static_tests/src/marks/suite.py	/^from .result import TestResult$/;"	i
-TestSuite	static_tests/src/marks/__init__.py	/^from .suite import TestSuite$/;"	i
-TestSuite	static_tests/src/marks/suite.py	/^class TestSuite(object):$/;"	c
-TimeoutProcess	static_tests/src/marks/case.py	/^from .process import Process, TimeoutProcess, TracedProcess$/;"	i
-TracedProcess	static_tests/src/marks/case.py	/^from .process import Process, TimeoutProcess, TracedProcess$/;"	i
-TracedProcess	static_tests/src/marks/runner.py	/^from .process import TracedProcess$/;"	i
+TEST_LOCATION	tests/grum.py	/^TEST_LOCATION = os.path.abspath('.\/tests')$/;"	v
+TestCase	_tests/lib/marks/case.py	/^class TestCase(object):$/;"	c
+TestLoader	_tests/lib/marks/loader.py	/^class TestLoader(object):$/;"	c
+TestProgram	_tests/lib/marks/main.py	/^class TestProgram(object):$/;"	c
+TestResult	_tests/lib/marks/result.py	/^class TestResult(object):$/;"	c
+TestSuite	_tests/lib/marks/suite.py	/^class TestSuite(object):$/;"	c
 UTIL_H	util.h	2;"	d
-UpdateTestResult	static_tests/src/marks/result.py	/^class UpdateTestResult(TestResult):$/;"	c
-UpdateTestRunner	static_tests/src/marks/runner.py	/^class UpdateTestRunner(BasicTestRunner):$/;"	c
-VERSION	static_tests/src/marks/_version.py	/^VERSION = (0, 5, 0, 'alpha', 8)$/;"	v
-_MAX_LENGTH	static_tests/src/marks/util.py	/^_MAX_LENGTH = 80$/;"	v
-_TestWrapper	static_tests/src/marks/case.py	/^class _TestWrapper(object):$/;"	c
-_TestWrapper	static_tests/src/marks/suite.py	/^from .case import _TestWrapper$/;"	i
-__all__	static_tests/src/marks/__init__.py	/^__all__ = [$/;"	v
-__call__	static_tests/src/marks/case.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:TestCase	file:
-__call__	static_tests/src/marks/marking.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:LogException	file:
-__call__	static_tests/src/marks/suite.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:TestSuite	file:
-__init__	static_tests/src/marks/case.py	/^    def __init__(self):$/;"	m	class:_TestWrapper
-__init__	static_tests/src/marks/case.py	/^    def __init__(self, argv, input_file=None, **kwargs):$/;"	m	class:ExplainProcess
-__init__	static_tests/src/marks/case.py	/^    def __init__(self, test_method_name='run_test', timeout=None):$/;"	m	class:TestCase
-__init__	static_tests/src/marks/main.py	/^    def __init__(self, module='__main__', test_loader=loader.default_test_loader, options=None):$/;"	m	class:TestProgram
-__init__	static_tests/src/marks/marking.py	/^    def __init__(self, callable):$/;"	m	class:LogException
-__init__	static_tests/src/marks/result.py	/^    def __init__(self):$/;"	m	class:MarkingTestResult
-__init__	static_tests/src/marks/result.py	/^    def __init__(self):$/;"	m	class:TestResult
-__init__	static_tests/src/marks/runner.py	/^    def __init__(self, result_class=None, **kwargs):$/;"	m	class:BasicTestRunner
-__init__	static_tests/src/marks/suite.py	/^    def __init__(self, tests=()):$/;"	m	class:TestSuite
-__iter__	static_tests/src/marks/suite.py	/^    def __iter__(self):$/;"	m	class:TestSuite	file:
-__repr__	static_tests/src/marks/case.py	/^    def __repr__(self):$/;"	m	class:TestCase	file:
-__repr__	static_tests/src/marks/result.py	/^    def __repr__(self):$/;"	m	class:TestResult	file:
-__repr__	static_tests/src/marks/suite.py	/^    def __repr__(self):$/;"	m	class:TestSuite	file:
-__str__	static_tests/src/marks/case.py	/^    def __str__(self):$/;"	m	class:TestCase	file:
-__version__	static_tests/src/marks/__init__.py	/^__version__ = get_version()/;"	v
-_apply_options	static_tests/src/marks/runner.py	/^    def _apply_options(self, obj):$/;"	m	class:BasicTestRunner
-_apply_options	static_tests/src/marks/suite.py	/^    def _apply_options(self, class_):$/;"	m	class:TestSuite
-_check_signal	static_tests/src/marks/case.py	/^    def _check_signal(self, process, msg):$/;"	m	class:TestCase
-_check_timeout	static_tests/src/marks/case.py	/^    def _check_timeout(self, process, msg):$/;"	m	class:TestCase
-_cleanup_processes	static_tests/src/marks/case.py	/^    def _cleanup_processes(self):$/;"	m	class:TestCase
-_compare_files	static_tests/src/marks/case.py	/^    def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None):$/;"	m	class:TestCase
-_default_protection	static_tests/src/marks/marking.py	/^def _default_protection():$/;"	f
-_error	static_tests/src/marks/marking.py	/^    def _error(self, msg, *args):$/;"	m	class:LogException
-_exc_info_pretty_print	static_tests/src/marks/result.py	/^    def _exc_info_pretty_print(self, exc_info, test):$/;"	m	class:TestResult
-_init_arg_parsers	static_tests/src/marks/main.py	/^    def _init_arg_parsers(self):$/;"	m	class:TestProgram
-_list_dirs	static_tests/src/marks/marking.py	/^    def _list_dirs(self):$/;"	m	class:MarkingRunner
-_print_coloured	static_tests/src/marks/case.py	/^    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):$/;"	m	class:ExplainProcess
-_print_coloured	static_tests/src/marks/case.py	/^    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):$/;"	m	class:TestCase
-_print_coloured	static_tests/src/marks/result.py	/^    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):$/;"	m	class:TestResult
-_process_details	static_tests/src/marks/case.py	/^    def _process_details(self, result):$/;"	m	class:TestCase
-_process_errors	static_tests/src/marks/case.py	/^    def _process_errors(self, result, errors):$/;"	m	class:TestCase
-_record_test	static_tests/src/marks/result.py	/^    def _record_test(self, test, outcome):$/;"	m	class:MarkingTestResult
-_set_protection	static_tests/src/marks/marking.py	/^    def _set_protection(self):$/;"	m	class:MarkingRunner
-_setup_class	static_tests/src/marks/suite.py	/^    def _setup_class(self, test, result):$/;"	m	class:TestSuite
-_setup_module	static_tests/src/marks/suite.py	/^    def _setup_module(self, test, result):$/;"	m	class:TestSuite
-_stderr_filename	static_tests/src/marks/case.py	/^    def _stderr_filename(self, p):$/;"	m	class:TestCase
-_stdout_filename	static_tests/src/marks/case.py	/^    def _stdout_filename(self, p):$/;"	m	class:TestCase
-_submissions	static_tests/src/marks/marking.py	/^    def _submissions(self, test):$/;"	m	class:MarkingRunner
-_tear_down_class	static_tests/src/marks/suite.py	/^    def _tear_down_class(self, class_, result):$/;"	m	class:TestSuite
-_tear_down_classes	static_tests/src/marks/suite.py	/^    def _tear_down_classes(self, result):$/;"	m	class:TestSuite
-_tear_down_module	static_tests/src/marks/suite.py	/^    def _tear_down_module(self, module_name, result):$/;"	m	class:TestSuite
-_tear_down_modules	static_tests/src/marks/suite.py	/^    def _tear_down_modules(self, result):$/;"	m	class:TestSuite
-_verbose_compare	static_tests/src/marks/case.py	/^    def _verbose_compare(self, stream_readline, file_path, stream_name, msg):$/;"	m	class:TestCase
-add_class_setup	static_tests/src/marks/result.py	/^    def add_class_setup(self, class_, success=True):$/;"	m	class:TestResult
-add_detail	static_tests/src/marks/case.py	/^    def add_detail(self, name, data):$/;"	m	class:TestCase
-add_detail	static_tests/src/marks/result.py	/^    def add_detail(self, name, data):$/;"	m	class:TestResult
-add_error	static_tests/src/marks/result.py	/^    def add_error(self, test, error):$/;"	m	class:MarkingTestResult
-add_error	static_tests/src/marks/result.py	/^    def add_error(self, test, error):$/;"	m	class:PrintedTestResult
-add_error	static_tests/src/marks/result.py	/^    def add_error(self, test, error):$/;"	m	class:TestResult
-add_failure	static_tests/src/marks/result.py	/^    def add_failure(self, test, error):$/;"	m	class:MarkingTestResult
-add_failure	static_tests/src/marks/result.py	/^    def add_failure(self, test, error):$/;"	m	class:PrintedTestResult
-add_failure	static_tests/src/marks/result.py	/^    def add_failure(self, test, error):$/;"	m	class:TestResult
-add_module_setup	static_tests/src/marks/result.py	/^    def add_module_setup(self, module_name, success=True):$/;"	m	class:TestResult
-add_success	static_tests/src/marks/result.py	/^    def add_success(self, test):$/;"	m	class:MarkingTestResult
-add_success	static_tests/src/marks/result.py	/^    def add_success(self, test):$/;"	m	class:PrintedTestResult
-add_success	static_tests/src/marks/result.py	/^    def add_success(self, test):$/;"	m	class:TestResult
-add_test	static_tests/src/marks/suite.py	/^    def add_test(self, test):$/;"	m	class:TestSuite
-add_tests	static_tests/src/marks/suite.py	/^    def add_tests(self, tests):$/;"	m	class:TestSuite
-apply_async	static_tests/src/marks/marking.py	/^    def apply_async(self, func, args=(), kwds={}, callback=None):$/;"	m	class:LoggingPool
-argparse	static_tests/src/marks/main.py	/^import argparse, os, sys$/;"	i
-assert_exit_status	static_tests/src/marks/case.py	/^    def assert_exit_status(self, process, status, msg=None):$/;"	m	class:TestCase
-assert_files_equal	static_tests/src/marks/case.py	/^    def assert_files_equal(self, file1, file2, msg=None):$/;"	m	class:TestCase
-assert_signal	static_tests/src/marks/case.py	/^    def assert_signal(self, process, signal, msg=None):$/;"	m	class:TestCase
-assert_signalled	static_tests/src/marks/case.py	/^    def assert_signalled(self, process, msg=None):$/;"	m	class:TestCase
-assert_stderr	static_tests/src/marks/case.py	/^    def assert_stderr(self, process, output, msg=None):$/;"	m	class:TestCase
-assert_stderr_matches_file	static_tests/src/marks/case.py	/^    def assert_stderr_matches_file(self, process, file_path, msg=None):$/;"	m	class:TestCase
-assert_stdout	static_tests/src/marks/case.py	/^    def assert_stdout(self, process, output, msg=None):$/;"	m	class:TestCase
-assert_stdout_matches_file	static_tests/src/marks/case.py	/^    def assert_stdout_matches_file(self, process, file_path, msg=None):$/;"	m	class:TestCase
+UpdateTestResult	_tests/lib/marks/result.py	/^class UpdateTestResult(TestResult):$/;"	c
+UpdateTestRunner	_tests/lib/marks/runner.py	/^class UpdateTestRunner(BasicTestRunner):$/;"	c
+VERSION	_tests/lib/marks/_version.py	/^VERSION = (0, 5, 0, 'alpha', 8)$/;"	v
+_MAX_LENGTH	_tests/lib/marks/util.py	/^_MAX_LENGTH = 80$/;"	v
+_TestWrapper	_tests/lib/marks/case.py	/^class _TestWrapper(object):$/;"	c
+__all__	_tests/lib/marks/__init__.py	/^__all__ = [$/;"	v
+__call__	_tests/lib/marks/case.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:TestCase	file:
+__call__	_tests/lib/marks/marking.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:LogException	file:
+__call__	_tests/lib/marks/suite.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:TestSuite	file:
+__init__	_tests/lib/marks/case.py	/^    def __init__(self):$/;"	m	class:_TestWrapper
+__init__	_tests/lib/marks/case.py	/^    def __init__(self, argv, input_file=None, **kwargs):$/;"	m	class:ExplainProcess
+__init__	_tests/lib/marks/case.py	/^    def __init__(self, test_method_name='run_test', timeout=None):$/;"	m	class:TestCase
+__init__	_tests/lib/marks/main.py	/^    def __init__(self, module='__main__', test_loader=loader.default_test_loader, options=None):$/;"	m	class:TestProgram
+__init__	_tests/lib/marks/marking.py	/^    def __init__(self, callable):$/;"	m	class:LogException
+__init__	_tests/lib/marks/result.py	/^    def __init__(self):$/;"	m	class:MarkingTestResult
+__init__	_tests/lib/marks/result.py	/^    def __init__(self):$/;"	m	class:TestResult
+__init__	_tests/lib/marks/runner.py	/^    def __init__(self, result_class=None, **kwargs):$/;"	m	class:BasicTestRunner
+__init__	_tests/lib/marks/suite.py	/^    def __init__(self, tests=()):$/;"	m	class:TestSuite
+__iter__	_tests/lib/marks/suite.py	/^    def __iter__(self):$/;"	m	class:TestSuite	file:
+__repr__	_tests/lib/marks/case.py	/^    def __repr__(self):$/;"	m	class:TestCase	file:
+__repr__	_tests/lib/marks/result.py	/^    def __repr__(self):$/;"	m	class:TestResult	file:
+__repr__	_tests/lib/marks/suite.py	/^    def __repr__(self):$/;"	m	class:TestSuite	file:
+__str__	_tests/lib/marks/case.py	/^    def __str__(self):$/;"	m	class:TestCase	file:
+__version__	_tests/lib/marks/__init__.py	/^__version__ = get_version()/;"	v
+_apply_options	_tests/lib/marks/runner.py	/^    def _apply_options(self, obj):$/;"	m	class:BasicTestRunner
+_apply_options	_tests/lib/marks/suite.py	/^    def _apply_options(self, class_):$/;"	m	class:TestSuite
+_check_signal	_tests/lib/marks/case.py	/^    def _check_signal(self, process, msg):$/;"	m	class:TestCase
+_check_timeout	_tests/lib/marks/case.py	/^    def _check_timeout(self, process, msg):$/;"	m	class:TestCase
+_cleanup_processes	_tests/lib/marks/case.py	/^    def _cleanup_processes(self):$/;"	m	class:TestCase
+_compare_files	_tests/lib/marks/case.py	/^    def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None):$/;"	m	class:TestCase
+_default_protection	_tests/lib/marks/marking.py	/^def _default_protection():$/;"	f
+_error	_tests/lib/marks/marking.py	/^    def _error(self, msg, *args):$/;"	m	class:LogException
+_exc_info_pretty_print	_tests/lib/marks/result.py	/^    def _exc_info_pretty_print(self, exc_info, test):$/;"	m	class:TestResult
+_init_arg_parsers	_tests/lib/marks/main.py	/^    def _init_arg_parsers(self):$/;"	m	class:TestProgram
+_list_dirs	_tests/lib/marks/marking.py	/^    def _list_dirs(self):$/;"	m	class:MarkingRunner
+_print_coloured	_tests/lib/marks/case.py	/^    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):$/;"	m	class:ExplainProcess
+_print_coloured	_tests/lib/marks/case.py	/^    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):$/;"	m	class:TestCase
+_print_coloured	_tests/lib/marks/result.py	/^    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):$/;"	m	class:TestResult
+_process_details	_tests/lib/marks/case.py	/^    def _process_details(self, result):$/;"	m	class:TestCase
+_process_errors	_tests/lib/marks/case.py	/^    def _process_errors(self, result, errors):$/;"	m	class:TestCase
+_record_test	_tests/lib/marks/result.py	/^    def _record_test(self, test, outcome):$/;"	m	class:MarkingTestResult
+_set_protection	_tests/lib/marks/marking.py	/^    def _set_protection(self):$/;"	m	class:MarkingRunner
+_setup_class	_tests/lib/marks/suite.py	/^    def _setup_class(self, test, result):$/;"	m	class:TestSuite
+_setup_module	_tests/lib/marks/suite.py	/^    def _setup_module(self, test, result):$/;"	m	class:TestSuite
+_stderr_filename	_tests/lib/marks/case.py	/^    def _stderr_filename(self, p):$/;"	m	class:TestCase
+_stdout_filename	_tests/lib/marks/case.py	/^    def _stdout_filename(self, p):$/;"	m	class:TestCase
+_submissions	_tests/lib/marks/marking.py	/^    def _submissions(self, test):$/;"	m	class:MarkingRunner
+_tear_down_class	_tests/lib/marks/suite.py	/^    def _tear_down_class(self, class_, result):$/;"	m	class:TestSuite
+_tear_down_classes	_tests/lib/marks/suite.py	/^    def _tear_down_classes(self, result):$/;"	m	class:TestSuite
+_tear_down_module	_tests/lib/marks/suite.py	/^    def _tear_down_module(self, module_name, result):$/;"	m	class:TestSuite
+_tear_down_modules	_tests/lib/marks/suite.py	/^    def _tear_down_modules(self, result):$/;"	m	class:TestSuite
+_verbose_compare	_tests/lib/marks/case.py	/^    def _verbose_compare(self, stream_readline, file_path, stream_name, msg):$/;"	m	class:TestCase
+add_class_setup	_tests/lib/marks/result.py	/^    def add_class_setup(self, class_, success=True):$/;"	m	class:TestResult
+add_detail	_tests/lib/marks/case.py	/^    def add_detail(self, name, data):$/;"	m	class:TestCase
+add_detail	_tests/lib/marks/result.py	/^    def add_detail(self, name, data):$/;"	m	class:TestResult
+add_error	_tests/lib/marks/result.py	/^    def add_error(self, test, error):$/;"	m	class:MarkingTestResult
+add_error	_tests/lib/marks/result.py	/^    def add_error(self, test, error):$/;"	m	class:PrintedTestResult
+add_error	_tests/lib/marks/result.py	/^    def add_error(self, test, error):$/;"	m	class:TestResult
+add_failure	_tests/lib/marks/result.py	/^    def add_failure(self, test, error):$/;"	m	class:MarkingTestResult
+add_failure	_tests/lib/marks/result.py	/^    def add_failure(self, test, error):$/;"	m	class:PrintedTestResult
+add_failure	_tests/lib/marks/result.py	/^    def add_failure(self, test, error):$/;"	m	class:TestResult
+add_module_setup	_tests/lib/marks/result.py	/^    def add_module_setup(self, module_name, success=True):$/;"	m	class:TestResult
+add_success	_tests/lib/marks/result.py	/^    def add_success(self, test):$/;"	m	class:MarkingTestResult
+add_success	_tests/lib/marks/result.py	/^    def add_success(self, test):$/;"	m	class:PrintedTestResult
+add_success	_tests/lib/marks/result.py	/^    def add_success(self, test):$/;"	m	class:TestResult
+add_test	_tests/lib/marks/suite.py	/^    def add_test(self, test):$/;"	m	class:TestSuite
+add_tests	_tests/lib/marks/suite.py	/^    def add_tests(self, tests):$/;"	m	class:TestSuite
+apply_async	_tests/lib/marks/marking.py	/^    def apply_async(self, func, args=(), kwds={}, callback=None):$/;"	m	class:LoggingPool
+assert_exit_status	_tests/lib/marks/case.py	/^    def assert_exit_status(self, process, status, msg=None):$/;"	m	class:TestCase
+assert_files_equal	_tests/lib/marks/case.py	/^    def assert_files_equal(self, file1, file2, msg=None):$/;"	m	class:TestCase
+assert_signal	_tests/lib/marks/case.py	/^    def assert_signal(self, process, signal, msg=None):$/;"	m	class:TestCase
+assert_signalled	_tests/lib/marks/case.py	/^    def assert_signalled(self, process, msg=None):$/;"	m	class:TestCase
+assert_stderr	_tests/lib/marks/case.py	/^    def assert_stderr(self, process, output, msg=None):$/;"	m	class:TestCase
+assert_stderr_matches_file	_tests/lib/marks/case.py	/^    def assert_stderr_matches_file(self, process, file_path, msg=None):$/;"	m	class:TestCase
+assert_stdout	_tests/lib/marks/case.py	/^    def assert_stdout(self, process, output, msg=None):$/;"	m	class:TestCase
+assert_stdout_matches_file	_tests/lib/marks/case.py	/^    def assert_stdout_matches_file(self, process, file_path, msg=None):$/;"	m	class:TestCase
 board	board.h	/^    Card* board;$/;"	m	struct:BoardState
 boardState	game.h	/^    BoardState* boardState;$/;"	m	struct:GameState
 c	scoring.h	/^    int c;$/;"	m	struct:Position
 cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
-case	static_tests/src/marks/loader.py	/^from . import case, suite$/;"	i
-case_class	static_tests/src/marks/loader.py	/^    case_class = case.TestCase$/;"	v	class:TestLoader
-child_pids	static_tests/src/marks/case.py	/^    def child_pids(self, parent):$/;"	m	class:TestCase
-class_setup_failed	static_tests/src/marks/result.py	/^    def class_setup_failed(self, class_):$/;"	m	class:MarkingTestResult
-class_setup_failed	static_tests/src/marks/result.py	/^    def class_setup_failed(self, class_):$/;"	m	class:TestResult
-class_setup_run	static_tests/src/marks/result.py	/^    def class_setup_run(self, class_):$/;"	m	class:TestResult
-coloured_text	static_tests/src/marks/case.py	/^from .util import strclass, safe_repr, coloured_text$/;"	i
-coloured_text	static_tests/src/marks/util.py	/^def coloured_text(text, colour=None, background=None, attrs=None):$/;"	f
-complete	static_tests/src/marks/marking.py	/^        def complete(result):$/;"	f	function:MarkingRunner.run
+case_class	_tests/lib/marks/loader.py	/^    case_class = case.TestCase$/;"	v	class:TestLoader
+child_pids	_tests/lib/marks/case.py	/^    def child_pids(self, parent):$/;"	m	class:TestCase
+class_setup_failed	_tests/lib/marks/result.py	/^    def class_setup_failed(self, class_):$/;"	m	class:MarkingTestResult
+class_setup_failed	_tests/lib/marks/result.py	/^    def class_setup_failed(self, class_):$/;"	m	class:TestResult
+class_setup_run	_tests/lib/marks/result.py	/^    def class_setup_run(self, class_):$/;"	m	class:TestResult
+coloured_text	_tests/lib/marks/util.py	/^def coloured_text(text, colour=None, background=None, attrs=None):$/;"	f
+complete	_tests/lib/marks/marking.py	/^        def complete(result):$/;"	f	function:MarkingRunner.run
 compute_longest_path	scoring.c	/^int compute_longest_path(BoardState* boardState, char target, Position pos,$/;"	f
-contextlib	static_tests/src/marks/case.py	/^import contextlib, sys, os, inspect, difflib, time$/;"	i
-copy	static_tests/src/marks/marking.py	/^import os, traceback, copy, multiprocessing as mp$/;"	i
 count_cards	board.c	/^void count_cards(BoardState* boardState) {$/;"	f
-create_tests	static_tests/src/marks/main.py	/^    def create_tests(self):$/;"	m	class:TestProgram
-csv	static_tests/src/marks/marking.py	/^import csv, json$/;"	i
+create_tests	_tests/lib/marks/main.py	/^    def create_tests(self):$/;"	m	class:TestProgram
 currPlayer	game.h	/^    int currPlayer;$/;"	m	struct:GameState
 deal_cards	game.c	/^bool deal_cards(GameState* gameState) {$/;"	f
 deck	game.h	/^    Deck* deck;$/;"	m	struct:GameState
 deckFile	game.h	/^    char* deckFile;$/;"	m	struct:GameState
-decorator	static_tests/src/marks/case.py	/^    def decorator(test_item):$/;"	f	function:marks
-default_test_loader	static_tests/src/marks/__init__.py	/^from .loader import TestLoader, default_test_loader$/;"	i
-default_test_loader	static_tests/src/marks/loader.py	/^default_test_loader = TestLoader()/;"	v
-default_test_method	static_tests/src/marks/case.py	/^    default_test_method = 'run_test'$/;"	v	class:TestCase
-delay	static_tests/src/marks/case.py	/^    def delay(self, secs):$/;"	m	class:TestCase
-difflib	static_tests/src/marks/case.py	/^import contextlib, sys, os, inspect, difflib, time$/;"	i
-division	static_tests/src/marks/marking.py	/^from __future__ import division, print_function$/;"	i
-division	static_tests/src/marks/result.py	/^from __future__ import division, print_function$/;"	i
-division	static_tests/src/marks/runner.py	/^from __future__ import division, print_function$/;"	i
-doc	static_tests/src/marks/case.py	/^    def doc(self):$/;"	m	class:TestCase
+decorator	_tests/lib/marks/case.py	/^    def decorator(test_item):$/;"	f	function:marks
+default_test_loader	_tests/lib/marks/loader.py	/^default_test_loader = TestLoader()/;"	v
+default_test_method	_tests/lib/marks/case.py	/^    default_test_method = 'run_test'$/;"	v	class:TestCase
+delay	_tests/lib/marks/case.py	/^    def delay(self, secs):$/;"	m	class:TestCase
+doc	_tests/lib/marks/case.py	/^    def doc(self):$/;"	m	class:TestCase
 draw_card	game.c	/^Card draw_card(GameState* gameState) {$/;"	f
-errno	static_tests/src/marks/runner.py	/^import os, errno, tempfile, shutil$/;"	i
 exec_game_loop	game.c	/^int exec_game_loop(GameState* gameState, char* playerTypes) {$/;"	f
 exec_main	main.c	/^int exec_main(int argc, char** argv) {$/;"	f
-export	static_tests/src/marks/result.py	/^    def export(self):$/;"	m	class:MarkingTestResult
-fail	static_tests/src/marks/case.py	/^    def fail(self, msg=None):$/;"	m	class:TestCase
-failure_exception	static_tests/src/marks/case.py	/^    failure_exception = AssertionError$/;"	v	class:TestCase
+export	_tests/lib/marks/result.py	/^    def export(self):$/;"	m	class:MarkingTestResult
+fail	_tests/lib/marks/case.py	/^    def fail(self, msg=None):$/;"	m	class:TestCase
+failure_exception	_tests/lib/marks/case.py	/^    failure_exception = AssertionError$/;"	v	class:TestCase
 finish_auto_turn	game.c	/^void finish_auto_turn(GameState* gameState, Card card, int row, int col) {$/;"	f
-finish_input	static_tests/src/marks/case.py	/^    def finish_input(self):$/;"	m	class:ExplainProcess
+finish_input	_tests/lib/marks/case.py	/^    def finish_input(self):$/;"	m	class:ExplainProcess
 fmt_card	deck.c	/^char* fmt_card(char* str, Card card) {$/;"	f
 fmt_card_c	deck.c	/^char* fmt_card_c(char* str, Card card, char blank) {$/;"	f
 fprint_board	board.c	/^bool fprint_board(BoardState* boardState, FILE* file, char blank) {$/;"	f
 fprint_hand	game.c	/^bool fprint_hand(GameState* gameState, FILE* file, char* sep, int player) {$/;"	f
 get_board_cell	board.c	/^Card* get_board_cell(BoardState* boardState, int row, int col) {$/;"	f
 get_card_at	scoring.c	/^Card get_card_at(BoardState* bs, Position pos) {$/;"	f
-get_complete_version	static_tests/src/marks/_version.py	/^def get_complete_version(version=None):$/;"	f
-get_details	static_tests/src/marks/result.py	/^    def get_details(self):$/;"	m	class:TestResult
+get_complete_version	_tests/lib/marks/_version.py	/^def get_complete_version(version=None):$/;"	f
+get_details	_tests/lib/marks/result.py	/^    def get_details(self):$/;"	m	class:TestResult
 get_hand	game.c	/^Card* get_hand(GameState* gameState, int playerIndex) {$/;"	f
-get_ld_preload	static_tests/src/marks/__init__.py	/^from .process import Process, set_ld_preload, get_ld_preload$/;"	i
-get_major_version	static_tests/src/marks/_version.py	/^def get_major_version(version=None):$/;"	f
+get_major_version	_tests/lib/marks/_version.py	/^def get_major_version(version=None):$/;"	f
 get_player_hand	game.c	/^Card* get_player_hand(GameState* gameState) {$/;"	f
-get_test_case_names	static_tests/src/marks/loader.py	/^    def get_test_case_names(self, test_case, prefix=None):$/;"	m	class:TestLoader
-get_version	static_tests/src/marks/__init__.py	/^from ._version import get_version$/;"	i
-get_version	static_tests/src/marks/_version.py	/^def get_version(version=None):$/;"	f
-get_version	static_tests/src/marks/main.py	/^from ._version import get_version$/;"	i
+get_test_case_names	_tests/lib/marks/loader.py	/^    def get_test_case_names(self, test_case, prefix=None):$/;"	m	class:TestLoader
+get_version	_tests/lib/marks/_version.py	/^def get_version(version=None):$/;"	f
 has_adjacent	board.c	/^bool has_adjacent(BoardState* boardState, int row, int col) {$/;"	f
 has_card_at	board.c	/^bool has_card_at(BoardState* boardState, int row, int col) {$/;"	f
 height	board.h	/^    int height;$/;"	m	struct:BoardState
-host	grum.py	/^host = platform.node().split('.')[0]$/;"	v
-host	static_tests/tests/grum.py	/^host = platform.node().split('.')[0]$/;"	v
+host	_tests/grum.py	/^host = platform.node().split('.')[0]$/;"	v
+host	_tests/tests/grum.py	/^host = platform.node().split('.')[0]$/;"	v
 host	tests/grum.py	/^host = platform.node().split('.')[0]$/;"	v
-id	static_tests/src/marks/case.py	/^    def id(self):$/;"	m	class:TestCase
-ignore_result	static_tests/src/marks/__init__.py	/^from .case import TestCase, marks, ignore_result$/;"	i
-ignore_result	static_tests/src/marks/case.py	/^def ignore_result(test_item):$/;"	f
+id	_tests/lib/marks/case.py	/^    def id(self):$/;"	m	class:TestCase
+ignore_result	_tests/lib/marks/case.py	/^def ignore_result(test_item):$/;"	f
 init_board	board.c	/^void init_board(BoardState* boardState, int width, int height) {$/;"	f
 init_game_state	game.c	/^void init_game_state(GameState* gameState) {$/;"	f
-initialise_marks	static_tests/src/marks/main.py	/^    def initialise_marks(self, argv):$/;"	m	class:TestProgram
-inspect	static_tests/src/marks/case.py	/^import contextlib, sys, os, inspect, difflib, time$/;"	i
+initialise_marks	_tests/lib/marks/main.py	/^    def initialise_marks(self, argv):$/;"	m	class:TestProgram
 is_blank	deck.c	/^bool is_blank(char* str) {$/;"	f
 is_board_empty	board.c	/^bool is_board_empty(BoardState* boardState) {$/;"	f
 is_board_full	board.c	/^bool is_board_full(BoardState* boardState) {$/;"	f
@@ -255,241 +225,188 @@ is_card	deck.c	/^bool is_card(char* str) {$/;"	f
 is_null_card	deck.c	/^bool is_null_card(Card card) {$/;"	f
 is_on_board	board.c	/^bool is_on_board(BoardState* boardState, int r, int c) {$/;"	f
 is_size_valid	board.c	/^bool is_size_valid(int width, int height) {$/;"	f
-is_test_method	static_tests/src/marks/loader.py	/^        def is_test_method(name):$/;"	f	function:TestLoader.get_test_case_names
-is_test_method	static_tests/src/marks/loader.py	/^    def is_test_method(self, name, test_case, prefix=None):$/;"	m	class:TestLoader
-json	static_tests/src/marks/marking.py	/^import csv, json$/;"	i
-kill	static_tests/src/marks/case.py	/^    def kill(self):$/;"	m	class:ExplainProcess
+is_test_method	_tests/lib/marks/loader.py	/^        def is_test_method(name):$/;"	f	function:TestLoader.get_test_case_names
+is_test_method	_tests/lib/marks/loader.py	/^    def is_test_method(self, name, test_case, prefix=None):$/;"	m	class:TestLoader
+kill	_tests/lib/marks/case.py	/^    def kill(self):$/;"	m	class:ExplainProcess
 letters	make_deck.py	/^    letters = string.ascii_uppercase$/;"	v
 load_deck_file	deck.c	/^bool load_deck_file(Deck* deck, char* deckFile) {$/;"	f
 load_game_file	game.c	/^bool load_game_file(GameState* gameState, char* saveFile) {$/;"	f
-load_tests_from_module	static_tests/src/marks/loader.py	/^    def load_tests_from_module(self, module):$/;"	m	class:TestLoader
-load_tests_from_name	static_tests/src/marks/loader.py	/^    def load_tests_from_name(self, name, module=None):$/;"	m	class:TestLoader
-load_tests_from_names	static_tests/src/marks/loader.py	/^    def load_tests_from_names(self, names, module=None):$/;"	m	class:TestLoader
-load_tests_from_test_case	static_tests/src/marks/loader.py	/^    def load_tests_from_test_case(self, test_case, prefix=None):$/;"	m	class:TestLoader
-loader	static_tests/src/marks/main.py	/^from . import loader, runner, marking, result$/;"	i
+load_tests_from_module	_tests/lib/marks/loader.py	/^    def load_tests_from_module(self, module):$/;"	m	class:TestLoader
+load_tests_from_name	_tests/lib/marks/loader.py	/^    def load_tests_from_name(self, name, module=None):$/;"	m	class:TestLoader
+load_tests_from_names	_tests/lib/marks/loader.py	/^    def load_tests_from_names(self, names, module=None):$/;"	m	class:TestLoader
+load_tests_from_test_case	_tests/lib/marks/loader.py	/^    def load_tests_from_test_case(self, test_case, prefix=None):$/;"	m	class:TestLoader
 longest_letter_paths	scoring.c	/^void longest_letter_paths(BoardState* boardState, int* letterLengths) {$/;"	f
+main	_tests/lib/marks/main.py	/^main = TestProgram/;"	v
 main	main.c	/^int main(int argc, char** argv) {$/;"	f
-main	static_tests/src/marks/__init__.py	/^from .main import main$/;"	i
-main	static_tests/src/marks/main.py	/^main = TestProgram/;"	v
-mark_submission	static_tests/src/marks/marking.py	/^def mark_submission(path, test, options):$/;"	f
-marking	static_tests/src/marks/main.py	/^from . import loader, runner, marking, result$/;"	i
-marks	grum.py	/^import marks$/;"	i
-marks	static_tests/src/marks/__init__.py	/^from .case import TestCase, marks, ignore_result$/;"	i
-marks	static_tests/src/marks/case.py	/^def marks(category, mark=None, category_marks=None):$/;"	f
-marks	static_tests/src/marks/marking.py	/^        import marks$/;"	i
-marks	static_tests/src/marks/marking.py	/^    import marks$/;"	i
-marks	static_tests/tests/grum.py	/^import marks$/;"	i
-marks	tests/grum.py	/^import marks$/;"	i
+mark_submission	_tests/lib/marks/marking.py	/^def mark_submission(path, test, options):$/;"	f
+marks	_tests/lib/marks/case.py	/^def marks(category, mark=None, category_marks=None):$/;"	f
 mod	board.c	/^int mod(int x, int d) {$/;"	f
-module_setup_failed	static_tests/src/marks/result.py	/^    def module_setup_failed(self, module_name):$/;"	m	class:MarkingTestResult
-module_setup_failed	static_tests/src/marks/result.py	/^    def module_setup_failed(self, module_name):$/;"	m	class:TestResult
-module_setup_run	static_tests/src/marks/result.py	/^    def module_setup_run(self, module_):$/;"	m	class:TestResult
-mp	static_tests/src/marks/marking.py	/^import os, traceback, copy, multiprocessing as mp$/;"	i
+module_setup_failed	_tests/lib/marks/result.py	/^    def module_setup_failed(self, module_name):$/;"	m	class:MarkingTestResult
+module_setup_failed	_tests/lib/marks/result.py	/^    def module_setup_failed(self, module_name):$/;"	m	class:TestResult
+module_setup_run	_tests/lib/marks/result.py	/^    def module_setup_run(self, module_):$/;"	m	class:TestResult
 n	make_deck.py	/^    n = int(sys.argv[1])$/;"	v
 num	deck.h	/^    int num;$/;"	m	struct:Card
 numCards	deck.h	/^    int numCards;$/;"	m	struct:Deck
 numDrawn	game.h	/^    int numDrawn;$/;"	m	struct:GameState
 numPlaced	board.h	/^    int numPlaced;$/;"	m	struct:BoardState
 numbers	make_deck.py	/^    numbers = string.digits.replace('0', '')$/;"	v
-option	static_tests/src/marks/case.py	/^    def option(self, option):$/;"	m	class:TestCase
-option	static_tests/src/marks/result.py	/^    def option(self, option):$/;"	m	class:TestResult
-os	grum.py	/^import os$/;"	i
-os	static_tests/src/marks/case.py	/^import contextlib, sys, os, inspect, difflib, time$/;"	i
-os	static_tests/src/marks/main.py	/^import argparse, os, sys$/;"	i
-os	static_tests/src/marks/marking.py	/^import os, traceback, copy, multiprocessing as mp$/;"	i
-os	static_tests/src/marks/runner.py	/^import os, errno, tempfile, shutil$/;"	i
-os	static_tests/src/marks/util.py	/^import os$/;"	i
-os	static_tests/tests/grum.py	/^import os$/;"	i
-os	tests/grum.py	/^import os$/;"	i
+option	_tests/lib/marks/case.py	/^    def option(self, option):$/;"	m	class:TestCase
+option	_tests/lib/marks/result.py	/^    def option(self, option):$/;"	m	class:TestResult
 parse_all_hands	game.c	/^bool parse_all_hands(FILE* file, GameState* gameState) {$/;"	f
-parse_arguments	static_tests/src/marks/main.py	/^    def parse_arguments(self, argv):$/;"	m	class:TestProgram
+parse_arguments	_tests/lib/marks/main.py	/^    def parse_arguments(self, argv):$/;"	m	class:TestProgram
 parse_card_row	game.c	/^bool parse_card_row(FILE* file, Card* cards, int numExpected,$/;"	f
 parse_int	util.c	/^int parse_int(char* str) {$/;"	f
-parse_options	static_tests/src/marks/main.py	/^    def parse_options(self, args):$/;"	m	class:TestProgram
+parse_options	_tests/lib/marks/main.py	/^    def parse_options(self, args):$/;"	m	class:TestProgram
 parse_top_line	game.c	/^bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {$/;"	f
 place_card	board.c	/^bool place_card(BoardState* boardState, int row, int col, Card card) {$/;"	f
-platform	grum.py	/^import platform$/;"	i
-platform	static_tests/tests/grum.py	/^import platform$/;"	i
-platform	tests/grum.py	/^import platform$/;"	i
 play_auto_turn	game.c	/^void play_auto_turn(GameState* gameState) {$/;"	f
 playerHands	game.h	/^    Card playerHands[NUM_PLAYERS * NUM_HAND];$/;"	m	struct:GameState
+printBuffer	board.h	/^    char* printBuffer;$/;"	m	struct:BoardState
 print_board	board.c	/^void print_board(BoardState* boardState) {$/;"	f
-print_function	grum.py	/^from __future__ import print_function$/;"	i
-print_function	static_tests/src/marks/case.py	/^from __future__ import print_function$/;"	i
-print_function	static_tests/src/marks/marking.py	/^from __future__ import division, print_function$/;"	i
-print_function	static_tests/src/marks/result.py	/^from __future__ import division, print_function$/;"	i
-print_function	static_tests/src/marks/runner.py	/^from __future__ import division, print_function$/;"	i
-print_function	static_tests/tests/grum.py	/^from __future__ import print_function$/;"	i
-print_function	tests/grum.py	/^from __future__ import print_function$/;"	i
 print_hand	game.c	/^void print_hand(GameState* gameState) {$/;"	f
 print_points	game.c	/^void print_points(GameState* gameState) {$/;"	f
-print_stderr	static_tests/src/marks/case.py	/^    def print_stderr(self):$/;"	m	class:ExplainProcess
-print_stdout	static_tests/src/marks/case.py	/^    def print_stdout(self):$/;"	m	class:ExplainProcess
-process	static_tests/src/marks/case.py	/^    def process(self, argv, input_file=None, *args, **kwargs):$/;"	m	class:TestCase
-process_class	static_tests/src/marks/case.py	/^    process_class = Process$/;"	v	class:TestCase
+print_stderr	_tests/lib/marks/case.py	/^    def print_stderr(self):$/;"	m	class:ExplainProcess
+print_stdout	_tests/lib/marks/case.py	/^    def print_stdout(self):$/;"	m	class:ExplainProcess
+process	_tests/lib/marks/case.py	/^    def process(self, argv, input_file=None, *args, **kwargs):$/;"	m	class:TestCase
+process_class	_tests/lib/marks/case.py	/^    process_class = Process$/;"	v	class:TestCase
 prompt_move	game.c	/^bool prompt_move(GameState* gameState) {$/;"	f
 r	scoring.h	/^    int r;$/;"	m	struct:Position
-random	make_deck.py	/^import random$/;"	i
-readline_stderr	static_tests/src/marks/case.py	/^    def readline_stderr(self):$/;"	m	class:ExplainProcess
-readline_stdout	static_tests/src/marks/case.py	/^    def readline_stdout(self):$/;"	m	class:ExplainProcess
+readline_stderr	_tests/lib/marks/case.py	/^    def readline_stderr(self):$/;"	m	class:ExplainProcess
+readline_stdout	_tests/lib/marks/case.py	/^    def readline_stdout(self):$/;"	m	class:ExplainProcess
 remove_card_from_hand	game.c	/^void remove_card_from_hand(GameState* gameState, int cardNum) {$/;"	f
-result	static_tests/src/marks/main.py	/^from . import loader, runner, marking, result$/;"	i
-result	static_tests/src/marks/runner.py	/^from . import result$/;"	i
-result_class	static_tests/src/marks/runner.py	/^    result_class = result.MarkingTestResult$/;"	v	class:MarkingTestRunner
-result_class	static_tests/src/marks/runner.py	/^    result_class = result.PrintedTestResult$/;"	v	class:BasicTestRunner
-result_class	static_tests/src/marks/runner.py	/^    result_class = result.UpdateTestResult$/;"	v	class:UpdateTestRunner
-run	static_tests/src/marks/case.py	/^    def run(self, result=None, **kwargs):$/;"	m	class:TestCase
-run	static_tests/src/marks/marking.py	/^    def run(self, test):$/;"	m	class:MarkingRunner
-run	static_tests/src/marks/runner.py	/^    def run(self, test):$/;"	m	class:BasicTestRunner
-run	static_tests/src/marks/runner.py	/^    def run(self, test):$/;"	m	class:MarkingTestRunner
-run	static_tests/src/marks/runner.py	/^    def run(self, test):$/;"	m	class:UpdateTestRunner
-run	static_tests/src/marks/suite.py	/^    def run(self, result=None, child=False):$/;"	m	class:TestSuite
-run_tests	static_tests/src/marks/main.py	/^    def run_tests(self):$/;"	m	class:TestProgram
-runner	static_tests/src/marks/main.py	/^from . import loader, runner, marking, result$/;"	i
-runner_class	static_tests/src/marks/main.py	/^    runner_class = runner.BasicTestRunner$/;"	v	class:TestProgram
+result_class	_tests/lib/marks/runner.py	/^    result_class = result.MarkingTestResult$/;"	v	class:MarkingTestRunner
+result_class	_tests/lib/marks/runner.py	/^    result_class = result.PrintedTestResult$/;"	v	class:BasicTestRunner
+result_class	_tests/lib/marks/runner.py	/^    result_class = result.UpdateTestResult$/;"	v	class:UpdateTestRunner
+run	_tests/lib/marks/case.py	/^    def run(self, result=None, **kwargs):$/;"	m	class:TestCase
+run	_tests/lib/marks/marking.py	/^    def run(self, test):$/;"	m	class:MarkingRunner
+run	_tests/lib/marks/runner.py	/^    def run(self, test):$/;"	m	class:BasicTestRunner
+run	_tests/lib/marks/runner.py	/^    def run(self, test):$/;"	m	class:MarkingTestRunner
+run	_tests/lib/marks/runner.py	/^    def run(self, test):$/;"	m	class:UpdateTestRunner
+run	_tests/lib/marks/suite.py	/^    def run(self, result=None, child=False):$/;"	m	class:TestSuite
+run_tests	_tests/lib/marks/main.py	/^    def run_tests(self):$/;"	m	class:TestProgram
+runner_class	_tests/lib/marks/main.py	/^    runner_class = runner.BasicTestRunner$/;"	v	class:TestProgram
 safe_read_line	util.c	/^bool safe_read_line(FILE* file, char** output) {$/;"	f
-safe_repr	static_tests/src/marks/case.py	/^from .util import strclass, safe_repr, coloured_text$/;"	i
-safe_repr	static_tests/src/marks/util.py	/^def safe_repr(obj, length=None):$/;"	f
+safe_repr	_tests/lib/marks/util.py	/^def safe_repr(obj, length=None):$/;"	f
 save_game_file	game.c	/^bool save_game_file(GameState* gameState, char* saveFile) {$/;"	f
-send	static_tests/src/marks/case.py	/^    def send(self, message):$/;"	m	class:ExplainProcess
-send_signal	static_tests/src/marks/case.py	/^    def send_signal(self, signal):$/;"	m	class:ExplainProcess
-send_signal_group	static_tests/src/marks/case.py	/^    def send_signal_group(self, signal):$/;"	m	class:ExplainProcess
+send	_tests/lib/marks/case.py	/^    def send(self, message):$/;"	m	class:ExplainProcess
+send_signal	_tests/lib/marks/case.py	/^    def send_signal(self, signal):$/;"	m	class:ExplainProcess
+send_signal_group	_tests/lib/marks/case.py	/^    def send_signal_group(self, signal):$/;"	m	class:ExplainProcess
 sep	make_deck.py	/^            sep='')$/;"	v
-set_ld_preload	static_tests/src/marks/__init__.py	/^from .process import Process, set_ld_preload, get_ld_preload$/;"	i
-set_up_explain	static_tests/src/marks/main.py	/^    def set_up_explain(self, args):$/;"	m	class:TestProgram
-set_up_mark	static_tests/src/marks/main.py	/^    def set_up_mark(self, args):$/;"	m	class:TestProgram
-set_up_test	static_tests/src/marks/main.py	/^    def set_up_test(self, args):$/;"	m	class:TestProgram
-set_up_update	static_tests/src/marks/main.py	/^    def set_up_update(self, args):$/;"	m	class:TestProgram
-setup	static_tests/src/marks/case.py	/^    def setup(self):$/;"	m	class:TestCase
-setup_class	grum.py	/^  def setup_class(cls):$/;"	m	class:Assignment1
-setup_class	static_tests/src/marks/case.py	/^    def setup_class(cls):$/;"	m	class:TestCase
-setup_class	static_tests/tests/grum.py	/^  def setup_class(cls):$/;"	m	class:Assignment1
+set_up_explain	_tests/lib/marks/main.py	/^    def set_up_explain(self, args):$/;"	m	class:TestProgram
+set_up_mark	_tests/lib/marks/main.py	/^    def set_up_mark(self, args):$/;"	m	class:TestProgram
+set_up_test	_tests/lib/marks/main.py	/^    def set_up_test(self, args):$/;"	m	class:TestProgram
+set_up_update	_tests/lib/marks/main.py	/^    def set_up_update(self, args):$/;"	m	class:TestProgram
+setup	_tests/lib/marks/case.py	/^    def setup(self):$/;"	m	class:TestCase
+setup_class	_tests/grum.py	/^  def setup_class(cls):$/;"	m	class:Assignment1
+setup_class	_tests/lib/marks/case.py	/^    def setup_class(cls):$/;"	m	class:TestCase
+setup_class	_tests/tests/grum.py	/^  def setup_class(cls):$/;"	m	class:Assignment1
 setup_class	tests/grum.py	/^  def setup_class(cls):$/;"	m	class:Assignment1
-setup_environment	static_tests/src/marks/runner.py	/^    def setup_environment(self):$/;"	m	class:BasicTestRunner
-shutil	static_tests/src/marks/runner.py	/^import os, errno, tempfile, shutil$/;"	i
-signal_process	static_tests/src/marks/case.py	/^    def signal_process(self, pid, sig, explain_process=None):$/;"	m	class:TestCase
-start_test	static_tests/src/marks/result.py	/^    def start_test(self, test):$/;"	m	class:ExplainTestResult
-start_test	static_tests/src/marks/result.py	/^    def start_test(self, test):$/;"	m	class:PrintedTestResult
-start_test	static_tests/src/marks/result.py	/^    def start_test(self, test):$/;"	m	class:TestResult
-start_test	static_tests/src/marks/result.py	/^    def start_test(self, test):$/;"	m	class:UpdateTestResult
-start_test_run	static_tests/src/marks/result.py	/^    def start_test_run(self):$/;"	m	class:ExplainTestResult
-start_test_run	static_tests/src/marks/result.py	/^    def start_test_run(self):$/;"	m	class:PrintedTestResult
-start_test_run	static_tests/src/marks/result.py	/^    def start_test_run(self):$/;"	m	class:TestResult
-start_test_run	static_tests/src/marks/result.py	/^    def start_test_run(self):$/;"	m	class:UpdateTestResult
-stop_test	static_tests/src/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:ExplainTestResult
-stop_test	static_tests/src/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:PrintedTestResult
-stop_test	static_tests/src/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:TestResult
-stop_test	static_tests/src/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:UpdateTestResult
-stop_test_run	static_tests/src/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:ExplainTestResult
-stop_test_run	static_tests/src/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:MarkingTestResult
-stop_test_run	static_tests/src/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:PrintedTestResult
-stop_test_run	static_tests/src/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:TestResult
-strclass	static_tests/src/marks/case.py	/^from .util import strclass, safe_repr, coloured_text$/;"	i
-strclass	static_tests/src/marks/suite.py	/^from .util import strclass$/;"	i
-strclass	static_tests/src/marks/util.py	/^def strclass(cls):$/;"	f
-string	make_deck.py	/^import string$/;"	i
+setup_environment	_tests/lib/marks/runner.py	/^    def setup_environment(self):$/;"	m	class:BasicTestRunner
+signal_process	_tests/lib/marks/case.py	/^    def signal_process(self, pid, sig, explain_process=None):$/;"	m	class:TestCase
+start_test	_tests/lib/marks/result.py	/^    def start_test(self, test):$/;"	m	class:ExplainTestResult
+start_test	_tests/lib/marks/result.py	/^    def start_test(self, test):$/;"	m	class:PrintedTestResult
+start_test	_tests/lib/marks/result.py	/^    def start_test(self, test):$/;"	m	class:TestResult
+start_test	_tests/lib/marks/result.py	/^    def start_test(self, test):$/;"	m	class:UpdateTestResult
+start_test_run	_tests/lib/marks/result.py	/^    def start_test_run(self):$/;"	m	class:ExplainTestResult
+start_test_run	_tests/lib/marks/result.py	/^    def start_test_run(self):$/;"	m	class:PrintedTestResult
+start_test_run	_tests/lib/marks/result.py	/^    def start_test_run(self):$/;"	m	class:TestResult
+start_test_run	_tests/lib/marks/result.py	/^    def start_test_run(self):$/;"	m	class:UpdateTestResult
+stop_test	_tests/lib/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:ExplainTestResult
+stop_test	_tests/lib/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:PrintedTestResult
+stop_test	_tests/lib/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:TestResult
+stop_test	_tests/lib/marks/result.py	/^    def stop_test(self, test):$/;"	m	class:UpdateTestResult
+stop_test_run	_tests/lib/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:ExplainTestResult
+stop_test_run	_tests/lib/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:MarkingTestResult
+stop_test_run	_tests/lib/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:PrintedTestResult
+stop_test_run	_tests/lib/marks/result.py	/^    def stop_test_run(self):$/;"	m	class:TestResult
+strclass	_tests/lib/marks/util.py	/^def strclass(cls):$/;"	f
 suit	deck.h	/^    char suit;$/;"	m	struct:Card
-suite	static_tests/src/marks/loader.py	/^from . import case, suite$/;"	i
-suite_class	static_tests/src/marks/loader.py	/^    suite_class = suite.TestSuite$/;"	v	class:TestLoader
-sys	grum.py	/^import sys$/;"	i
-sys	make_deck.py	/^import sys$/;"	i
-sys	static_tests/src/marks/case.py	/^import contextlib, sys, os, inspect, difflib, time$/;"	i
-sys	static_tests/src/marks/main.py	/^import argparse, os, sys$/;"	i
-sys	static_tests/src/marks/result.py	/^import sys$/;"	i
-sys	static_tests/src/marks/suite.py	/^import sys$/;"	i
-sys	static_tests/tests/grum.py	/^import sys$/;"	i
-sys	tests/grum.py	/^import sys$/;"	i
-tear_down	static_tests/src/marks/case.py	/^    def tear_down(self):$/;"	m	class:TestCase
-tear_down_class	static_tests/src/marks/case.py	/^    def tear_down_class(cls):$/;"	m	class:TestCase
-tear_down_environment	static_tests/src/marks/runner.py	/^    def tear_down_environment(self):$/;"	m	class:BasicTestRunner
-tempfile	static_tests/src/marks/runner.py	/^import os, errno, tempfile, shutil$/;"	i
-test_1auto1	grum.py	/^  def test_1auto1(self):$/;"	m	class:Assignment1
-test_1auto1	static_tests/tests/grum.py	/^  def test_1auto1(self):$/;"	m	class:Assignment1
+suite_class	_tests/lib/marks/loader.py	/^    suite_class = suite.TestSuite$/;"	v	class:TestLoader
+tear_down	_tests/lib/marks/case.py	/^    def tear_down(self):$/;"	m	class:TestCase
+tear_down_class	_tests/lib/marks/case.py	/^    def tear_down_class(cls):$/;"	m	class:TestCase
+tear_down_environment	_tests/lib/marks/runner.py	/^    def tear_down_environment(self):$/;"	m	class:BasicTestRunner
+test_1auto1	_tests/grum.py	/^  def test_1auto1(self):$/;"	m	class:Assignment1
+test_1auto1	_tests/tests/grum.py	/^  def test_1auto1(self):$/;"	m	class:Assignment1
 test_1auto1	tests/grum.py	/^  def test_1auto1(self):$/;"	m	class:Assignment1
-test_1auto2	grum.py	/^  def test_1auto2(self):$/;"	m	class:Assignment1
-test_1auto2	static_tests/tests/grum.py	/^  def test_1auto2(self):$/;"	m	class:Assignment1
+test_1auto2	_tests/grum.py	/^  def test_1auto2(self):$/;"	m	class:Assignment1
+test_1auto2	_tests/tests/grum.py	/^  def test_1auto2(self):$/;"	m	class:Assignment1
 test_1auto2	tests/grum.py	/^  def test_1auto2(self):$/;"	m	class:Assignment1
-test_1hum2	grum.py	/^  def test_1hum2(self):$/;"	m	class:Assignment1
-test_1hum2	static_tests/tests/grum.py	/^  def test_1hum2(self):$/;"	m	class:Assignment1
+test_1hum2	_tests/grum.py	/^  def test_1hum2(self):$/;"	m	class:Assignment1
+test_1hum2	_tests/tests/grum.py	/^  def test_1hum2(self):$/;"	m	class:Assignment1
 test_1hum2	tests/grum.py	/^  def test_1hum2(self):$/;"	m	class:Assignment1
-test_2auto1	grum.py	/^  def test_2auto1(self):$/;"	m	class:Assignment1
-test_2auto1	static_tests/tests/grum.py	/^  def test_2auto1(self):$/;"	m	class:Assignment1
+test_2auto1	_tests/grum.py	/^  def test_2auto1(self):$/;"	m	class:Assignment1
+test_2auto1	_tests/tests/grum.py	/^  def test_2auto1(self):$/;"	m	class:Assignment1
 test_2auto1	tests/grum.py	/^  def test_2auto1(self):$/;"	m	class:Assignment1
-test_2hum2	grum.py	/^  def test_2hum2(self):$/;"	m	class:Assignment1
-test_2hum2	static_tests/tests/grum.py	/^  def test_2hum2(self):$/;"	m	class:Assignment1
+test_2hum2	_tests/grum.py	/^  def test_2hum2(self):$/;"	m	class:Assignment1
+test_2hum2	_tests/tests/grum.py	/^  def test_2hum2(self):$/;"	m	class:Assignment1
 test_2hum2	tests/grum.py	/^  def test_2hum2(self):$/;"	m	class:Assignment1
-test_any1	grum.py	/^  def test_any1(self):$/;"	m	class:Assignment1
-test_any1	static_tests/tests/grum.py	/^  def test_any1(self):$/;"	m	class:Assignment1
+test_any1	_tests/grum.py	/^  def test_any1(self):$/;"	m	class:Assignment1
+test_any1	_tests/tests/grum.py	/^  def test_any1(self):$/;"	m	class:Assignment1
 test_any1	tests/grum.py	/^  def test_any1(self):$/;"	m	class:Assignment1
-test_any2	grum.py	/^  def test_any2(self):$/;"	m	class:Assignment1
-test_any2	static_tests/tests/grum.py	/^  def test_any2(self):$/;"	m	class:Assignment1
+test_any2	_tests/grum.py	/^  def test_any2(self):$/;"	m	class:Assignment1
+test_any2	_tests/tests/grum.py	/^  def test_any2(self):$/;"	m	class:Assignment1
 test_any2	tests/grum.py	/^  def test_any2(self):$/;"	m	class:Assignment1
-test_bad_deck1	grum.py	/^  def test_bad_deck1(self):$/;"	m	class:Assignment1
-test_bad_deck1	static_tests/tests/grum.py	/^  def test_bad_deck1(self):$/;"	m	class:Assignment1
+test_bad_deck1	_tests/grum.py	/^  def test_bad_deck1(self):$/;"	m	class:Assignment1
+test_bad_deck1	_tests/tests/grum.py	/^  def test_bad_deck1(self):$/;"	m	class:Assignment1
 test_bad_deck1	tests/grum.py	/^  def test_bad_deck1(self):$/;"	m	class:Assignment1
-test_bad_deck2	grum.py	/^  def test_bad_deck2(self):$/;"	m	class:Assignment1
-test_bad_deck2	static_tests/tests/grum.py	/^  def test_bad_deck2(self):$/;"	m	class:Assignment1
+test_bad_deck2	_tests/grum.py	/^  def test_bad_deck2(self):$/;"	m	class:Assignment1
+test_bad_deck2	_tests/tests/grum.py	/^  def test_bad_deck2(self):$/;"	m	class:Assignment1
 test_bad_deck2	tests/grum.py	/^  def test_bad_deck2(self):$/;"	m	class:Assignment1
-test_bad_sf1	grum.py	/^  def test_bad_sf1(self):$/;"	m	class:Assignment1
-test_bad_sf1	static_tests/tests/grum.py	/^  def test_bad_sf1(self):$/;"	m	class:Assignment1
+test_bad_sf1	_tests/grum.py	/^  def test_bad_sf1(self):$/;"	m	class:Assignment1
+test_bad_sf1	_tests/tests/grum.py	/^  def test_bad_sf1(self):$/;"	m	class:Assignment1
 test_bad_sf1	tests/grum.py	/^  def test_bad_sf1(self):$/;"	m	class:Assignment1
-test_bad_sf2	grum.py	/^  def test_bad_sf2(self):$/;"	m	class:Assignment1
-test_bad_sf2	static_tests/tests/grum.py	/^  def test_bad_sf2(self):$/;"	m	class:Assignment1
+test_bad_sf2	_tests/grum.py	/^  def test_bad_sf2(self):$/;"	m	class:Assignment1
+test_bad_sf2	_tests/tests/grum.py	/^  def test_bad_sf2(self):$/;"	m	class:Assignment1
 test_bad_sf2	tests/grum.py	/^  def test_bad_sf2(self):$/;"	m	class:Assignment1
-test_bad_type1	grum.py	/^  def test_bad_type1(self):$/;"	m	class:Assignment1
-test_bad_type1	static_tests/tests/grum.py	/^  def test_bad_type1(self):$/;"	m	class:Assignment1
+test_bad_type1	_tests/grum.py	/^  def test_bad_type1(self):$/;"	m	class:Assignment1
+test_bad_type1	_tests/tests/grum.py	/^  def test_bad_type1(self):$/;"	m	class:Assignment1
 test_bad_type1	tests/grum.py	/^  def test_bad_type1(self):$/;"	m	class:Assignment1
-test_bad_type2	grum.py	/^  def test_bad_type2(self):$/;"	m	class:Assignment1
-test_bad_type2	static_tests/tests/grum.py	/^  def test_bad_type2(self):$/;"	m	class:Assignment1
+test_bad_type2	_tests/grum.py	/^  def test_bad_type2(self):$/;"	m	class:Assignment1
+test_bad_type2	_tests/tests/grum.py	/^  def test_bad_type2(self):$/;"	m	class:Assignment1
 test_bad_type2	tests/grum.py	/^  def test_bad_type2(self):$/;"	m	class:Assignment1
-test_classes	static_tests/src/marks/result.py	/^    def test_classes(self):$/;"	m	class:TestResult
-test_executer	static_tests/src/marks/case.py	/^    def test_executer(self, test_case, is_test=False):$/;"	m	class:_TestWrapper
-test_hs1	grum.py	/^  def test_hs1(self):$/;"	m	class:Assignment1
-test_hs1	static_tests/tests/grum.py	/^  def test_hs1(self):$/;"	m	class:Assignment1
+test_classes	_tests/lib/marks/result.py	/^    def test_classes(self):$/;"	m	class:TestResult
+test_executer	_tests/lib/marks/case.py	/^    def test_executer(self, test_case, is_test=False):$/;"	m	class:_TestWrapper
+test_hs1	_tests/grum.py	/^  def test_hs1(self):$/;"	m	class:Assignment1
+test_hs1	_tests/tests/grum.py	/^  def test_hs1(self):$/;"	m	class:Assignment1
 test_hs1	tests/grum.py	/^  def test_hs1(self):$/;"	m	class:Assignment1
-test_hs2	grum.py	/^  def test_hs2(self):$/;"	m	class:Assignment1
-test_hs2	static_tests/tests/grum.py	/^  def test_hs2(self):$/;"	m	class:Assignment1
+test_hs2	_tests/grum.py	/^  def test_hs2(self):$/;"	m	class:Assignment1
+test_hs2	_tests/tests/grum.py	/^  def test_hs2(self):$/;"	m	class:Assignment1
 test_hs2	tests/grum.py	/^  def test_hs2(self):$/;"	m	class:Assignment1
-test_huma2	grum.py	/^  def test_huma2(self):$/;"	m	class:Assignment1
-test_huma2	static_tests/tests/grum.py	/^  def test_huma2(self):$/;"	m	class:Assignment1
+test_huma2	_tests/grum.py	/^  def test_huma2(self):$/;"	m	class:Assignment1
+test_huma2	_tests/tests/grum.py	/^  def test_huma2(self):$/;"	m	class:Assignment1
 test_huma2	tests/grum.py	/^  def test_huma2(self):$/;"	m	class:Assignment1
-test_humgames1	grum.py	/^  def test_humgames1(self):$/;"	m	class:Assignment1
-test_humgames1	static_tests/tests/grum.py	/^  def test_humgames1(self):$/;"	m	class:Assignment1
+test_humgames1	_tests/grum.py	/^  def test_humgames1(self):$/;"	m	class:Assignment1
+test_humgames1	_tests/tests/grum.py	/^  def test_humgames1(self):$/;"	m	class:Assignment1
 test_humgames1	tests/grum.py	/^  def test_humgames1(self):$/;"	m	class:Assignment1
-test_humgames2	grum.py	/^  def test_humgames2(self):$/;"	m	class:Assignment1
-test_humgames2	static_tests/tests/grum.py	/^  def test_humgames2(self):$/;"	m	class:Assignment1
+test_humgames2	_tests/grum.py	/^  def test_humgames2(self):$/;"	m	class:Assignment1
+test_humgames2	_tests/tests/grum.py	/^  def test_humgames2(self):$/;"	m	class:Assignment1
 test_humgames2	tests/grum.py	/^  def test_humgames2(self):$/;"	m	class:Assignment1
-test_init1	grum.py	/^  def test_init1(self):$/;"	m	class:Assignment1
-test_init1	static_tests/tests/grum.py	/^  def test_init1(self):$/;"	m	class:Assignment1
+test_init1	_tests/grum.py	/^  def test_init1(self):$/;"	m	class:Assignment1
+test_init1	_tests/tests/grum.py	/^  def test_init1(self):$/;"	m	class:Assignment1
 test_init1	tests/grum.py	/^  def test_init1(self):$/;"	m	class:Assignment1
-test_init2	grum.py	/^  def test_init2(self):$/;"	m	class:Assignment1
-test_init2	static_tests/tests/grum.py	/^  def test_init2(self):$/;"	m	class:Assignment1
+test_init2	_tests/grum.py	/^  def test_init2(self):$/;"	m	class:Assignment1
+test_init2	_tests/tests/grum.py	/^  def test_init2(self):$/;"	m	class:Assignment1
 test_init2	tests/grum.py	/^  def test_init2(self):$/;"	m	class:Assignment1
-test_loaddisplay1	grum.py	/^  def test_loaddisplay1(self):$/;"	m	class:Assignment1
-test_loaddisplay1	static_tests/tests/grum.py	/^  def test_loaddisplay1(self):$/;"	m	class:Assignment1
+test_loaddisplay1	_tests/grum.py	/^  def test_loaddisplay1(self):$/;"	m	class:Assignment1
+test_loaddisplay1	_tests/tests/grum.py	/^  def test_loaddisplay1(self):$/;"	m	class:Assignment1
 test_loaddisplay1	tests/grum.py	/^  def test_loaddisplay1(self):$/;"	m	class:Assignment1
-test_loadfirst1	grum.py	/^  def test_loadfirst1(self):$/;"	m	class:Assignment1
-test_loadfirst1	static_tests/tests/grum.py	/^  def test_loadfirst1(self):$/;"	m	class:Assignment1
+test_loadfirst1	_tests/grum.py	/^  def test_loadfirst1(self):$/;"	m	class:Assignment1
+test_loadfirst1	_tests/tests/grum.py	/^  def test_loadfirst1(self):$/;"	m	class:Assignment1
 test_loadfirst1	tests/grum.py	/^  def test_loadfirst1(self):$/;"	m	class:Assignment1
-test_method	static_tests/src/marks/case.py	/^    def test_method(self):$/;"	m	class:TestCase
-test_method_prefix	static_tests/src/marks/loader.py	/^    test_method_prefix = 'test'$/;"	v	class:TestLoader
-test_modules	static_tests/src/marks/result.py	/^    def test_modules(self):$/;"	m	class:TestResult
-test_savefile_empty_deck	static_tests/tests/grum.py	/^  def test_savefile_empty_deck(self):$/;"	m	class:Assignment1
-test_usage1	grum.py	/^  def test_usage1(self):$/;"	m	class:Assignment1
-test_usage1	static_tests/tests/grum.py	/^  def test_usage1(self):$/;"	m	class:Assignment1
+test_method	_tests/lib/marks/case.py	/^    def test_method(self):$/;"	m	class:TestCase
+test_method_prefix	_tests/lib/marks/loader.py	/^    test_method_prefix = 'test'$/;"	v	class:TestLoader
+test_modules	_tests/lib/marks/result.py	/^    def test_modules(self):$/;"	m	class:TestResult
+test_usage1	_tests/grum.py	/^  def test_usage1(self):$/;"	m	class:Assignment1
+test_usage1	_tests/tests/grum.py	/^  def test_usage1(self):$/;"	m	class:Assignment1
 test_usage1	tests/grum.py	/^  def test_usage1(self):$/;"	m	class:Assignment1
-test_usage2	grum.py	/^  def test_usage2(self):$/;"	m	class:Assignment1
-test_usage2	static_tests/tests/grum.py	/^  def test_usage2(self):$/;"	m	class:Assignment1
+test_usage2	_tests/grum.py	/^  def test_usage2(self):$/;"	m	class:Assignment1
+test_usage2	_tests/tests/grum.py	/^  def test_usage2(self):$/;"	m	class:Assignment1
 test_usage2	tests/grum.py	/^  def test_usage2(self):$/;"	m	class:Assignment1
-time	static_tests/src/marks/case.py	/^import contextlib, sys, os, inspect, difflib, time$/;"	i
-timeout	grum.py	/^  timeout = 12 $/;"	v	class:Assignment1
-timeout	static_tests/src/marks/case.py	/^    timeout = None$/;"	v	class:TestCase
-timeout	static_tests/tests/grum.py	/^  timeout = 12 $/;"	v	class:Assignment1
+timeout	_tests/grum.py	/^  timeout = 12 $/;"	v	class:Assignment1
+timeout	_tests/lib/marks/case.py	/^    timeout = None$/;"	v	class:TestCase
+timeout	_tests/tests/grum.py	/^  timeout = 12 $/;"	v	class:Assignment1
 timeout	tests/grum.py	/^  timeout = 12 $/;"	v	class:Assignment1
 to_card	deck.c	/^Card to_card(char* str) {$/;"	f
 tokenise	util.c	/^int tokenise(char* line, int** indexes) { \/\/ TODO: specify fixed numTokens$/;"	f
-traceback	static_tests/src/marks/marking.py	/^import os, traceback, copy, multiprocessing as mp$/;"	i
-types	static_tests/src/marks/loader.py	/^import types$/;"	i
-update_details	static_tests/src/marks/result.py	/^    def update_details(self, details):$/;"	m	class:TestResult
-util	static_tests/src/marks/result.py	/^from . import util$/;"	i
+update_details	_tests/lib/marks/result.py	/^    def update_details(self, details):$/;"	m	class:TestResult
 width	board.h	/^    int width;$/;"	m	struct:BoardState
