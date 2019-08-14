@@ -19,7 +19,7 @@ cd "$tmp"
 
 # deletes the macro from places where its used, leaving a ("asdf%s", ...)
 # expression which is valid.
-sed -r -i 's|^(\s+)DEBUG(_PRINTF?)|\1|g' *.c
+sed -r -i 's|^(\s+)DEBUG(_PRINTF?)|\1NOOP\2|g' *.c
 
 style_output="$(style.sh)"
 

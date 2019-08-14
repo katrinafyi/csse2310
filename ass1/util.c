@@ -91,3 +91,12 @@ int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
     return numTokens;
 }
 
+// see header
+void noop_print(char* str) {
+    ;
+}
+
+// see header
+void noop_printf(char* fmt, ...) {
+    ;
+}

@@ -22,8 +22,10 @@
 #define DEBUG_PRINTF(fmt, ...) do {} while (0)
 #endif
 
-#define NOOP_PRINT(...) do {} while (0)
-#define NOOP_PRINTF(...) do {} while (0)
+// these are blank so when expanded, the DEBUG_PRINTF(...) reduces to (...)
+// which will evaluate (...) and discard the result.
+#define NOOP_PRINT
+#define NOOP_PRINTF
 
 /* Parses the str into a non-negative integer, with the following
  * requirements:
@@ -54,6 +56,12 @@ bool safe_read_line(FILE* file, char** output);
  * treated as an individual \0 terminated string.
  */
 int tokenise(char* line, int** indexes);
+
+/* Stubs to placate the style checker. */
+void noop_print(char* str);
+
+/* Stubs to placate the style checker. */
+void noop_printf(char* fmt, ...);
 
 #endif
 
