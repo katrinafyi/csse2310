@@ -49,7 +49,7 @@ int exec_main(int argc, char** argv, GameState* gameState,
             return EXIT_INCORRECT_ARG_TYPES;
         }
         // gameState->deckFile expects a free'able pointer to destroy.
-        char* deckFileStr = malloc(sizeof(char) * strlen(argv[1]));
+        char* deckFileStr = malloc(sizeof(char) * (strlen(argv[1]) + 1));
         strcpy(deckFileStr, argv[1]);
         gameState->deckFile = deckFileStr;
         init_board(gameState->boardState, w, h);
