@@ -83,8 +83,13 @@ bool is_board_empty(BoardState* boardState);
  */
 bool is_size_valid(int width, int height);
 
-/* Returns x (mod d). */
+/* Returns x (mod d).
+ *
+ * WARNING: lazy implementation. for negatives, only valid up to -d.
+ * This is fine for the uses here because we only use it to wrap around.
+ */
 int mod(int x, int d);
+
 
 #endif
 

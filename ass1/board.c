@@ -54,6 +54,18 @@ void destroy_board(BoardState* boardState) {
     boardState->printBuffer = NULL;
 }
 
+// WARNING: lazy implementation. for negatives, only valid up to -d.
+// This is fine for the uses here because we only use it to wrap around.
+/* Returns x (mod d) */
+int mod(int x, int d) {
+    if (x < 0) {
+        return x + d;
+    } else {
+        return x % d;
+    }
+}
+
+
 /* Returns true if there exists a card at the row/col. */
 bool has_card_at(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
@@ -78,16 +90,6 @@ void count_cards(BoardState* boardState) {
 Card* get_board_cell(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
     return boardState->board + row * boardState->width + col; // get_board_cell
-}
-
-// WARNING: lazy implementation. for negatives, only valid up to -d.
-// This is fine for the uses here because we only use it to wrap around.
-int mod(int x, int d) {
-    if (x < 0) {
-        return x + d;
-    } else {
-        return x % d;
-    }
 }
 
 /* Returns true if there exists a card adjacent to the given row/col. */
