@@ -16,8 +16,6 @@ void init_game_state(GameState* gameState) {
     gameState->currPlayer = 0;
     gameState->numDrawn = 0;
     // nested structs are initialised externally.
-    gameState->boardState = NULL;
-    gameState->deck = NULL;
     gameState->deckFile = NULL;
     for (int i = 0; i < NUM_HAND * NUM_PLAYERS; i++) {
         gameState->playerHands[i] = NULL_CARD;
@@ -37,9 +35,6 @@ GameState new_game(void) {
 
 // see header
 void destroy_game(GameState* gameState) {
-    if (gameState == NULL) {
-        return;
-    }
     destroy_board(gameState->boardState);
     destroy_deck(gameState->deck);
 

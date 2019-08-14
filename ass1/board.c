@@ -44,9 +44,6 @@ BoardState new_board(void) {
 
 // see header
 void destroy_board(BoardState* boardState) {
-    if (boardState == NULL) {
-        return;
-    }
     free(boardState->board);
     free(boardState->printBuffer);
 

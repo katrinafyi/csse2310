@@ -33,8 +33,6 @@ int exec_main(int argc, char** argv, GameState* gameState,
         playerTypes[i] = *typeArg; // grab first and only char of arg.
     }
     init_game_state(gameState); // initialises gameState struct
-    gameState->deck = deck;
-    gameState->boardState = boardState;
     if (!isNewGame) { // loading save file.
         if (!load_game_file(gameState, argv[1])) {
             return EXIT_SAVE_ERROR;
@@ -71,6 +69,9 @@ int main(int argc, char** argv) {
     GameState gameState = new_game();
     BoardState boardState = new_board();
     Deck deck = new_deck();
+    gameState.deck = &deck;
+    gameState.boardState = &boardState;
+
     int ret = exec_main(argc, argv, &gameState, &boardState, &deck);
     char* error = "";
     switch (ret) {

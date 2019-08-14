@@ -16,9 +16,6 @@ Deck new_deck(void) {
 
 // see header
 void destroy_deck(Deck* deck) {
-    if (deck == NULL) {
-        return;
-    }
     free(deck->cards);
     deck->cards = NULL;
 }
