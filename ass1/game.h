@@ -14,6 +14,8 @@
 
 /* Struct for all of the game state. Completely describes a game's current
  * state.
+ *
+ * Note: deckFile must be set to a malloc'd string.
  */
 typedef struct GameState {
     int currPlayer;
@@ -70,6 +72,16 @@ bool load_game_file(GameState* gameState, char* saveFile);
  * boardState) are set to NULL.
  */
 void init_game_state(GameState* gameState);
+
+/* Returns a new game state struct with values safely initialised.
+ */
+GameState new_game(void);
+
+/* Clears all allocated memory from game state and calls destroy on deck
+ * and board as well. gameState and its sub-structs should absolutely not be
+ * used afterwards.
+ */
+void destroy_game(GameState* gameState);
 
 /* Saves the game state to the given file, overwriting it if it exists.
  * Returns false on any errors saving the file.

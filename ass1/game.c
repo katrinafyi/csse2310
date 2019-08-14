@@ -24,6 +24,32 @@ void init_game_state(GameState* gameState) {
     }
 }
 
+// see header
+GameState new_game(void) {
+    // see, i wrote init_game_state a long time (a week) ago and now realised
+    // my function names are wildly inconsistent and state leaked everywhere.
+    // so, i added the new_* and destroy_* series of functions but this still
+    // needs to be compatible with the old uses of init_game_state.
+    GameState gs;
+    init_game_state(&gs);
+    return gs;
+}
+
+// see header
+void destroy_game(GameState* gameState) {
+    if (gameState == NULL) {
+        return;
+    }
+    destroy_board(gameState->boardState);
+    destroy_deck(gameState->deck);
+
+    free(gameState->deckFile);
+
+    gameState->boardState = NULL;
+    gameState->deck = NULL;
+    gameState->deckFile = NULL;
+}
+
 /* Parses the top line of the file which contains w, h, n, v.
  * w, h = width, height. n = num cards drawn. v = player number.
  *
@@ -36,20 +62,20 @@ void init_game_state(GameState* gameState) {
 bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     char* topLine;
     if (!safe_read_line(file, &topLine)) {
-        DEBUG_PRINT("error top line of savefile");
+        noop_print("error top line of savefile");
         return false;
     }
     int topLineNums[4];
     int* indexes;
     int numTokens = tokenise(topLine, &indexes);
     if (numTokens != 4) {
-        DEBUG_PRINT("not exactly 4 ints");
+        noop_print("not exactly 4 ints");
         return false;
     }
     for (int i = 0; i < numTokens; i++) {
         int parsed = parse_int(topLine + indexes[i]);
         if (parsed < 0) {
-            DEBUG_PRINT("invalid integer on top line");
+            noop_print("invalid integer on top line");
             free(topLine);
             return false;
         }
@@ -114,7 +140,7 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
         // the current player is expected to have 1 more than others.
         int expectedCards = NUM_HAND - (playerIndex == currPlayer ? 0 : 1);
         if (!parse_card_row(file, hand, expectedCards, false)) {
-            DEBUG_PRINT("invalid player hand");
+            noop_print("invalid player hand");
             return false;
         }
     }
@@ -125,7 +151,7 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
 bool load_game_file(GameState* gameState, char* saveFile) {
     FILE* file = fopen(saveFile, "r");
     if (file == NULL) {
-        DEBUG_PRINT("error opening savefile");
+        noop_print("error opening savefile");
         return false;
     }
     // width, height, num drawn and curr player as they appear in the file.
@@ -134,12 +160,12 @@ bool load_game_file(GameState* gameState, char* saveFile) {
         return false;
     }
     if (!is_size_valid(w, h) || n < 0 || v <= 0 || v > NUM_PLAYERS) {
-        DEBUG_PRINT("integer out of range");
+        noop_print("integer out of range");
         return false;
     }
     gameState->numDrawn = n;
     gameState->currPlayer = v - 1; // shift to 0-indexed
-    DEBUG_PRINT("top line parsed");
+    noop_print("top line parsed");
     if (!safe_read_line(file, &(gameState->deckFile))) { // read deckfile path
         return false;
     }
@@ -147,22 +173,22 @@ bool load_game_file(GameState* gameState, char* saveFile) {
     if (!parse_all_hands(file, gameState)) {
         return false;
     }
-    DEBUG_PRINT("reading board");
+    noop_print("reading board");
     BoardState* bs = gameState->boardState;
     init_board(bs, w, h);
     for (int row = 0; row < h; row++) {
-        DEBUG_PRINTF("row parsing, row %d\n", row);
+        noop_printf("row parsing, row %d\n", row);
         if (!parse_card_row(file, get_board_cell(bs, row, 0), w, true)) {
-            DEBUG_PRINT("invalid board row");
+            noop_print("invalid board row");
             return false;
         }
     }
     count_cards(bs); // updates count of cards on board.
     if (fgetc(file) != EOF) {
-        DEBUG_PRINT("extra junk at eof");
+        noop_print("extra junk at eof");
         return false;
     }
-    DEBUG_PRINT("game file load successful");
+    noop_print("game file load successful");
     fclose(file);
     return true;
 }
@@ -203,7 +229,7 @@ bool deal_cards(GameState* gameState) {
 
     // draw cards for each players sequentially, not alternating players
     for (int p = 0; p < NUM_PLAYERS; p++) {
-        DEBUG_PRINT("distributing cards");
+        noop_print("distributing cards");
         Card* hand = get_hand(gameState, p);
         // draws NUM_HAND - 1 actual cards because no player is 'playing' yet
         for (int i = 0; i < NUM_HAND - 1; i++) {
@@ -221,9 +247,9 @@ bool deal_cards(GameState* gameState) {
 // see header.
 Card draw_card(GameState* gameState) {
     int n = gameState->numDrawn;
-    DEBUG_PRINTF("drawing the %d-th card\n", n);
+    noop_printf("drawing the %d-th card\n", n);
     if (n >= gameState->deck->numCards) {
-        DEBUG_PRINT("but there are no more cards");
+        noop_print("but there are no more cards");
         return NULL_CARD;
     }
     gameState->numDrawn++;
@@ -234,7 +260,7 @@ Card draw_card(GameState* gameState) {
 bool save_game_file(GameState* gameState, char* saveFile) {
     GameState* gs = gameState;
     BoardState* bs = gs->boardState;
-    DEBUG_PRINTF("attempting to save to |%s|\n", saveFile);
+    noop_printf("attempting to save to |%s|\n", saveFile);
     FILE* file = fopen(saveFile, "w");
     if (file == NULL) {
         return false;
@@ -252,7 +278,7 @@ bool save_game_file(GameState* gameState, char* saveFile) {
     if (!fprint_board(bs, file, BLANK_CHAR_SAVED)) {
         return false;
     }
-    DEBUG_PRINT("closing file");
+    noop_print("closing file");
     fclose(file);
     return true;
 }
@@ -280,7 +306,7 @@ bool prompt_move(GameState* gameState) {
         printf("Move? ");
         fflush(stdout);
         if (!safe_read_line(stdin, &input)) {
-            DEBUG_PRINT("error reading human input");
+            noop_print("error reading human input");
             free(input);
             return false;
         }
@@ -294,7 +320,7 @@ bool prompt_move(GameState* gameState) {
         int* indexes = NULL;
         int numTokens = tokenise(input, &indexes);
         if (numTokens != 3) {
-            DEBUG_PRINT("invalid number of tokens");
+            noop_print("invalid number of tokens");
             free(indexes);
             continue;
         }
@@ -306,13 +332,13 @@ bool prompt_move(GameState* gameState) {
         input = NULL;
         if (cardNum < 0 || cardNum >= NUM_HAND ||
                 !is_on_board(gameState->boardState, row, col)) {
-            DEBUG_PRINT("card or row/col number outside of range");
+            noop_print("card or row/col number outside of range");
             continue;
         }
         Card card = get_player_hand(gameState)[cardNum];
         assert(!is_null_card(card)); // player should always have 6 cards.
         if (!place_card(gameState->boardState, row, col, card)) {
-            DEBUG_PRINT("cannot put card here");
+            noop_print("cannot put card here");
             continue;
         }
         remove_card_from_hand(gameState, cardNum);
@@ -336,7 +362,7 @@ void play_auto_turn(GameState* gameState) {
     BoardState* bs = gameState->boardState;
     int w = bs->width;
     int h = bs->height;
-    DEBUG_PRINT("playing auto turn");
+    noop_print("playing auto turn");
     Card card = get_player_hand(gs)[0]; // get first card
     if (is_board_empty(bs)) {
         int r = (h + 1) / 2 - 1;
@@ -393,7 +419,7 @@ void print_points(GameState* gameState) {
 
 // see header.
 int exec_game_loop(GameState* gameState, char* playerTypes) {
-    DEBUG_PRINTF("starting game loop with player types %c %c\n",
+    noop_printf("starting game loop with player types %c %c\n",
             playerTypes[0], playerTypes[1]);
     GameState* gs = gameState;
     while (1) {
@@ -427,7 +453,7 @@ int exec_game_loop(GameState* gameState, char* playerTypes) {
         }
         gs->currPlayer = (gs->currPlayer + 1) % NUM_PLAYERS;
     }
-    DEBUG_PRINT("game ended, computing points");
+    noop_print("game ended, computing points");
     print_points(gs);
     return EXIT_SUCCESS;
 }

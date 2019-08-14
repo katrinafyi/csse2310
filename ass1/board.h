@@ -27,6 +27,14 @@ typedef struct BoardState {
  */
 void init_board(BoardState* boardState, int width, int height);
 
+/* Returns a new board state with values initialised to NULLs.
+ */
+BoardState new_board(void);
+
+/* Frees all allocated memory from the given board struct.
+ */
+void destroy_board(BoardState* boardState);
+
 /* Recounts the number of cards currently placed on the board,
  * storing it into the numPlaced member. */
 void count_cards(BoardState* boardState);

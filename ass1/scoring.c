@@ -69,7 +69,7 @@ void longest_letter_paths(BoardState* boardState, int* letterLengths) {
                     (Position) {r, c}, 0);
             // assumes card.suit is always valid.
             int letter = card.suit - 'A';
-            DEBUG_PRINTF("%d length from (%d,%d) : %d%c\n",
+            noop_printf("%d length from (%d,%d) : %d%c\n",
                     len, r, c, card.num, card.suit);
             if (len > letterLengths[letter]) {
                 letterLengths[letter] = len;

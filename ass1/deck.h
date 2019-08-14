@@ -32,6 +32,14 @@ typedef struct Deck {
  */
 bool load_deck_file(Deck* deck, char* deckFile);
 
+/* Returns a new empty deck initialised appropriately.
+ */
+Deck new_deck(void);
+
+/* Frees memory associated with this deck.
+ */
+void destroy_deck(Deck* deck);
+
 /* Returns true if str points to a valid non-blank card.
  * str need not be null-terminated but must have at least 2 characters.
  */

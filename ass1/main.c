@@ -16,7 +16,8 @@
  * bark save a a
  * bark deck 10 10 a a
  */
-int exec_main(int argc, char** argv) {
+int exec_main(int argc, char** argv, GameState* gameState,
+            BoardState* boardState, Deck* deck) {
     if (!(argc == 2 + NUM_PLAYERS || argc == 4 + NUM_PLAYERS)) {
         return EXIT_INCORRECT_ARGS;
     }
@@ -31,17 +32,14 @@ int exec_main(int argc, char** argv) {
         }
         playerTypes[i] = *typeArg; // grab first and only char of arg.
     }
-    GameState gameState; // store structs on the stack
-    BoardState boardState;
-    Deck deck;
-    init_game_state(&gameState); // initialises gameState struct
-    gameState.deck = &deck;
-    gameState.boardState = &boardState;
+    init_game_state(gameState); // initialises gameState struct
+    gameState->deck = deck;
+    gameState->boardState = boardState;
     if (!isNewGame) { // loading save file.
-        if (!load_game_file(&gameState, argv[1])) {
+        if (!load_game_file(gameState, argv[1])) {
             return EXIT_SAVE_ERROR;
         }
-        if (is_board_full(&boardState)) {
+        if (is_board_full(boardState)) {
             return EXIT_BOARD_FULL;
         }
     } else { // else, we are starting a new game.
@@ -50,29 +48,31 @@ int exec_main(int argc, char** argv) {
         if (!is_size_valid(w, h)) {
             return EXIT_INCORRECT_ARG_TYPES;
         }
-        gameState.deckFile = argv[1];
-        init_board(gameState.boardState, w, h);
+        // gameState->deckFile expects a free'able pointer to destroy.
+        char* deckFileStr = malloc(sizeof(char) * strlen(argv[1]));
+        strcpy(deckFileStr, argv[1]);
+        gameState->deckFile = deckFileStr;
+        init_board(gameState->boardState, w, h);
     }
-    if (!load_deck_file(&deck, gameState.deckFile)) {
+    if (!load_deck_file(deck, gameState->deckFile)) {
         return EXIT_DECK_ERROR; // checks deck AFTER save, contrary to spec
     }
-    if (isNewGame && !deal_cards(&gameState)) { // draws first 10 cards
+    if (isNewGame && !deal_cards(gameState)) { // draws first 10 cards
         return EXIT_DECK_SHORT;
     }
-    int ret = exec_game_loop(&gameState, playerTypes);
-    // if new game, deckFile is on the stack and shouldn't be freed.
-    free(!isNewGame ? gameState.deckFile : NULL);
-    free(boardState.board); // obviously if we returned earlier, these leak.
-    free(boardState.printBuffer);
-    free(deck.cards);
+    int ret = exec_game_loop(gameState, playerTypes);
     return ret;
 }
 
 /* Entry point of game. This offloads the work to exec_main() and just
- * translates exit codes to their corresponding messages.
+ * translates exit codes to their corresponding messages. Also owns the state
+ * of the whole game.
  */
 int main(int argc, char** argv) {
-    int ret = exec_main(argc, argv);
+    GameState gameState = new_game();
+    BoardState boardState = new_board();
+    Deck deck = new_deck();
+    int ret = exec_main(argc, argv, &gameState, &boardState, &deck);
     char* error = "";
     switch (ret) {
         case EXIT_SUCCESS:
@@ -103,6 +103,10 @@ int main(int argc, char** argv) {
             error = "UNKNOWN EXIT CODE\n"; // obviously should never happen
     }
     fprintf(stderr, "%s", error);
-    DEBUG_PRINTF("exiting with code %d\n", ret);
+
+    noop_print("destroying game state");
+    destroy_game(&gameState);
+
+    noop_printf("exiting with code %d\n", ret);
     return ret;
 }

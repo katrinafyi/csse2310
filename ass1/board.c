@@ -30,6 +30,30 @@ void init_board(BoardState* boardState, int width, int height) {
     }
 }
 
+// see header
+BoardState new_board(void) {
+    BoardState bs;
+    bs.width = 0;
+    bs.height = 0;
+    bs.numPlaced = 0;
+
+    bs.printBuffer = NULL;
+    bs.board = NULL;
+    return bs;
+}
+
+// see header
+void destroy_board(BoardState* boardState) {
+    if (boardState == NULL) {
+        return;
+    }
+    free(boardState->board);
+    free(boardState->printBuffer);
+
+    boardState->board = NULL;
+    boardState->printBuffer = NULL;
+}
+
 /* Returns true if there exists a card at the row/col. */
 bool has_card_at(BoardState* boardState, int row, int col) {
     assert(is_on_board(boardState, row, col));
@@ -46,7 +70,7 @@ void count_cards(BoardState* boardState) {
             }
         }
     }
-    DEBUG_PRINTF("counted %d cards on board\n", count);
+    noop_printf("counted %d cards on board\n", count);
     boardState->numPlaced = count;
 }
 

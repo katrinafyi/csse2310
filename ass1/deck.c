@@ -7,20 +7,36 @@
 #include "deck.h"
 #include "util.h"
 
+Deck new_deck(void) {
+    Deck deck;
+    deck.numCards = 0;
+    deck.cards = NULL;
+    return deck;
+}
+
+// see header
+void destroy_deck(Deck* deck) {
+    if (deck == NULL) {
+        return;
+    }
+    free(deck->cards);
+    deck->cards = NULL;
+}
+
 // see header
 bool load_deck_file(Deck* deck, char* deckFile) {
     deck->numCards = 0; // just in case we iterate over an errored deck.
     deck->cards = NULL;
     FILE* file = fopen(deckFile, "r");
-    DEBUG_PRINTF("deck file loading: %s\n", deckFile);
+    noop_printf("deck file loading: %s\n", deckFile);
     char* numLine;
     if (!safe_read_line(file, &numLine)) { // this checks if file is NULL
-        DEBUG_PRINT("failed to read number line");
+        noop_print("failed to read number line");
         return false;
     }
     int numCards = parse_int(numLine);
     if (numCards < 0) {
-        DEBUG_PRINT("number of cards invalid");
+        noop_print("number of cards invalid");
         return false;
     }
     free(numLine);
@@ -39,7 +55,7 @@ bool load_deck_file(Deck* deck, char* deckFile) {
         free(line);
     }
     if (fgetc(file) != EOF) {
-        DEBUG_PRINT("junk at end of deck");
+        noop_print("junk at end of deck");
         return false;
     }
     fclose(file);
@@ -74,6 +90,7 @@ Card to_card(char* str) {
 
 // see header
 char* fmt_card_c(char* str, Card card, char blank) {
+    // poor man's sprintf
     if (is_null_card(card)) {
         str[0] = blank;
         str[1] = blank;
