@@ -25,4 +25,5 @@ grep -L 'no leaks are possible' tmp_valgrind_* | xargs less
 
 echo "Cleaning up files"
 rm Assignment*
+rm tsave*
 rm tmp_valgrind_*

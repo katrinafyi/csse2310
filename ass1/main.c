@@ -50,8 +50,7 @@ int exec_main(int argc, char** argv, GameState* gameState,
         }
         // gameState->deckFile expects a free'able pointer to destroy.
         char* deckFileStr = malloc(sizeof(char) * (strlen(argv[1]) + 1));
-        strcpy(deckFileStr, argv[1]);
-        gameState->deckFile = deckFileStr;
+        gameState->deckFile = strcpy(deckFileStr, argv[1]);
         init_board(gameState->boardState, w, h);
     }
     if (!load_deck_file(deck, gameState->deckFile)) {
