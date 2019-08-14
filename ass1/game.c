@@ -29,9 +29,9 @@ GameState new_game(void) {
     GameState gs;
     init_game_state(&gs);
 
-    gameState->boardState = NULL;
-    gameState->deck = NULL;
-    gameState->deckFile = NULL;
+    gs.boardState = NULL;
+    gs.deck = NULL;
+    gs.deckFile = NULL;
     return gs;
 }
 
