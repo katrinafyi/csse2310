@@ -22,10 +22,6 @@
 #define DEBUG_PRINTF(fmt, ...) do {} while (0)
 #endif
 
-// these are blank so when expanded, the DEBUG_PRINTF(...) reduces to (...)
-// which will evaluate (...) and discard the result.
-#define NOOP_PRINT
-#define NOOP_PRINTF
 
 /* Parses the str into a non-negative integer, with the following
  * requirements:
@@ -56,6 +52,9 @@ bool safe_read_line(FILE* file, char** output);
  * treated as an individual \0 terminated string.
  */
 int tokenise(char* line, int** indexes);
+
+// The style.sh chokes on our DEBUG_PRINT macros up top, so we replace them
+// with these noop functions when building in 'release' mode.
 
 /* Stubs to placate the style checker. */
 void noop_print(char* str);
