@@ -8,8 +8,6 @@
 #include "exitCodes.h"
 #include "scoring.h"
 
-#define ENSURE_NONNEG(x) if (x < 0) { return false; }
-
 // see header
 // style.sh flags a whitespace error here for some reason.
 void init_game_state(GameState* gameState) {
@@ -30,6 +28,10 @@ GameState new_game(void) {
     // needs to be compatible with the old uses of init_game_state.
     GameState gs;
     init_game_state(&gs);
+
+    gameState->boardState = NULL;
+    gameState->deck = NULL;
+    gameState->deckFile = NULL;
     return gs;
 }
 

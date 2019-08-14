@@ -53,7 +53,7 @@ bool safe_read_line(FILE* file, char** output) {
         }
     }
     // free up space we don't need
-    *output = realloc(*output, sizeof(char) * (position + 1));
+    // *output = realloc(*output, sizeof(char) * (position + 1));
     // if line contains nulls, strlen will be < position.
     bool isValid = errno == 0 && strlen(*output) == position;
     if (!isValid) {
