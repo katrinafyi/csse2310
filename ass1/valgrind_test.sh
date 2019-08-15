@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
-if ! which testa1.sh >/dev/null 2>&1; then
-    echo 'test script not found'
+test_sh='testa1.sh'
+
+! $test_sh > /dev/null 2>&1 && test_sh='_tests/testa1.sh'
+
+if ! $test_sh >/dev/null 2>&1; then
+    echo 'test script not found in path or ./_tests'
     exit 1
 fi
 
-tests="$(testa1.sh explain | grep ./bark)"
+tests="$($test_sh explain | grep ./bark)"
 IFS='
 '
 i=1
@@ -15,8 +19,9 @@ for cmd in $tests; do
     fi
     echo "$cmd"
     log_file="tmp_valgrind_$i"
-    echo "$cmd" > $log_file
     eval "valgrind --leak-check=full --log-file=$log_file $cmd";
+    echo >> $log_file
+    echo "$cmd" >> $log_file
     ((i++))
 done;
 

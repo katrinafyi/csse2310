@@ -17,7 +17,7 @@
  * bark deck 10 10 a a
  */
 int exec_main(int argc, char** argv, GameState* gameState,
-            BoardState* boardState, Deck* deck) {
+        BoardState* boardState, Deck* deck) {
     if (!(argc == 2 + NUM_PLAYERS || argc == 4 + NUM_PLAYERS)) {
         return EXIT_INCORRECT_ARGS;
     }
@@ -47,8 +47,8 @@ int exec_main(int argc, char** argv, GameState* gameState,
             return EXIT_INCORRECT_ARG_TYPES;
         }
         // gameState->deckFile expects a free'able pointer to destroy.
-        char* deckFileStr = malloc(sizeof(char) * (strlen(argv[1]) + 1));
-        gameState->deckFile = strcpy(deckFileStr, argv[1]);
+        char* deckArg = malloc(sizeof(char) * (strlen(argv[1]) + 1));
+        gameState->deckFile = strcpy(deckArg, argv[1]);
         init_board(gameState->boardState, w, h);
     }
     if (!load_deck_file(deck, gameState->deckFile)) {

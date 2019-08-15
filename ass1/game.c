@@ -144,13 +144,10 @@ bool parse_all_hands(FILE* file, GameState* gameState) {
     return true;
 }
 
-// see header
-bool load_game_file(GameState* gameState, char* saveFile) {
-    FILE* file = fopen(saveFile, "r");
-    if (file == NULL) {
-        noop_print("error opening savefile");
-        return false;
-    }
+/* Runs the actual loading and validation of the save file. Called by a
+ * wrapper function which manages the file.
+ */
+bool do_load_game(GameState* gameState, FILE* file) {
     // width, height, num drawn and curr player as they appear in the file.
     int w, h, n, v;
     if (!parse_top_line(file, &w, &h, &n, &v)) {
@@ -185,9 +182,21 @@ bool load_game_file(GameState* gameState, char* saveFile) {
         noop_print("extra junk at eof");
         return false;
     }
-    noop_print("game file load successful");
-    fclose(file);
     return true;
+}
+
+// see header
+bool load_game_file(GameState* gameState, char* saveFile) {
+    FILE* file = fopen(saveFile, "r");
+    if (file == NULL) {
+        noop_print("error opening savefile");
+        return false;
+    }
+    // this function calls the inner function and cleans up its memory
+    bool ret = do_load_game(gameState, file);
+    noop_printf("game file ended with bool %d, closing file\n", ret);
+    fclose(file);
+    return ret;
 }
 
 // see header

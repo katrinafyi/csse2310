@@ -7,6 +7,7 @@
 #include "deck.h"
 #include "util.h"
 
+// see header
 Deck new_deck(void) {
     Deck deck;
     deck.numCards = 0;
@@ -20,12 +21,10 @@ void destroy_deck(Deck* deck) {
     deck->cards = NULL;
 }
 
-// see header
-bool load_deck_file(Deck* deck, char* deckFile) {
-    deck->numCards = 0; // just in case we iterate over an errored deck.
-    deck->cards = NULL;
-    FILE* file = fopen(deckFile, "r");
-    noop_printf("deck file loading: %s\n", deckFile);
+/* Actually loads the deck file into the given deck. Called by wrapper
+ * function which manages memory.
+ */
+bool do_load_deck(Deck* deck, FILE* file) {
     char* numLine;
     if (!safe_read_line(file, &numLine)) { // this checks if file is NULL
         noop_print("failed to read number line");
@@ -34,6 +33,7 @@ bool load_deck_file(Deck* deck, char* deckFile) {
     int numCards = parse_int(numLine);
     if (numCards < 0) {
         noop_print("number of cards invalid");
+        free(numLine);
         return false;
     }
     free(numLine);
@@ -44,8 +44,8 @@ bool load_deck_file(Deck* deck, char* deckFile) {
         if (!safe_read_line(file, &line)) {
             return false;
         }
-        int valid = strlen(line) == 2 && is_card(line);
-        if (!valid) {
+        if (strlen(line) != 2 || !is_card(line)) {
+            free(line);
             return false;
         }
         deck->cards[i] = to_card(line); // card must be non-null
@@ -55,9 +55,24 @@ bool load_deck_file(Deck* deck, char* deckFile) {
         noop_print("junk at end of deck");
         return false;
     }
-    fclose(file);
     deck->numCards = numCards; // only set if we succeeded
     return true;
+}
+
+// see header
+bool load_deck_file(Deck* deck, char* deckFile) {
+    deck->numCards = 0; // just in case we iterate over an errored deck.
+    deck->cards = NULL;
+
+    noop_printf("deck file loading: %s\n", deckFile);
+    FILE* file = fopen(deckFile, "r");
+    if (file == NULL) {
+        return false;
+    }
+
+    bool ret = do_load_deck(deck, file);
+    fclose(file);
+    return ret;
 }
 
 // see header

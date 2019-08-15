@@ -39,7 +39,7 @@ int parse_int(char* str);
  * Returns false if any of the above conditions fail, true on success.
  *
  * MALLOCs enough space for the line. Stores the allocated pointer into
- * *output.
+ * *output. Space is only allocated if the return value is true.
  */
 bool safe_read_line(FILE* file, char** output);
 
