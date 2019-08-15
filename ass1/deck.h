@@ -13,7 +13,9 @@
  * 'A' <= suit <= 'Z'
  */
 typedef struct Card {
+    // rank of the card
     int num;
+    // suit of the card
     char suit;
 } Card;
 

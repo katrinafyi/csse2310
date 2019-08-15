@@ -18,12 +18,17 @@
  * Note: deckFile must be set to a malloc'd string.
  */
 typedef struct GameState {
+    // 0-based index of the current player
     int currPlayer;
+    // number of cards already drawn from the deck
     int numDrawn;
+    // array for player hands
     Card playerHands[NUM_PLAYERS * NUM_HAND];
+    // path of the used deck file. should be a malloc'd string
     char* deckFile;
+    // pointer to the deck
     Deck* deck;
-
+    // pointer to the board
     BoardState* boardState;
 } GameState;
 

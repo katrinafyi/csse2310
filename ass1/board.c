@@ -125,7 +125,9 @@ void print_board(BoardState* boardState) {
 
 // see header
 bool fprint_board(BoardState* boardState, FILE* file, char blank) {
-    // this is a hot codepath which is why everything is done at a low level
+    // this is a hot codepath which is why everything is done at a low level.
+    // could be optimised by only updating the cards which change in
+    // place_card.
     int w = boardState->width;
     int h = boardState->height;
     char* str = boardState->printBuffer;

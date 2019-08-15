@@ -14,11 +14,15 @@
  * to the board should be made via get_board_cell().
  */
 typedef struct BoardState {
+    // width of the board
     int width;
+    // height of the board
     int height;
+    // number of cards placed on the board
     int numPlaced;
+    // malloc'd array storing the board's cards
     Card* board;
-
+    // malloc'd buffer for printing the board.
     char* printBuffer;
 } BoardState;
 
