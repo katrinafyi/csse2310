@@ -1,6 +1,8 @@
 #ifndef EXITCODES_H
 #define EXITCODES_H
 
+// these should be an enum
+
 // EXIT_SUCCESS is already defined as 0
 #define EXIT_INCORRECT_ARGS 1
 #define EXIT_INCORRECT_ARG_TYPES 2

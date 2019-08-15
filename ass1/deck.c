@@ -25,7 +25,7 @@ void destroy_deck(Deck* deck) {
  * function which manages memory.
  */
 bool do_load_deck(Deck* deck, FILE* file) {
-    char* numLine;
+    char* numLine = NULL;
     if (!safe_read_line(file, &numLine)) { // this checks if file is NULL
         noop_print("failed to read number line");
         return false;

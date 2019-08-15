@@ -67,6 +67,7 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
     int numTokens = tokenise(topLine, &indexes);
     if (numTokens != 4) {
         noop_print("not exactly 4 ints");
+        free(indexes);
         return false;
     }
     for (int i = 0; i < numTokens; i++) {
@@ -74,6 +75,7 @@ bool parse_top_line(FILE* file, int* w, int* h, int* n, int* v) {
         if (parsed < 0) {
             noop_print("invalid integer on top line");
             free(topLine);
+            free(indexes);
             return false;
         }
         topLineNums[i] = parsed;
