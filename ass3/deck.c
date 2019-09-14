@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "deck.h"
 #include "util.h"
@@ -92,7 +93,7 @@ bool is_card(char* str) {
 
 // see header
 bool is_null_card(Card card) {
-    return card.num == 0; // define num == 0 iff card is NULL
+    return card.rank == 0; // define num == 0 iff card is NULL
 }
 
 // see header

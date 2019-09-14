@@ -1,19 +1,31 @@
-src = deck.c util.c 
-CCFLAGS := -g -std=c99 -Wall -pedantic
-sed_from = DEBUG_
-sed_to = noop_\L
+hub_src = hub.c
+alice_src = alice.c
+bob_src = bob.c
+common_src = deck.c util.c
+all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)
 
-release: sed bark
+CCFLAGS := -g -std=gnu99 -Wall -pedantic
 
-bark:
-	gcc $(CCFLAGS) $(src) -o bark
+.PHONY: sed_debug sed_noop all debug
+release: sed_noop all
+
+all: 2310hub 2310alice 2310bob
+
+2310hub: $(common_src) $(hub_src)
+	gcc $(CCFLAGS) $^ -o $@
+
+2310alice: $(common_src) $(alice_src)
+	gcc $(CCFLAGS) $^ -o $@
+
+2310bob: $(common_src) $(bob_src)
+	gcc $(CCFLAGS) $^ -o $@
 
 debug: CCFLAGS += -D DEBUG
-debug: sed_from = noop_
-debug: sed_to = DEBUG_\U
-debug: sed bark
+debug: sed_debug
 
-sed:
-	sed -r -i 's/^(\s+)$(sed_from)(PRINTF?)/\1$(sed_to)\2/gI' $(src)
+sed_debug:
+	sed -r -i 's/^(\s+)noop_(PRINTF?)/\1DEBUG_\U\2/gI' $(all_src)
 
-.PHONY: bark
+sed_noop:
+	sed -r -i 's/^(\s+)DEBUG_(PRINTF?)/\1noop_\L\2/gI' $(all_src)
+
