@@ -11,7 +11,7 @@ int exec_main(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-    printf("|%s|\n", string_int(0));
+    printf("|%s|\n", int_to_string(0));
     int ret = exec_main(argc, argv);
     return ret;
 }

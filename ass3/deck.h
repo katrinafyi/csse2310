@@ -35,16 +35,26 @@ typedef struct Deck {
  */
 bool deck_init_file(Deck* deck, char* deckFile);
 
+/* Initialises an empty deck with the given number of cards.
+ */
+void deck_init_empty(Deck* deck, int numCards);
+
 /* Frees memory associated with this deck.
  */
 void destroy_deck(Deck* deck);
 
-/* Returns the highest or lowest card of the given suit in hand, or NULL_CARD
- * if there is no such card.
+/* Clears all cards from the given deck, replace them with NULL_CARD. */
+void deck_clear(Deck* deck);
+
+/* Returns true if all slots in the deck are non-null. */
+bool deck_is_full(Deck* deck);
+
+/* Returns the index of the highest or lowest card of the given suit in hand, 
+ * or a negative if there is no such card.
  *
  * If high is true, returns the highest card, otherwise returns lowest.
  */
-Card deck_best_card(Deck* hand, char suit, bool high);
+int deck_best_card_index(Deck* hand, char suit, bool high);
 
 /* Returns the index of the given card in the given deck, or -1 if it does
  * not appear.

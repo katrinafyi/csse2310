@@ -27,7 +27,7 @@ int parse_int(char* str) {
 }
 
 // see header
-char* string_int(int number) {
+char* int_to_string(int number) {
     int len = snprintf(NULL, 0, "%d", number);
     char* str = malloc((len + 1) * sizeof(char));
     snprintf(str, len+1, "%d", number);

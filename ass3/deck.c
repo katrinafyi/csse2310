@@ -60,6 +60,11 @@ bool do_load_deck(Deck* deck, FILE* file) {
     return true;
 }
 
+void deck_init_empty(Deck* deck, int numCards) {
+    deck->numCards = numCards;
+    deck->cards = calloc(numCards, sizeof(Card));
+}
+
 // see header
 bool deck_init_file(Deck* deck, char* deckFile) {
     deck->numCards = 0; // just in case we iterate over an errored deck.
@@ -74,6 +79,57 @@ bool deck_init_file(Deck* deck, char* deckFile) {
     bool ret = do_load_deck(deck, file);
     fclose(file);
     return ret;
+}
+
+// see header
+void deck_clear(Deck* deck) {
+    for (int i = 0; i < deck->numCards; i++) {
+        deck->cards[i] = NULL_CARD;
+    }
+}
+
+// see header
+bool deck_is_full(Deck* deck) {
+    for (int i = 0; i < deck->numCards; i++) {
+        if (is_null_card(deck->cards[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// see header
+int deck_best_card_index(Deck* deck, char suit, bool high) {
+    Card best = NULL_CARD;
+    int bestIndex = -1;
+    // multiplier to change direction of optimality.
+    int mult = high ? 1 : -1;
+    for (int i = 0; i < deck->numCards; i++) {
+        if (deck->cards[i].suit != suit) {
+            continue;
+        }
+        if (is_null_card(best) || 
+                deck->cards[i].rank * mult > best.rank * mult) {
+            best = deck->cards[i];
+            bestIndex = i;
+        }
+    }
+    return bestIndex;
+}
+
+// see header
+int deck_index_of(Deck* deck, Card card) {
+    for (int i = 0; i < deck->numCards; i++) {
+        if (cards_equal(card, deck->cards[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// see header
+bool cards_equal(Card card1, Card card2) {
+    return card1.suit == card2.suit && card1.rank == card2.rank;
 }
 
 // see header
@@ -93,7 +149,7 @@ bool is_card(char* str) {
 
 // see header
 bool is_null_card(Card card) {
-    return card.rank == 0; // define num == 0 iff card is NULL
+    return cards_equal(NULL_CARD, card);
 }
 
 // see header

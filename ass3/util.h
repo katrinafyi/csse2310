@@ -35,7 +35,7 @@ int parse_int(char* str);
 /* Formats the given integer into a MALLOC'd string, returning the
  * string. Should always succeed.
  */
-char* string_int(int number);
+char* int_to_string(int number);
 
 /* Helper method to read an arbitrary length line from a file. Ensures that
  *  - file is not NULL

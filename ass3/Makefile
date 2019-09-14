@@ -11,6 +11,15 @@ release: sed_noop all
 
 all: 2310hub 2310alice 2310bob
 
+test_util: $(common_src) testUtil.c
+	gcc $(CCFLAGS) $^ -o $@
+	./$@ a,b---,c
+
+test_deck: $(common_src) testDeck.c
+	gcc $(CCFLAGS) $^ -o $@
+	./$@
+
+
 2310hub: $(common_src) $(hub_src)
 	gcc $(CCFLAGS) $^ -o $@
 
@@ -19,6 +28,8 @@ all: 2310hub 2310alice 2310bob
 
 2310bob: $(common_src) $(bob_src)
 	gcc $(CCFLAGS) $^ -o $@
+
+
 
 debug: CCFLAGS += -D DEBUG
 debug: sed_debug
