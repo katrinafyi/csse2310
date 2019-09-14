@@ -1,4 +1,4 @@
-src = main.c deck.c board.c game.c util.c scoring.c
+src = deck.c util.c 
 CCFLAGS := -g -std=c99 -Wall -pedantic
 sed_from = DEBUG_
 sed_to = noop_\L

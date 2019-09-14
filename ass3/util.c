@@ -11,7 +11,7 @@
 int parse_int(char* str) {
     // reject unless leading char is digit or +
     if (!(isdigit(*str) || *str == '+')) {
-        noop_print("invalid first char");
+        DEBUG_PRINT("invalid first char");
         return -1;
     }
     char* end;
@@ -20,7 +20,7 @@ int parse_int(char* str) {
     // original string is empty or not complete match.
     // invalid number.
     if (errno != 0 || *end != '\0') {
-        noop_print("check error");
+        DEBUG_PRINT("check error");
         return -1;
     }
     return num;
@@ -77,7 +77,7 @@ int tokenise(char* line, char split, char** tokens, int numTokens) {
     int len = strlen(line);
     int curNumTokens = 1;
     tokens[0] = line; // first token start at start of string.
-    noop_printf("tokenising: |%s|\n", line);
+    DEBUG_PRINTF("tokenising: |%s|\n", line);
     for (int i = 0; i <= len; i++) {
         char c = line[i];
         if (c == split) {
