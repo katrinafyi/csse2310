@@ -60,7 +60,7 @@ bool do_load_deck(Deck* deck, FILE* file) {
 }
 
 // see header
-bool load_deck_file(Deck* deck, char* deckFile) {
+bool deck_init_file(Deck* deck, char* deckFile) {
     deck->numCards = 0; // just in case we iterate over an errored deck.
     deck->cards = NULL;
 
@@ -77,9 +77,17 @@ bool load_deck_file(Deck* deck, char* deckFile) {
 
 // see header
 bool is_card(char* str) {
-    return '1' <= str[0] && str[0] <= '9'
-            && 'A' <= str[1] && str[1] <= 'Z';
     // these bounds could probably be #define'd
+    switch (str[1]) {
+        case 'A':
+        case 'C':
+        case 'D':
+        case 'H':
+            break;
+        default:
+            return false;
+    }
+    return !isupper(str[1]) && isxdigit(str[1]) && str[1] != '0';
 }
 
 // see header
@@ -94,29 +102,27 @@ bool is_blank(char* str) {
 
 // see header
 Card to_card(char* str) {
-    int num = str[0] - '1' + 1;
-    char suit = str[1];
-    assert(1 <= num && num <= 9 && 'A' <= suit && suit <= 'Z');
-    return (Card) {num, suit};
+    assert(is_card(str));
+    int rank;
+    if (!isdigit(str[1])) {
+        // rank is a lowercase hex char
+        rank = str[1] - 'a' + 10;
+    } else {
+        // rank is a digit
+        rank = str[1] - '0';
+    }
+    char suit = str[0];
+    return (Card) {suit, rank};
 }
 
 // see header
-char* fmt_card_c(char* str, Card card, char blank) {
-    // poor man's sprintf
-    if (is_null_card(card)) {
-        str[0] = blank;
-        str[1] = blank;
-        str[2] = '\0';
+char* fmt_card(char* str, Card card, bool dotSeparated) {
+    assert(card.rank < 16);
+    if (dotSeparated) {
+        snprintf(str, 4, "%c.%x", card.suit, card.rank);
     } else {
-        assert(1 <= card.num && card.num <= 9);
-        str[0] = card.num + '0'; // convert int into character
-        str[1] = card.suit;
-        str[2] = '\0';
+        snprintf(str, 3, "%c%x", card.suit, card.rank);
     }
     return str;
 }
 
-// see header
-char* fmt_card(char* str, Card card) {
-    return fmt_card_c(str, card, BLANK_CHAR_PRINT);
-}

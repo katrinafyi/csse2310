@@ -73,30 +73,29 @@ bool safe_read_line(FILE* file, char** output) {
 }
 
 // see header
-int tokenise(char* line, int** indexes) { // TODO: specify fixed numTokens
+int tokenise(char* line, char split, char** tokens, int numTokens) {
     int len = strlen(line);
-    int numTokens = 1;
-    *indexes = malloc(sizeof(int) * numTokens);
-    (*indexes)[0] = 0; // first token start at start of string.
+    int curNumTokens = 1;
+    tokens[0] = line; // first token start at start of string.
     noop_printf("tokenising: |%s|\n", line);
     for (int i = 0; i <= len; i++) {
         char c = line[i];
-        if (c == ' ') {
-            // replace space with \0.
+        if (c == split) {
+            // replace split character with \0
             // each token can be viewed as its own null terminated string.
             line[i] = '\0';
-            // DEBUG_PRINTF("token at %d\n", i);
+            DEBUG_PRINTF("token end at %d\n", i);
 
-            // number of tokens should be small enough that realloc'ing
-            // every token is fine.
-            *indexes = realloc(*indexes, sizeof(int) * (numTokens + 1));
-            // next token starts after this space.
-            // if line ends with a space, last token will be an empty string.
-            (*indexes)[numTokens] = i + 1;
-            numTokens++;
+            if (curNumTokens < numTokens) {
+                // next token starts after this character.
+                // if line ends with a split character,
+                // last token will be an empty string.
+                tokens[curNumTokens] = line + i + 1;
+            }
+            curNumTokens++;
         }
     }
-    return numTokens;
+    return curNumTokens;
 }
 
 // see header

@@ -48,15 +48,18 @@ char* string_int(int number);
  */
 bool safe_read_line(FILE* file, char** output);
 
-/* Splits the input line by space characters, returning the number of
- * space-separated tokens in the line. Stores a MALLOC'd array of the starting
- * indexes of each token into *indexes.
+/* Splits the input string by the split character, returning the number of
+ * tokens in the string. Stores the start of each token into the given tokens
+ * array.
  *
- * Replaces spaces in the string with \0, so for i = 0, ..., numTokens-1,
- * line + (*indexes)[i] points to the start of the i-th token which can be
+ * Returns the number of tokens actually in the line. However, only up to
+ * numTokens tokens will be stored into tokens.
+ *
+ * Replaces split chars in the string with \0, so for i = 0, ..., numTokens-1,
+ * tokens[i] points to the start of the i-th token which can be
  * treated as an individual \0 terminated string.
  */
-int tokenise(char* line, int** indexes);
+int tokenise(char* line, char split, char** tokens, int numTokens);
 
 // The style.sh chokes on our DEBUG_PRINT macros up top, so we replace them
 // with these noop functions when building in 'release' mode.

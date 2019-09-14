@@ -3,20 +3,21 @@
 
 #include <stdbool.h>
 
-#define NULL_CARD ((Card) { 0, '~' } )
+#define NULL_CARD ((Card) { '~', 0 } )
 #define BLANK_CHAR_SAVED '*'
 #define BLANK_CHAR_PRINT '.'
 
 /* Card with an integer `num` (its rank) and a character `suit`.
  * Assumptions:
- * 0 <= num <= 9
- * 'A' <= suit <= 'Z'
+ * 0 <= rank <= 16
+ * suit is 'A', 'D', 'S' or 'C'
+ * 0 rank indicates null card.
  */
 typedef struct Card {
-    // rank of the card
-    int num;
     // suit of the card
     char suit;
+    // rank of the card
+    int rank;
 } Card;
 
 /* Deck storing the total number of cards in the deck and a pointer to a
@@ -32,18 +33,35 @@ typedef struct Deck {
  * Returns true on success, false for any deck file formatting errors.
  * File structure assumptions are described in the implementation.
  */
-bool load_deck_file(Deck* deck, char* deckFile);
-
-/* Returns a new empty deck initialised appropriately.
- */
-Deck new_deck(void);
+bool deck_init_file(Deck* deck, char* deckFile);
 
 /* Frees memory associated with this deck.
  */
 void destroy_deck(Deck* deck);
 
+/* Returns the highest or lowest card of the given suit in hand, or NULL_CARD
+ * if there is no such card.
+ *
+ * If high is true, returns the highest card, otherwise returns lowest.
+ */
+Card deck_best_card(Deck* hand, char suit, bool high);
+
+/* Returns the index of the given card in the given deck, or -1 if it does
+ * not appear.
+ */
+int deck_index_of(Deck* hand, Card card);
+
+/* Returns true if the given cards are equal. That is, their suit and rank
+ * are both the same.
+ */
+bool cards_equal(Card card1, Card card2);
+
 /* Returns true if str points to a valid non-blank card.
  * str need not be null-terminated but must have at least 2 characters.
+ * Suits should be a valid uppercase suit.
+ * Ranks are interpreted as hexadecimal and must be lowercase.
+ *
+ * Note that NULL_CARD is intentionally not a valid card by this definition.
  */
 bool is_card(char* str);
 
@@ -53,26 +71,17 @@ bool is_card(char* str);
 bool is_null_card(Card card);
 // yes, these 2 functions are probably named too similarly.
 
-/* Returns true if str points to a blank card. That is, if it points to
- * two BLANK_CHAR_SAVED characters.
- */
-bool is_blank(char* str);
-
 /* Parses the given string into a Card struct, returning the struct.
- * str must be a non-null card.
+ * str must be a non-blank card.
  */
 Card to_card(char* str);
 
-/* Formats the given card into the given string, replacing null cards with
- * the given blank character.
- * str contain space for at least 3 characters (including \0).
+/* Formats the given card into the given string, optionally putting a '.'
+ * between the suit and rank. Returns the string.
+ * str contain space for at least 3 characters (including \0) or 4 characters
+ * if dotSeparated.
  */
-char* fmt_card_c(char* str, Card card, char blank);
-
-/* Formats the given card into the given string, replacing null cards with
- * 2 of BLANK_CHAR_PRINT and \0 terminating the string.
- */
-char* fmt_card(char* str, Card card);
+char* fmt_card(char* str, Card card, bool dotSeparated);
 
 #endif
 
