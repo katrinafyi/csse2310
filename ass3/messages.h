@@ -1,15 +1,17 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
+#include "deck.h"
+
 #define NUM_MESSAGE_TYPES 5
 
 typedef enum {
-    HAND, NEW_ROUND, PLAYED_CARD,
-    GAME_OVER, PLAY_CARD
+    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,
+    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL
 } MessageType;
 
 typedef enum {
-    OK, EOF, INVALID
+    MS_OK, MS_EOF, MS_INVALID
 } MessageStatus;
 
 typedef struct {
@@ -18,9 +20,10 @@ typedef struct {
 } PlayedTuple;
 
 typedef union {
-    Deck deck;
+    Deck hand;
     int leadPlayer;
     PlayedTuple playedTuple;
+    Card card;
 } MessageData;
 
 typedef struct {
@@ -28,20 +31,23 @@ typedef struct {
     MessageData data;
 } Message;
 
-char* get_message_code(MessageType type);
+char* msg_code(MessageType type);
 
 MessageStatus msg_receive(FILE* file, Message* messageOut);
 
-// payload = encoded data
-Deck msg_decode_hand(char* payload);
+MessageStatus msg_send(FILE* file, Message message);
+
+bool msg_decode_hand(char* payload, Deck* outDeck);
 char* msg_encode_hand(Deck deck);
 
-int msg_decode_int(char* payload);
+bool msg_decode_int(char* payload, int* outInt);
 char* msg_encode_int(int);
 
-PlayedTuple msg_decode_played(char* payload);
+bool msg_decode_played(char* payload, PlayedTuple* outTuple);
 char* msg_encode_played(PlayedTuple tuple);
 
-bool msg_send(FILE* file, Message message);
+bool msg_decode_card(char* payload, Card* outCard);
+char* msg_encode_card(Card card);
+
 
 #endif

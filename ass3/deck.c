@@ -36,9 +36,11 @@ bool do_load_deck(Deck* deck, FILE* file) {
     for (int i = 0; i < numCards; i++) {
         char* line;
         if (!safe_read_line(file, &line)) {
+            DEBUG_PRINT("read line failed");
             return false;
         }
         if (strlen(line) != 2 || !is_card(line)) {
+            DEBUG_PRINTF("invalid card: |%s|\n", line);
             free(line);
             return false;
         }
@@ -141,8 +143,8 @@ bool cards_equal(Card card1, Card card2) {
 // see header
 bool is_card(char* str) {
     // these bounds could probably be #define'd
-    switch (str[1]) {
-        case 'A':
+    switch (str[0]) {
+        case 'S':
         case 'C':
         case 'D':
         case 'H':
@@ -151,6 +153,11 @@ bool is_card(char* str) {
             return false;
     }
     return !isupper(str[1]) && isxdigit(str[1]) && str[1] != '0';
+}
+
+// see header
+bool is_card_string(char* str) {
+    return strlen(str) == 2 && is_card(str);
 }
 
 // see header

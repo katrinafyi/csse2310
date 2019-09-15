@@ -16,7 +16,7 @@ int parse_int(char* str) {
     }
     char* end;
     errno = 0;
-    int num = (int)strtol(str, &end, 10);
+    int num = (int)strtol(str, &end, 10); // base 10
     // original string is empty or not complete match.
     // invalid number.
     if (errno != 0 || *end != '\0') {
@@ -54,7 +54,7 @@ bool safe_read_line(FILE* file, char** output) {
             position++;
 
             if (position >= allocated) {
-                allocated += LINE_BUFFER;
+                allocated *= 2; // for amortised constant time
                 // printf("allocating to %d\n", allocated);
                 *output = realloc(*output, sizeof(char) * allocated);
             }
@@ -73,12 +73,16 @@ bool safe_read_line(FILE* file, char** output) {
 }
 
 // see header
-int tokenise(char* line, char split, char** tokens, int numTokens) {
+int tokenise(char* line, char split, char** tokens, int maxTokens) {
     int len = strlen(line);
     int curNumTokens = 1;
     tokens[0] = line; // first token start at start of string.
     DEBUG_PRINTF("tokenising: |%s|\n", line);
     for (int i = 0; i <= len; i++) {
+        if (curNumTokens >= maxTokens) {
+            break;
+        }
+
         char c = line[i];
         if (c == split) {
             // replace split character with \0
@@ -86,12 +90,10 @@ int tokenise(char* line, char split, char** tokens, int numTokens) {
             line[i] = '\0';
             DEBUG_PRINTF("token end at %d\n", i);
 
-            if (curNumTokens < numTokens) {
-                // next token starts after this character.
-                // if line ends with a split character,
-                // last token will be an empty string.
-                tokens[curNumTokens] = line + i + 1;
-            }
+            // next token starts after this character.
+            // if line ends with a split character,
+            // last token will be an empty string.
+            tokens[curNumTokens] = line + i + 1;
             curNumTokens++;
         }
     }

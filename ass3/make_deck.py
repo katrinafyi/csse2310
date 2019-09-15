@@ -8,8 +8,8 @@ if __name__ == '__main__':
         print('specify number of cards as argument', file=sys.stderr)
         sys.exit(1)
 
-    suits = 'ADCH'
-    ranks = string.hexdigits.lower()
+    suits = 'SDCH'
+    ranks = string.hexdigits.lower().replace('0', '');
 
     n = int(sys.argv[1])
 

@@ -78,6 +78,11 @@ bool cards_equal(Card card1, Card card2);
  */
 bool is_card(char* str);
 
+/* Returns true if str points to a valid null-terminated card.
+ * See is_card for card format.
+ */
+bool is_card_string(char* str);
+
 /* Returns true if the card struct is a null value.
  * That is, it should be treated as a blank or missing card.
  */
