@@ -23,11 +23,11 @@ int main(int argc, char** argv) {
     Deck deck = make_deck();
 
     // test optimal card selection
-    assert(deck_best_card_index(&deck, 'A', true) == 0);
-    assert(deck_best_card_index(&deck, 'A', false) == 2);
-    assert(deck_best_card_index(&deck, 'S', false) == -1);
-    assert(deck_best_card_index(&deck, 'S', true) == -1);
-    assert(deck_best_card_index(&deck, 'D', true) == 3);
+    assert(deck_best_card(&deck, 'A', true) == 0);
+    assert(deck_best_card(&deck, 'A', false) == 2);
+    assert(deck_best_card(&deck, 'S', false) == -1);
+    assert(deck_best_card(&deck, 'S', true) == -1);
+    assert(deck_best_card(&deck, 'D', true) == 3);
 
     // test index of
     assert(deck_index_of(&deck, (Card) { 'A', 14 }) == 1);

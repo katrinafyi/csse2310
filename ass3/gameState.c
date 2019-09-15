@@ -67,7 +67,7 @@ bool gs_is_round_over(GameState* gameState) {
 void gs_end_round(GameState* gameState) {
     DEBUG_PRINT("ending round");
 
-    int winningPlayer = deck_best_card_index(gameState->table,
+    int winningPlayer = deck_best_card(gameState->table,
             gameState->leadSuit, true);
     assert(winningPlayer >= 0);
     Card winningCard = gameState->table->cards[winningPlayer];

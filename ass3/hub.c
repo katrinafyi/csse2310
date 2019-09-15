@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "exitCodes.h"
 #include "hubState.h"
@@ -145,6 +146,9 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
 }
 
 int main(int argc, char** argv) {
+    // ignore SIGPIPE caused by writes to a dead child
+    ignore_sigpipe();
+
     GameState gameState = {0};
     HubState hubState = {0};
     Deck fullDeck = {0}; // deck of all cards to use

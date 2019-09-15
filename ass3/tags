@@ -41,7 +41,7 @@ HubExitCode	exitCodes.h	/^} HubExitCode;$/;"	t	typeref:enum:__anon1
 HubState	hubState.h	/^} HubState;$/;"	t	typeref:struct:__anon5
 INSTANT_SEGFAULT	util.h	10;"	d
 IsStringInBiggerString	unity/unity.c	/^int IsStringInBiggerString(const char* longstring, const char* shortstring)$/;"	f
-LINE_BUFFER	util.c	8;"	d	file:
+LINE_BUFFER	util.c	9;"	d	file:
 MESSAGES_H	messages.h	2;"	d
 MSG_GAME_OVER	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:__anon6
 MSG_HAND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:__anon6
@@ -58,6 +58,7 @@ MessageStatus	messages.h	/^} MessageStatus;$/;"	t	typeref:enum:__anon7
 MessageType	messages.h	/^} MessageType;$/;"	t	typeref:enum:__anon6
 NULL_CARD	deck.h	6;"	d
 NUM_MESSAGE_TYPES	messages.h	6;"	d
+NUM_SUITS	deck.h	7;"	d
 NumberOfTests	unity/unity_internals.h	/^    UNITY_COUNTER_TYPE NumberOfTests;$/;"	m	struct:UNITY_STORAGE_T
 PLAYERINTERFACE_H	strategy.h	2;"	d
 PLAYERSTATE_H	playerState.h	2;"	d
@@ -978,6 +979,7 @@ deck_init_empty	deck.c	/^void deck_init_empty(Deck* deck, int numCards) {$/;"	f
 deck_init_file	deck.c	/^bool deck_init_file(Deck* deck, char* deckFile) {$/;"	f
 deck_is_full	deck.c	/^bool deck_is_full(Deck* deck) {$/;"	f
 deck_remove_card	deck.c	/^void deck_remove_card(Deck* deck, Card card) {$/;"	f
+deck_search	deck.c	/^Card deck_search(Deck* hand, char order[NUM_SUITS], bool high) {$/;"	f
 default_options	unity/generate_module.rb	/^  def self.default_options$/;"	F	class:UnityModuleGenerator
 default_options	unity/generate_test_runner.rb	/^  def self.default_options$/;"	F	class:UnityTestRunnerGenerator
 destroy	unity/generate_module.rb	/^  def destroy(module_name, pattern = nil)$/;"	f
@@ -1020,6 +1022,7 @@ i16	unity/unity.c	/^    UNITY_INT16 i16;$/;"	m	union:__anon12	file:
 i32	unity/unity.c	/^    UNITY_INT32 i32;$/;"	m	union:__anon12	file:
 i64	unity/unity.c	/^    UNITY_INT64 i64;$/;"	m	union:__anon12	file:
 i8	unity/unity.c	/^    UNITY_INT8 i8;$/;"	m	union:__anon12	file:
+ignore_sigpipe	util.c	/^void ignore_sigpipe(void) {$/;"	f
 initialize	unity/colour_prompt.rb	/^  def initialize$/;"	f	class:ColourCommandLine
 initialize	unity/generate_module.rb	/^  def initialize(options = nil)$/;"	f	class:UnityModuleGenerator
 initialize	unity/generate_test_runner.rb	/^  def initialize(options = nil)$/;"	f	class:UnityTestRunnerGenerator
@@ -1100,6 +1103,8 @@ setUp	unity/unity.h	/^    void setUp(void) { }$/;"	f
 setUp	unity/unity.h	44;"	d
 set_xml_output	unity/parse_output.rb	/^  def set_xml_output$/;"	f	class:ParseOutput
 start_player	hub.c	/^bool start_player(HubState* hubState, int playerNum, char* name) {$/;"	f
+strategy_when_following	alice.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
+strategy_when_leading	alice.c	/^int strategy_when_leading(PlayerState* playerState) {$/;"	f
 suit	deck.h	/^    char suit;$/;"	m	struct:Card
 suiteSetUp	unity/unity.h	/^    UNITY_WEAK_ATTRIBUTE void suiteSetUp(void) { }$/;"	f
 suiteSetUp	unity/unity.h	/^    void suiteSetUp(void) { }$/;"	f

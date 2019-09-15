@@ -110,7 +110,7 @@ MessageStatus msg_send(FILE* file, Message message) {
     // note newline at end
     errno = 0;
     int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
-    DEBUG_PRINTF("errno: %d\n", errno);
+    // DEBUG_PRINTF("errno: %d\n", errno);
     free(payload);
     return (ret >= 0) ? MS_OK : MS_EOF;
 }

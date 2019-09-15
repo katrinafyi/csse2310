@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
+#include <signal.h>
 
 #define LINE_BUFFER 10
 
@@ -98,6 +99,14 @@ int tokenise(char* line, char split, char** tokens, int maxTokens) {
         }
     }
     return curNumTokens;
+}
+
+// see header
+void ignore_sigpipe(void) {
+    struct sigaction sa = {0};
+    sa.sa_flags = SA_RESTART;
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE, &sa, NULL);
 }
 
 // see header

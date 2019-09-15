@@ -100,7 +100,20 @@ bool deck_is_full(Deck* deck) {
 }
 
 // see header
-int deck_best_card_index(Deck* deck, char suit, bool high) {
+int deck_search(Deck* hand, char* order, bool high) {
+    int len = strlen(order);
+    for (int s = 0; s < len; s++) {
+        char suit = order[s];
+        int index = deck_best_card(hand, suit, high);
+        if (index != -1) {
+            return hand->cards[index];
+        }
+    }
+    return -1;
+}
+
+// see header
+int deck_best_card(Deck* deck, char suit, bool high) {
     Card best = NULL_CARD;
     int bestIndex = -1;
     // multiplier to change direction of optimality.

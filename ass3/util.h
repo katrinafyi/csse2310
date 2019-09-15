@@ -54,6 +54,10 @@ bool safe_read_line(FILE* file, char** output);
  */
 int tokenise(char* line, char split, char** tokens, int numTokens);
 
+/* Ignores the SIGPIPE signal via sigaction configuration.
+ */
+void ignore_sigpipe(void);
+
 // The style.sh chokes on our DEBUG_PRINT macros up top, so we replace them
 // with these noop functions when building in 'release' mode.
 

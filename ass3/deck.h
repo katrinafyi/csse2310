@@ -47,12 +47,21 @@ void deck_clear(Deck* deck);
 /* Returns true if all slots in the deck are non-null. */
 bool deck_is_full(Deck* deck);
 
+/* Looks for cards from the hand in the given order, returning index of
+ * the matched card. order is a null-terminated string of suits, will be 
+ * searched from left to right. If high is true, returns the highest card 
+ * of the first  matching suit, else the lowest.
+ *
+ * Returns -1 if no such cards exist.
+ */
+int deck_search(Deck* hand, char* order, bool high);
+
 /* Returns the index of the highest or lowest card of the given suit in hand, 
  * or a negative if there is no such card.
  *
  * If high is true, returns the highest card, otherwise returns lowest.
  */
-int deck_best_card_index(Deck* hand, char suit, bool high);
+int deck_best_card(Deck* hand, char suit, bool high);
 
 /* Returns the index of the given card in the given deck, or -1 if it does
  * not appear.

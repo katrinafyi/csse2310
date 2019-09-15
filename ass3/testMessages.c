@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "messages.h"
 #include "util.h"
@@ -10,6 +11,7 @@
 // tests message related functions
 int main(int argc, char** argv) {
     assert(argc >= 2);
+    ignore_sigpipe();
 
     // test msg_receive with first argument.
     int fds[2];
@@ -26,7 +28,7 @@ int main(int argc, char** argv) {
     printf("code: %s\n", msg_code(message.type));
 
     if (message.type == MSG_HAND) {
-        // test encoding hands
+        // test encoding hands. LEAKS
         printf("encoded hand: |%s|\n", msg_encode_hand(message.data.hand));
     }
 
@@ -43,11 +45,10 @@ int main(int argc, char** argv) {
         char* line;
         safe_read_line(readFile, &line);
         printf("recv: %s\n", line);
+        free(line);
     }
-
-    fclose(readFile);
+    fclose(readFile); // close and try to write after closed
     fflush(writeFile);
-    printf("send after closed: %d\n", msg_send(writeFile, message));
     printf("send after closed: %d\n", msg_send(writeFile, message));
     fclose(writeFile);
     return 0;
