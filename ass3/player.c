@@ -106,9 +106,13 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
     if (should_exit(status, &message, &ret) || message.type != MSG_HAND) {
         return ret;
     }
-    Deck* hand = malloc(sizeof(Deck)); // malloc so ps_destroy works correctly
+    Deck* hand = malloc(sizeof(Deck)); // so ps_destroy work correctly
     *hand = message.data.hand; // take a copy to prevent overwriting
     ps_set_hand(playerState, hand);
+    if (hand->numCards != playerState->handSize) {
+        DEBUG_PRINT("hand size doesn't match");
+        return P_INVALID_MESSAGE;
+    }
 
     GameState* gameState = playerState->gameState;
     while (true) {
@@ -157,6 +161,7 @@ PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,
     if (handSize < 1) {
         return P_INCORRECT_HAND;
     }
+    playerState->handSize = handSize;
 
     gs_init(gameState, numPlayers, threshold);
     ps_init(playerState, gameState, playerNum);

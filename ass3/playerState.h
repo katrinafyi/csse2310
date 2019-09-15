@@ -8,6 +8,7 @@ typedef struct {
     GameState* gameState;
 
     int playerIndex;
+    int handSize;
     Deck* hand;
 } PlayerState;
 
