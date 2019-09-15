@@ -1,7 +1,7 @@
-hub_src = hub.c
-alice_src = alice.c
-bob_src = bob.c
-common_src = deck.c util.c
+hub_src = hubState.c hub.c
+alice_src = playerState.c alice.c player.c
+bob_src = playerState.c bob.c player.c
+common_src = deck.c util.c exitCodes.c gameState.c
 all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)
 
 CCFLAGS := -g -std=gnu99 -Wall -pedantic
@@ -10,6 +10,9 @@ CCFLAGS := -g -std=gnu99 -Wall -pedantic
 release: sed_noop all
 
 all: 2310hub 2310alice 2310bob
+
+test_compile:
+	bash ./testCompile.sh
 
 test_util: $(common_src) testUtil.c
 	gcc $(CCFLAGS) $^ -o $@

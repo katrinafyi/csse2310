@@ -9,21 +9,14 @@
 #include "util.h"
 
 // see header
-Deck new_deck(void) {
-    Deck deck;
-    deck.numCards = 0;
-    deck.cards = NULL;
-    return deck;
-}
-
-// see header
-void destroy_deck(Deck* deck) {
-    free(deck->cards);
-    deck->cards = NULL;
+void deck_destroy(Deck* deck) {
+    if (deck->cards != NULL) {
+        free(deck->cards);
+    }
 }
 
 /* Actually loads the deck file into the given deck. Called by wrapper
- * function which manages memory.
+ * function which manages memory. Returns true if deck is valid and loaded.
  */
 bool do_load_deck(Deck* deck, FILE* file) {
     char* numLine = NULL;
@@ -60,6 +53,7 @@ bool do_load_deck(Deck* deck, FILE* file) {
     return true;
 }
 
+// see header
 void deck_init_empty(Deck* deck, int numCards) {
     deck->numCards = numCards;
     deck->cards = calloc(numCards, sizeof(Card));
@@ -78,6 +72,11 @@ bool deck_init_file(Deck* deck, char* deckFile) {
 
     bool ret = do_load_deck(deck, file);
     fclose(file);
+    // if false, clear any allocated memory.
+    if (!ret && deck->cards != NULL) {
+        free(deck->cards);
+        deck->cards = NULL;
+    }
     return ret;
 }
 
@@ -128,6 +127,13 @@ int deck_index_of(Deck* deck, Card card) {
 }
 
 // see header
+void deck_remove_card(Deck* deck, Card card) {
+    int index = deck_index_of(deck, card);
+    assert(index >= 0);
+    deck->cards[index] = NULL_CARD;
+}
+
+// see header
 bool cards_equal(Card card1, Card card2) {
     return card1.suit == card2.suit && card1.rank == card2.rank;
 }
@@ -150,11 +156,6 @@ bool is_card(char* str) {
 // see header
 bool is_null_card(Card card) {
     return cards_equal(NULL_CARD, card);
-}
-
-// see header
-bool is_blank(char* str) {
-    return str[0] == BLANK_CHAR_SAVED && str[1] == BLANK_CHAR_SAVED;
 }
 
 // see header

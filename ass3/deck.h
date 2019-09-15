@@ -4,8 +4,6 @@
 #include <stdbool.h>
 
 #define NULL_CARD ((Card) { '~', 0 } )
-#define BLANK_CHAR_SAVED '*'
-#define BLANK_CHAR_PRINT '.'
 
 /* Card with an integer `num` (its rank) and a character `suit`.
  * Assumptions:
@@ -41,7 +39,7 @@ void deck_init_empty(Deck* deck, int numCards);
 
 /* Frees memory associated with this deck.
  */
-void destroy_deck(Deck* deck);
+void deck_destroy(Deck* deck);
 
 /* Clears all cards from the given deck, replace them with NULL_CARD. */
 void deck_clear(Deck* deck);
@@ -60,6 +58,11 @@ int deck_best_card_index(Deck* hand, char suit, bool high);
  * not appear.
  */
 int deck_index_of(Deck* hand, Card card);
+
+/* Removes the given card from the given hand, replacing it with null. 
+ * The card SHOULD exist in the hand.
+ */
+void deck_remove_card(Deck* hand, Card card);
 
 /* Returns true if the given cards are equal. That is, their suit and rank
  * are both the same.

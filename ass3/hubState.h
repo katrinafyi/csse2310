@@ -1,6 +1,12 @@
 #ifndef HUBSTATE_H
 #define HUBSTATE_H
 
+#include <stdbool.h>
+#include <stdlib.h>
+
+#include "gameState.h"
+#include "deck.h"
+
 typedef struct {
   FILE* read;
   FILE* write;
@@ -15,6 +21,10 @@ typedef struct {
 
 // only mallocs everything.
 void hs_init(HubState* hubState, GameState* gameState);
+
+void hs_destroy(HubState* hubState);
+
+
 // get numPlayers from gs and deal cards.
 void hs_deal_cards(HubState* hubState, Deck* deck);
 void hs_set_player_pipe(HubState* hubState, int player, FILE* readFile, FILE* writeFile);

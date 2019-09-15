@@ -8,12 +8,12 @@ if __name__ == '__main__':
         print('specify number of cards as argument', file=sys.stderr)
         sys.exit(1)
 
-    letters = string.ascii_uppercase
-    numbers = string.digits.replace('0', '')
+    suits = 'ADCH'
+    ranks = string.hexdigits.lower()
+
     n = int(sys.argv[1])
 
     print(n)
     for i in range(n):
-        print(random.choice(numbers), random.choice(letters),
-            sep='')
+        print(random.choice(suits), random.choice(ranks), sep='')
 

@@ -1,6 +1,10 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
+#include <stdbool.h>
+
+#include "deck.h"
+
 typedef struct {
     int numPlayers;
     int threshold;

@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "gameState.h"
+#include "deck.h"
 #include "util.h"
 
 // see header
@@ -39,11 +40,14 @@ void gs_destroy(GameState* gameState) {
 void gs_new_round(GameState* gameState, int leadPlayer) {
     DEBUG_PRINT("new round");
     gameState->leadPlayer = leadPlayer;
+    gameState->currPlayer = leadPlayer;
     deck_clear(gameState->table);
 }
 
 void gs_place_card(GameState* gameState, int player, Card card) {
     DEBUG_PRINT("placing card");
+    assert(player == gameState->currPlayer);
+
     if (player == gameState->leadPlayer) {
         DEBUG_PRINTF("setting lead suit %c\n", card.suit);
         gameState->leadSuit = card.suit;
@@ -61,13 +65,17 @@ bool gs_is_round_over(GameState* gameState) {
 }
 
 void gs_end_round(GameState* gameState) {
-    Card winningCard = deck_best_card(gameState->table,
+    DEBUG_PRINT("ending round");
+
+    int winningPlayer = deck_best_card_index(gameState->table,
             gameState->leadSuit, true);
-    int winningPlayer = deck_index_of(gameState->table, winningCard);
     assert(winningPlayer >= 0);
+    Card winningCard = gameState->table->cards[winningPlayer];
     DEBUG_PRINTF("player %d won with card %c%x\n", winningPlayer,
             winningCard.suit, winningCard.rank);
+    assert(winningCard.suit == gameState->leadSuit);
     
+    // count diamonds on the table.
     Deck* table = gameState->table;
     int diamonds = 0;
     for (int i = 0; i < table->numCards; i++) {
@@ -75,7 +83,7 @@ void gs_end_round(GameState* gameState) {
             diamonds++;
         }
     }
-
+    // increment points and give diamonds to winning player.
     gameState->playerPoints[winningPlayer]++;
     gameState->diamondsWon[winningPlayer] += diamonds;
 }

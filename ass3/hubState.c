@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "hubState.h"
+#include "util.h"
 
 // see header
 void hs_init(HubState* hubState, GameState* gameState) {
@@ -14,6 +15,8 @@ void hs_init(HubState* hubState, GameState* gameState) {
 
 // see header
 void hs_destroy(HubState* hubState) {
+    GameState* gameState = hubState->gameState;
+
     if (hubState->playerHands != NULL) {
         for (int i = 0; i < gameState->numPlayers; i++) {
             deck_destroy(hubState->playerHands + i);
@@ -21,10 +24,13 @@ void hs_destroy(HubState* hubState) {
         free(hubState->playerHands);
         hubState->playerHands = NULL;
     }
-    free(hubState->pipes);
-    hubState->pipes = NULL;
-
-    gs_destroy(hubState->gameState);
+    if (hubState->pipes != NULL) {
+        free(hubState->pipes);
+        hubState->pipes = NULL;
+    }
+    if (hubState->gameState != NULL) {
+        gs_destroy(hubState->gameState);
+    }
 }
 
 // see header
@@ -39,7 +45,9 @@ void hs_deal_cards(HubState* hubState, Deck* deck) {
     for (int p = 0; p < numPlayers; p++) {
         deck_init_empty(hubState->playerHands + p, handSize);
         for (int i = 0; i < handSize; i++) {
-            hubState->playerHands[p].cards[i] = deck->cards[drawn];
+            Card card = deck->cards[drawn];
+            DEBUG_PRINTF("dealing %c%x to %d\n", card.suit, card.rank, p);
+            hubState->playerHands[p].cards[i] = card;
             drawn++;
         }
     }
@@ -55,7 +63,5 @@ void hs_set_player_pipe(HubState* hubState, int player,
 
 // see header
 void hs_played_card(HubState* hubState, int player, Card card) {
-    int index = deck_index_of(hubState->playerHands + player);
-    assert(index >= 0);
-    hubState->playerHands[player].cards[index] = NULL_CARD;
+    deck_remove_card(hubState->playerHands + player, card);
 }

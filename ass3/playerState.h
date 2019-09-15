@@ -1,6 +1,9 @@
 #ifndef PLAYERSTATE_H
 #define PLAYERSTATE_H
 
+#include "deck.h"
+#include "gameState.h"
+
 typedef struct {
     GameState* gameState;
 
