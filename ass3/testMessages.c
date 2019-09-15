@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "messages.h"
+#include "util.h"
 
 // tests message related functions
 int main(int argc, char** argv) {
@@ -18,11 +19,9 @@ int main(int argc, char** argv) {
 
     fprintf(writeFile, "%s\n", argv[1]);
     fflush(writeFile);
-    fclose(writeFile);
 
     Message message;
     MessageStatus ret = msg_receive(readFile, &message);
-    assert(fgetc(readFile) == EOF);
     printf("msg_receive returned: %d\n", ret);
     printf("code: %s\n", msg_code(message.type));
 
@@ -37,5 +36,19 @@ int main(int argc, char** argv) {
                 message.data.playedTuple));
     }
 
+    // test full message sending!
+    if (ret == MS_OK) { // but only for valid messages
+        printf("send ret: %d\n", msg_send(writeFile, message));
+        fflush(writeFile);
+        char* line;
+        safe_read_line(readFile, &line);
+        printf("recv: %s\n", line);
+    }
+
+    fclose(readFile);
+    fflush(writeFile);
+    printf("send after closed: %d\n", msg_send(writeFile, message));
+    printf("send after closed: %d\n", msg_send(writeFile, message));
+    fclose(writeFile);
     return 0;
 }

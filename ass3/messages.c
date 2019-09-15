@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include "messages.h"
 #include "util.h"
@@ -58,7 +59,7 @@ char* msg_payload_encode(Message message) {
         case MSG_PLAY_CARD:
             return msg_encode_card(message.data.card);
         default:
-            return NULL;
+            return strdup(""); // mallocs an empty string
     }
 }
 
@@ -102,7 +103,17 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
     return MS_OK;
 }
 
-MessageStatus msg_send(FILE* file, Message message);
+// see header
+MessageStatus msg_send(FILE* file, Message message) {
+    // only (reasonable) error is EOF caused by broken pipe
+    char* payload = msg_payload_encode(message);
+    // note newline at end
+    errno = 0;
+    int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
+    DEBUG_PRINTF("errno: %d\n", errno);
+    free(payload);
+    return (ret >= 0) ? MS_OK : MS_EOF;
+}
 
 // see header
 bool msg_decode_hand(char* payload, Deck* outDeck) {

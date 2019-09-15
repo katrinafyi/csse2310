@@ -142,7 +142,6 @@ bool cards_equal(Card card1, Card card2) {
 
 // see header
 bool is_card(char* str) {
-    // these bounds could probably be #define'd
     switch (str[0]) {
         case 'S':
         case 'C':
@@ -152,6 +151,7 @@ bool is_card(char* str) {
         default:
             return false;
     }
+    // any lowercase hexadecimal digit except 0
     return !isupper(str[1]) && isxdigit(str[1]) && str[1] != '0';
 }
 
