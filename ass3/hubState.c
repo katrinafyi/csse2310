@@ -30,6 +30,7 @@ void hs_destroy(HubState* hubState) {
     }
     if (hubState->gameState != NULL) {
         gs_destroy(hubState->gameState);
+        hubState->gameState = NULL;
     }
 }
 

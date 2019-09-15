@@ -15,9 +15,12 @@ void ps_init(PlayerState* playerState, GameState* gameState, int playerIndex) {
 void ps_destroy(PlayerState* playerState) {
     if (playerState->gameState != NULL) {
         gs_destroy(playerState->gameState);
+        playerState->gameState = NULL;
     }
     if (playerState->hand != NULL) {
         deck_destroy(playerState->hand);
+        free(playerState->hand);
+        playerState->hand = NULL;
     }
 }
 

@@ -92,8 +92,7 @@ PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {
             gs_play_turn(gameState, played.player, played.card);
         }
     }
-    // if we reach here, everyone's taken a turn and we should go to the
-    // next round.
+    // at this point, everyone's taken a turn and we should go to next round
     *outContinue = true;
     return P_NORMAL;
 }
@@ -107,8 +106,9 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
     if (should_exit(status, &message, &ret) || message.type != MSG_HAND) {
         return ret;
     }
-    Deck hand = message.data.hand; // take a copy to prevent overwriting
-    ps_set_hand(playerState, &hand);
+    Deck* hand = malloc(sizeof(Deck)); // malloc so ps_destroy works correctly
+    *hand = message.data.hand; // take a copy to prevent overwriting
+    ps_set_hand(playerState, hand);
 
     GameState* gameState = playerState->gameState;
     while (true) {
@@ -120,7 +120,7 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
         }
         gs_new_round(gameState, message.data.leadPlayer);
 
-        // flag is needed to signify exit when ret is P_NORMAL. this occurs
+        // flag is needed to allow exits when ret is P_NORMAL. this occurs
         // at game over.
         bool cont = false; 
         ret = exec_play_round(playerState, &cont);
@@ -174,6 +174,9 @@ int main(int argc, char** argv) {
 
     PlayerExitCode ret = exec_player_main(argc, argv, 
             &gameState, &playerState);
+    
+    ps_destroy(&playerState);
+    gs_destroy(&gameState);
 
     print_player_message(ret);
     DEBUG_PRINTF("player exiting with code: %d\n", ret);

@@ -12,6 +12,7 @@
 void deck_destroy(Deck* deck) {
     if (deck->cards != NULL) {
         free(deck->cards);
+        deck->cards = NULL;
     }
 }
 
