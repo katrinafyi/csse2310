@@ -1,6 +1,6 @@
 hub_src = hubState.c hub.c
-alice_src = playerState.c alice.c
-bob_src = playerState.c bob.c
+alice_src = playerState.c alice.c player.c
+bob_src = playerState.c bob.c player.c
 common_src = deck.c util.c exitCodes.c gameState.c messages.c
 all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)
 

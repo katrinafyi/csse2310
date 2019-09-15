@@ -78,7 +78,7 @@ int tokenise(char* line, char split, char** tokens, int maxTokens) {
     int len = strlen(line);
     int curNumTokens = 1;
     tokens[0] = line; // first token start at start of string.
-    DEBUG_PRINTF("tokenising: |%s|\n", line);
+    //DEBUG_PRINTF("tokenising: |%s|\n", line);
     for (int i = 0; i <= len; i++) {
         if (curNumTokens >= maxTokens) {
             break;
@@ -89,7 +89,7 @@ int tokenise(char* line, char split, char** tokens, int maxTokens) {
             // replace split character with \0
             // each token can be viewed as its own null terminated string.
             line[i] = '\0';
-            DEBUG_PRINTF("token end at %d\n", i);
+            //DEBUG_PRINTF("token end at %d\n", i);
 
             // next token starts after this character.
             // if line ends with a split character,

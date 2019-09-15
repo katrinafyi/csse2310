@@ -38,14 +38,12 @@ void gs_destroy(GameState* gameState) {
 }
 
 void gs_new_round(GameState* gameState, int leadPlayer) {
-    DEBUG_PRINT("new round");
     gameState->leadPlayer = leadPlayer;
     gameState->currPlayer = leadPlayer;
     deck_clear(gameState->table);
 }
 
-void gs_place_card(GameState* gameState, int player, Card card) {
-    DEBUG_PRINT("placing card");
+void gs_play_turn(GameState* gameState, int player, Card card) {
     assert(player == gameState->currPlayer);
 
     if (player == gameState->leadPlayer) {
@@ -55,6 +53,8 @@ void gs_place_card(GameState* gameState, int player, Card card) {
     assert(0 <= player && player < gameState->table->numCards);
     gameState->table->cards[player] = card;
 
+    assert(gameState->currPlayer == player);
+    gameState->currPlayer = player;
     gameState->currPlayer++;
     gameState->currPlayer %= gameState->numPlayers;
 }

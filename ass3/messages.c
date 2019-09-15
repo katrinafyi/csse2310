@@ -238,3 +238,41 @@ char* msg_encode_card(Card card) {
     return fmt_card(payload, card, false);
 }
 
+// see header
+Message msg_hand(Deck hand) {
+    Message message = {0};
+    message.type = MSG_HAND;
+    message.data.hand = hand;
+    return message;
+}
+
+// see header
+Message msg_new_round(int leadPlayer) {
+    Message message = {0};
+    message.type = MSG_NEW_ROUND;
+    message.data.leadPlayer = leadPlayer;
+    return message;
+}
+
+// see header
+Message msg_played_card(int player, Card card) {
+    Message message = {0};
+    message.type = MSG_PLAYED_CARD;
+    message.data.playedTuple = (PlayedTuple) { player, card };
+    return message;
+}
+
+// see header
+Message msg_game_over(void) {
+    Message message = {0};
+    message.type = MSG_GAME_OVER;
+    return message;
+}
+
+// see header
+Message msg_play_card(Card card) {
+    Message message = {0};
+    message.type = MSG_PLAY_CARD;
+    message.data.card = card;
+    return message;
+}

@@ -58,7 +58,6 @@ MessageStatus	messages.h	/^} MessageStatus;$/;"	t	typeref:enum:__anon7
 MessageType	messages.h	/^} MessageType;$/;"	t	typeref:enum:__anon6
 NULL_CARD	deck.h	6;"	d
 NUM_MESSAGE_TYPES	messages.h	6;"	d
-NUM_SUITS	deck.h	7;"	d
 NumberOfTests	unity/unity_internals.h	/^    UNITY_COUNTER_TYPE NumberOfTests;$/;"	m	struct:UNITY_STORAGE_T
 PLAYERINTERFACE_H	strategy.h	2;"	d
 PLAYERSTATE_H	playerState.h	2;"	d
@@ -947,9 +946,9 @@ UnityTestRunnerGenerator	unity/generate_test_runner.rb	/^class UnityTestRunnerGe
 UnityTestSummary	unity/unity_test_summary.rb	/^class UnityTestSummary$/;"	c
 UnityToJUnit	unity/stylize_as_junit.rb	/^class UnityToJUnit$/;"	c
 UnityVerbosity	unity/unity.c	/^int UnityVerbosity            = 1;$/;"	v
-alice_src	Makefile	/^alice_src = playerState.c alice.c$/;"	m
+alice_src	Makefile	/^alice_src = playerState.c alice.c player.c$/;"	m
 all_src	Makefile	/^all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)$/;"	m
-bob_src	Makefile	/^bob_src = playerState.c bob.c$/;"	m
+bob_src	Makefile	/^bob_src = playerState.c bob.c player.c$/;"	m
 card	messages.h	/^    Card card;$/;"	m	struct:__anon8
 card	messages.h	/^    Card card;$/;"	m	union:__anon9
 cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
@@ -971,15 +970,16 @@ create_suite_teardown	unity/generate_test_runner.rb	/^  def create_suite_teardow
 currPlayer	gameState.h	/^    int currPlayer;$/;"	m	struct:__anon3
 d	unity/unity.c	/^    double d;$/;"	m	union:__anon12	file:
 data	messages.h	/^    MessageData data;$/;"	m	struct:__anon10
-deck_best_card_index	deck.c	/^int deck_best_card_index(Deck* deck, char suit, bool high) {$/;"	f
+deck_best_card	deck.c	/^int deck_best_card(Deck* deck, char suit, bool high) {$/;"	f
 deck_clear	deck.c	/^void deck_clear(Deck* deck) {$/;"	f
 deck_destroy	deck.c	/^void deck_destroy(Deck* deck) {$/;"	f
 deck_index_of	deck.c	/^int deck_index_of(Deck* deck, Card card) {$/;"	f
 deck_init_empty	deck.c	/^void deck_init_empty(Deck* deck, int numCards) {$/;"	f
 deck_init_file	deck.c	/^bool deck_init_file(Deck* deck, char* deckFile) {$/;"	f
+deck_is_empty	deck.c	/^bool deck_is_empty(Deck* deck) {$/;"	f
 deck_is_full	deck.c	/^bool deck_is_full(Deck* deck) {$/;"	f
 deck_remove_card	deck.c	/^void deck_remove_card(Deck* deck, Card card) {$/;"	f
-deck_search	deck.c	/^Card deck_search(Deck* hand, char order[NUM_SUITS], bool high) {$/;"	f
+deck_search	deck.c	/^int deck_search(Deck* hand, char* order, bool high) {$/;"	f
 default_options	unity/generate_module.rb	/^  def self.default_options$/;"	F	class:UnityModuleGenerator
 default_options	unity/generate_test_runner.rb	/^  def self.default_options$/;"	F	class:UnityTestRunnerGenerator
 destroy	unity/generate_module.rb	/^  def destroy(module_name, pattern = nil)$/;"	f
@@ -989,6 +989,9 @@ do_load_deck	deck.c	/^bool do_load_deck(Deck* deck, FILE* file) {$/;"	f
 exec_child	hub.c	/^void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {$/;"	f
 exec_hub_loop	hub.c	/^HubExitCode exec_hub_loop(HubState* hubState) {$/;"	f
 exec_hub_main	hub.c	/^HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,$/;"	f
+exec_play_round	player.c	/^PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {$/;"	f
+exec_player_loop	player.c	/^PlayerExitCode exec_player_loop(PlayerState* playerState) {$/;"	f
+exec_player_main	player.c	/^PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,$/;"	f
 f	unity/unity.c	/^    float f;$/;"	m	union:__anon12	file:
 files_to_operate_on	unity/generate_module.rb	/^  def files_to_operate_on(module_name, pattern = nil)$/;"	f	class:UnityModuleGenerator
 find_includes	unity/generate_test_runner.rb	/^  def find_includes(source)$/;"	f	class:UnityTestRunnerGenerator
@@ -1008,7 +1011,7 @@ gs_end_round	gameState.c	/^void gs_end_round(GameState* gameState) {$/;"	f
 gs_init	gameState.c	/^void gs_init(GameState* gameState, int numPlayers, int threshold) {$/;"	f
 gs_is_round_over	gameState.c	/^bool gs_is_round_over(GameState* gameState) {$/;"	f
 gs_new_round	gameState.c	/^void gs_new_round(GameState* gameState, int leadPlayer) {$/;"	f
-gs_place_card	gameState.c	/^void gs_place_card(GameState* gameState, int player, Card card) {$/;"	f
+gs_play_turn	gameState.c	/^void gs_play_turn(GameState* gameState, int player, Card card) {$/;"	f
 guard	make_header.py	/^            guard = header.upper() + '_H'$/;"	v
 hand	messages.h	/^    Deck hand;$/;"	m	union:__anon9
 hand	playerState.h	/^    Deck* hand;$/;"	m	struct:__anon11
@@ -1040,10 +1043,12 @@ leadPlayer	gameState.h	/^    int leadPlayer;$/;"	m	struct:__anon3
 leadPlayer	messages.h	/^    int leadPlayer;$/;"	m	union:__anon9
 leadSuit	gameState.h	/^    char leadSuit;$/;"	m	struct:__anon3
 main	hub.c	/^int main(int argc, char** argv) {$/;"	f
+main	player.c	/^int main(int argc, char** argv) {$/;"	f
 main	testDeck.c	/^int main(int argc, char** argv) {$/;"	f
 main	testMessages.c	/^int main(int argc, char** argv) {$/;"	f
 main	testUtil.c	/^int main(int argc, char** argv) {$/;"	f
 make_deck	testDeck.c	/^Deck make_deck(void) {$/;"	f
+message_error	player.c	/^PlayerExitCode message_error(MessageStatus status) {$/;"	f
 msg_code	messages.c	/^char* msg_code(MessageType type) {$/;"	f
 msg_decode_card	messages.c	/^bool msg_decode_card(char* payload, Card* outCard) {$/;"	f
 msg_decode_hand	messages.c	/^bool msg_decode_hand(char* payload, Deck* outDeck) {$/;"	f
@@ -1053,8 +1058,13 @@ msg_encode_card	messages.c	/^char* msg_encode_card(Card card) {$/;"	f
 msg_encode_hand	messages.c	/^char* msg_encode_hand(Deck deck) {$/;"	f
 msg_encode_int	messages.c	/^char* msg_encode_int(int value) {$/;"	f
 msg_encode_played	messages.c	/^char* msg_encode_played(PlayedTuple tuple) {$/;"	f
+msg_game_over	messages.c	/^Message msg_game_over(void) {$/;"	f
+msg_hand	messages.c	/^Message msg_hand(Deck hand) {$/;"	f
+msg_new_round	messages.c	/^Message msg_new_round(int leadPlayer) {$/;"	f
 msg_payload_decode	messages.c	/^bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {$/;"	f
 msg_payload_encode	messages.c	/^char* msg_payload_encode(Message message) {$/;"	f
+msg_play_card	messages.c	/^Message msg_play_card(Card card) {$/;"	f
+msg_played_card	messages.c	/^Message msg_played_card(int player, Card card) {$/;"	f
 msg_receive	messages.c	/^MessageStatus msg_receive(FILE* file, Message* outMessage) {$/;"	f
 msg_send	messages.c	/^MessageStatus msg_send(FILE* file, Message message) {$/;"	f
 n	make_deck.py	/^    n = int(sys.argv[1])$/;"	v
@@ -1104,7 +1114,9 @@ setUp	unity/unity.h	44;"	d
 set_xml_output	unity/parse_output.rb	/^  def set_xml_output$/;"	f	class:ParseOutput
 start_player	hub.c	/^bool start_player(HubState* hubState, int playerNum, char* name) {$/;"	f
 strategy_when_following	alice.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
+strategy_when_following	bob.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
 strategy_when_leading	alice.c	/^int strategy_when_leading(PlayerState* playerState) {$/;"	f
+strategy_when_leading	bob.c	/^int strategy_when_leading(PlayerState* playerState) {$/;"	f
 suit	deck.h	/^    char suit;$/;"	m	struct:Card
 suiteSetUp	unity/unity.h	/^    UNITY_WEAK_ATTRIBUTE void suiteSetUp(void) { }$/;"	f
 suiteSetUp	unity/unity.h	/^    void suiteSetUp(void) { }$/;"	f

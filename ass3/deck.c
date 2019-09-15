@@ -100,13 +100,24 @@ bool deck_is_full(Deck* deck) {
 }
 
 // see header
+bool deck_is_empty(Deck* deck) {
+    for (int i = 0; i < deck->numCards; i++) {
+        if (!is_null_card(deck->cards[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+// see header
 int deck_search(Deck* hand, char* order, bool high) {
     int len = strlen(order);
     for (int s = 0; s < len; s++) {
         char suit = order[s];
         int index = deck_best_card(hand, suit, high);
         if (index != -1) {
-            return hand->cards[index];
+            return index;
         }
     }
     return -1;

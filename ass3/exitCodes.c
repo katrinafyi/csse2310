@@ -64,6 +64,9 @@ void print_player_message(PlayerExitCode code) {
         case P_INCORRECT_HAND:
             str = "Invalid hand size";
             break;
+        case P_INVALID_MESSAGE:
+            str = "Invalid message";
+            break;
         case P_HUB_EOF:
             str = "EOF";
             break;

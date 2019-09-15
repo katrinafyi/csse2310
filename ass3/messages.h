@@ -49,5 +49,10 @@ char* msg_encode_played(PlayedTuple tuple);
 bool msg_decode_card(char* payload, Card* outCard);
 char* msg_encode_card(Card card);
 
+Message msg_hand(Deck hand);
+Message msg_new_round(int leadPlayer);
+Message msg_played_card(int player, Card card);
+Message msg_game_over(void);
+Message msg_play_card(Card card);
 
 #endif

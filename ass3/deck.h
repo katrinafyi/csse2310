@@ -47,6 +47,9 @@ void deck_clear(Deck* deck);
 /* Returns true if all slots in the deck are non-null. */
 bool deck_is_full(Deck* deck);
 
+/* Returns true if all slots in the deck are null. */
+bool deck_is_empty(Deck* deck);
+
 /* Looks for cards from the hand in the given order, returning index of
  * the matched card. order is a null-terminated string of suits, will be 
  * searched from left to right. If high is true, returns the highest card 
