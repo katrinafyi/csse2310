@@ -26,8 +26,16 @@ int main(int argc, char** argv) {
     printf("msg_receive returned: %d\n", ret);
     printf("code: %s\n", msg_code(message.type));
 
-    // test encoding hands
-    printf("encoded: |%s|\n", msg_encode_hand(message.data.hand));
+    if (message.type == MSG_HAND) {
+        // test encoding hands
+        printf("encoded hand: |%s|\n", msg_encode_hand(message.data.hand));
+    }
+
+    if (message.type == MSG_PLAYED_CARD) {
+        // test encoding tuple
+        printf("encoded tuple: |%s|\n", msg_encode_played(
+                message.data.playedTuple));
+    }
 
     return 0;
 }
