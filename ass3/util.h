@@ -15,12 +15,18 @@
 // hard.
 #define PID_CHAR(pid) (pid % 26 + 'A')
 
+// terminal escape codes
+#define TERM_GREY "\x1b[38;5;8m"
+#define TERM_RESET "\x1b[0m"
+#define TERM_REVERSE "\x1b[7m"
+
 // macros to print a message along with function and line number.
-// ass3: now with PID
+// ass3: now with PID and colours
 // unfortunately, these crash the style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "(%c) %s:%d "fmt, PID_CHAR(getpid()), \
+        "\x1b[38;5;%dm(%c) "TERM_GREY"%s:%d"TERM_RESET" "fmt, \
+        getpid() % 7 + 9, PID_CHAR(getpid()), \
         __func__, __LINE__, __VA_ARGS__);
 
 /* Parses the str into a non-negative integer, with the following
