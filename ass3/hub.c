@@ -225,6 +225,10 @@ HubExitCode exec_hub_loop(HubState* hubState) {
                 return ret;
             }
         }
+        gs_end_round(hubState->gameState);
+    }
+    if (!broadcast_message(hubState, msg_game_over(), -1)) {
+        return H_PLAYER_EOF;
     }
     return H_NORMAL;
 }
