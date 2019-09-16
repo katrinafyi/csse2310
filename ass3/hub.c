@@ -175,7 +175,7 @@ HubExitCode exec_player_turn(HubState* hubState, int currPlayer) {
             message.type != MSG_PLAY_CARD) {
         return ret;
     }
-    Card playedCard = message.data.card;
+    Card playedCard = message.data.card; // store played card
 
     if (deck_index_of(hand, message.data.card) == -1) {
         DEBUG_PRINT("card not in player's hand");
@@ -184,9 +184,10 @@ HubExitCode exec_player_turn(HubState* hubState, int currPlayer) {
 
     char leadSuit = hubState->gameState->leadSuit;
     int leadPlayer = hubState->gameState->leadPlayer;
+    bool violatesSuit = (deck_best_card(hand, leadSuit, true) != -1 &&
+            playedCard.suit != leadSuit);
     // if not lead player, and they have a lead suit card but didn't play it
-    if (leadPlayer != currPlayer && deck_best_card(hand, leadSuit, true) != -1 &&
-            playedCard.suit != leadSuit) {
+    if (leadPlayer != currPlayer && violatesSuit) {
         DEBUG_PRINT("does not follow lead suit");
         return H_INVALID_CARD;
     }
@@ -203,14 +204,17 @@ HubExitCode exec_player_turn(HubState* hubState, int currPlayer) {
 }
 
 HubExitCode exec_hub_loop(HubState* hubState) {
+    GameState* gameState = hubState->gameState;
     Message message;
     HubExitCode ret = H_INVALID_MESSAGE;
 
+    int numPlayers = hubState->gameState->numPlayers;
     // hand size will be the same for all players
     int handSize = hubState->playerHands[0].numCards;
     // one round per card in hand.
     for (int r = 0; r < handSize; r++) {
         int leadPlayer = hubState->gameState->leadPlayer;
+        printf("Lead player=%d\n", leadPlayer);
         
         // broadcast NEWROUND
         message = msg_new_round(leadPlayer);
@@ -218,15 +222,28 @@ HubExitCode exec_hub_loop(HubState* hubState) {
             return H_PLAYER_EOF;
         }
         // iterate over players
-        for (int i = 0; i < hubState->gameState->numPlayers; i++) {
-            int currPlayer = hubState->gameState->currPlayer;
+        for (int i = 0; i < numPlayers; i++) {
+            int currPlayer = gameState->currPlayer;
             ret = exec_player_turn(hubState, currPlayer);
             if (ret != H_NORMAL) {
                 return ret;
             }
         }
-        gs_end_round(hubState->gameState);
+        // prints message of cards this round, in order of play
+        printf("Cards=");
+        for (int i = 0; i < numPlayers; i++) {
+            // iterate in order of play
+            int player = (leadPlayer + i) % numPlayers;
+            if (i > 0) {
+                printf(" ");
+            }
+            Card card = gameState->table->cards[player];
+            printf("%c.%x", card.suit, card.rank);
+        }
+        printf("\n");
+        gs_end_round(gameState); // finalises round and declare winner
     }
+    // send final GAMEOVER to everyone
     if (!broadcast_message(hubState, msg_game_over(), -1)) {
         return H_PLAYER_EOF;
     }
