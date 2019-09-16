@@ -96,7 +96,7 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
 
 PlayerExitCode exec_player_loop(PlayerState* playerState) {
     Message message;
-    PlayerExitCode ret;
+    PlayerExitCode ret = P_INVALID_MESSAGE;
 
     DEBUG_PRINT("expecting hand");
     MessageStatus status = msg_receive(stdin, &message);
