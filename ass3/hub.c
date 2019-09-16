@@ -48,8 +48,9 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
     dup2(fdStderr, STDERR_FILENO);
     close(fdStderr);
 #endif
-    // this should never be printed in release mode
-    fprintf(stderr, "    child stderr is visible (DEBUG on)\n");
+    // this should never be printed in release mode which is why it is
+    // left in.
+    fprintf(stderr, "        child stderr is visible (DEBUG on)\n");
 
     // close original copies of each fd because they have been dup2'd
     close(fdStdin);
@@ -99,8 +100,8 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
         fclose(writeFile);
         return false;
     }
-    DEBUG_PRINTF("child %d (%s) started. pid: %d\n",
-            playerNum, name, forkResult);
+    DEBUG_PRINTF("child %d (%s) started. pid: %d (%c)\n",
+            playerNum, name, forkResult, PID_CHAR(forkResult));
     hubState->pipes[playerNum] = (PipePair)
         { .read = readFile, .write = writeFile };
     return true;
@@ -155,13 +156,13 @@ bool broadcast_message(HubState* hubState, Message message, int exclude) {
 bool hub_should_exit(MessageStatus status, HubExitCode* outCode) {
     if (status != MS_OK) {
         DEBUG_PRINTF("error message status: %d\n", status);
-        *outCode = status == MS_EOF ? P_HUB_EOF : P_INVALID_MESSAGE;
+        *outCode = status == MS_EOF ? H_PLAYER_EOF : H_INVALID_MESSAGE;
         return true;
     }
     return false;
 }
 
-HubExitCode exec_player_turn(HubState* hubState, int currPlayer) {
+HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
     GameState* gameState = hubState->gameState;
     Message message;
     HubExitCode ret;
@@ -203,6 +204,43 @@ HubExitCode exec_player_turn(HubState* hubState, int currPlayer) {
     return H_NORMAL;
 }
 
+void print_round_cards(HubState* hubState) {
+    GameState* gameState = hubState->gameState;
+    int numPlayers = gameState->numPlayers;
+    int leadPlayer = gameState->leadPlayer;
+
+    // prints message of cards this round, in order of play
+    printf("Cards=");
+    for (int i = 0; i < numPlayers; i++) {
+        // iterate in order of play
+        int player = (leadPlayer + i) % numPlayers;
+        if (i > 0) {
+            printf(" ");
+        }
+        Card card = gameState->table->cards[player];
+        printf("%c.%x", card.suit, card.rank);
+    }
+    printf("\n");
+}
+
+void print_player_scores(HubState* hubState) {
+    GameState* gameState = hubState->gameState;
+    int threshold = gameState->threshold;
+
+    for (int p = 0; p < gameState->numPlayers; p++) {
+        if (p > 0) {
+            printf(" ");
+        }
+        int points = gameState->playerPoints[p];
+        int diamonds = gameState->diamondsWon[p];
+        int diamondsMult = diamonds >= threshold ? 1 : -1;
+
+        int total = points + diamondsMult * diamonds;
+        printf("%d:%d", p, total);
+    }
+    printf("\n");
+}
+
 HubExitCode exec_hub_loop(HubState* hubState) {
     GameState* gameState = hubState->gameState;
     Message message;
@@ -215,34 +253,26 @@ HubExitCode exec_hub_loop(HubState* hubState) {
     for (int r = 0; r < handSize; r++) {
         int leadPlayer = hubState->gameState->leadPlayer;
         printf("Lead player=%d\n", leadPlayer);
+        gs_new_round(gameState, leadPlayer);
         
         // broadcast NEWROUND
         message = msg_new_round(leadPlayer);
         if (!broadcast_message(hubState, message, -1)) {
             return H_PLAYER_EOF;
         }
-        // iterate over players
+        // iterate over players, running their turn
         for (int i = 0; i < numPlayers; i++) {
             int currPlayer = gameState->currPlayer;
-            ret = exec_player_turn(hubState, currPlayer);
+            ret = one_player_turn(hubState, currPlayer);
             if (ret != H_NORMAL) {
                 return ret;
             }
         }
-        // prints message of cards this round, in order of play
-        printf("Cards=");
-        for (int i = 0; i < numPlayers; i++) {
-            // iterate in order of play
-            int player = (leadPlayer + i) % numPlayers;
-            if (i > 0) {
-                printf(" ");
-            }
-            Card card = gameState->table->cards[player];
-            printf("%c.%x", card.suit, card.rank);
-        }
-        printf("\n");
+        print_round_cards(hubState); // print cards played this round
         gs_end_round(gameState); // finalises round and declare winner
     }
+    // print final scores to terminal
+    print_player_scores(hubState);
     // send final GAMEOVER to everyone
     if (!broadcast_message(hubState, msg_game_over(), -1)) {
         return H_PLAYER_EOF;
@@ -290,10 +320,23 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     return exec_hub_loop(hubState);
 }
 
-/* Signal handler for SIGHUP. Exits with the appropriate exit code.
+/* Signal handler for SIGHUP.
+ * Exits with the appropriate exit code and message.
  */
 void sighup_handler(int signal) {
-    exit(H_SIGNAL); // exit immediately on SIGHUP
+    // temporarily block SIGINT on this process
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGINT);
+    sigprocmask(SIG_BLOCK, &set, NULL);
+
+    // kill children using 0 because they have our group ID
+    kill(0, SIGINT);
+    // blocking SIGINT prevents us from sharing the same fate
+
+    // not calling print_hub_message because that uses fprintf
+    write(STDERR_FILENO, "Ended due to signal", 19);
+    _exit(H_SIGNAL); // exit immediately
 }
 
 /* Registers the SIGHUP handler to exit the program.

@@ -53,7 +53,7 @@ Card get_card_to_play(PlayerState* playerState) {
  * play should continue to the next round if exit code is normal, otherwise
  * it should exit.
  */
-PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {
+PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
     PlayerExitCode ret = P_INVALID_MESSAGE;
     MessageStatus status;
     Message message;
@@ -124,10 +124,11 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
         // flag is needed to allow exits when ret is P_NORMAL. this occurs
         // at game over.
         bool cont = false; 
-        ret = exec_play_round(playerState, &cont);
+        ret = play_round(playerState, &cont);
         if (ret != P_NORMAL || !cont) {
             return ret;
         }
+        gs_end_round(gameState);
     }
     assert(0); // will always return from within loop
 }

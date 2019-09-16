@@ -962,6 +962,7 @@ all_obj	Makefile	/^all_obj = $(all_src:.c=.o)$/;"	m
 all_src	Makefile	/^all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)$/;"	m
 bob_obj	Makefile	/^bob_obj = $(bob_src:.c=.o)$/;"	m
 bob_src	Makefile	/^bob_src = playerState.c bob.c player.c$/;"	m
+broadcast_message	hub.c	/^bool broadcast_message(HubState* hubState, Message message, int exclude) {$/;"	f
 card	messages.h	/^    Card card;$/;"	m	struct:PlayedTuple
 card	messages.h	/^    Card card;$/;"	m	union:MessageData
 cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
@@ -1001,11 +1002,12 @@ detect_os_specifics	unity/parse_output.rb	/^  def detect_os_specifics(line)$/;"	
 diamondsWon	gameState.h	/^    int* diamondsWon;$/;"	m	struct:GameState
 do_load_deck	deck.c	/^bool do_load_deck(Deck* deck, FILE* file) {$/;"	f
 exec_child	hub.c	/^void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {$/;"	f
-exec_hub_loop	hub.c	/^HubExitCode exec_hub_loop(HubState* hubState, int numRounds) {$/;"	f
+exec_hub_loop	hub.c	/^HubExitCode exec_hub_loop(HubState* hubState) {$/;"	f
 exec_hub_main	hub.c	/^HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,$/;"	f
 exec_play_round	player.c	/^PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {$/;"	f
 exec_player_loop	player.c	/^PlayerExitCode exec_player_loop(PlayerState* playerState) {$/;"	f
 exec_player_main	player.c	/^PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,$/;"	f
+exec_player_turn	hub.c	/^HubExitCode exec_player_turn(HubState* hubState, int currPlayer) {$/;"	f
 f	unity/unity.c	/^    float f;$/;"	m	union:__anon1	file:
 files_to_operate_on	unity/generate_module.rb	/^  def files_to_operate_on(module_name, pattern = nil)$/;"	f	class:UnityModuleGenerator
 find_includes	unity/generate_test_runner.rb	/^  def find_includes(source)$/;"	f	class:UnityTestRunnerGenerator
@@ -1037,6 +1039,7 @@ hs_init	hubState.c	/^void hs_init(HubState* hubState, GameState* gameState) {$/;
 hs_played_card	hubState.c	/^void hs_played_card(HubState* hubState, int player, Card card) {$/;"	f
 hs_set_player_pipe	hubState.c	/^void hs_set_player_pipe(HubState* hubState, int player,$/;"	f
 hub_obj	Makefile	/^hub_obj = $(hub_src:.c=.o)$/;"	m
+hub_should_exit	hub.c	/^bool hub_should_exit(MessageStatus status, HubExitCode* outCode) {$/;"	f
 hub_src	Makefile	/^hub_src = hubState.c hub.c$/;"	m
 i16	unity/unity.c	/^    UNITY_INT16 i16;$/;"	m	union:__anon1	file:
 i32	unity/unity.c	/^    UNITY_INT32 i32;$/;"	m	union:__anon1	file:
@@ -1101,10 +1104,12 @@ playerHands	hubState.h	/^  Deck* playerHands;$/;"	m	struct:HubState
 playerIndex	playerState.h	/^    int playerIndex;$/;"	m	struct:PlayerState
 playerPoints	gameState.h	/^    int* playerPoints;$/;"	m	struct:GameState
 player_args	hub.c	/^char** player_args(HubState* hubState, int playerNum, char* name) {$/;"	f
+player_should_exit	player.c	/^bool player_should_exit(MessageStatus status, Message* message,$/;"	f
 posix_colour	unity/colour_prompt.rb	/^  def posix_colour(colour)$/;"	f	class:ColourCommandLine
 prepare_fixture_line	unity/parse_output.rb	/^  def prepare_fixture_line(line)$/;"	f	class:ParseOutput
 print_hub_message	exitCodes.c	/^void print_hub_message(HubExitCode code) {$/;"	f
 print_player_message	exitCodes.c	/^void print_player_message(PlayerExitCode code) {$/;"	f
+print_round_cards	hub.c	/^void print_round_cards(HubState* hubState) {$/;"	f
 process	unity/parse_output.rb	/^  def process(file_name)$/;"	f	class:ParseOutput
 ps_destroy	playerState.c	/^void ps_destroy(PlayerState* playerState) {$/;"	f
 ps_init	playerState.c	/^void ps_init(PlayerState* playerState, GameState* gameState, int playerIndex) {$/;"	f
@@ -1120,7 +1125,6 @@ read	hubState.h	/^  FILE* read;$/;"	m	struct:PipePair
 register_sighup	hub.c	/^void register_sighup(void) {$/;"	f
 report	unity/colour_reporter.rb	/^def report(message)$/;"	f
 results_structure	unity/stylize_as_junit.rb	/^  def results_structure$/;"	f
-roundNum	gameState.h	/^    int roundNum;$/;"	m	struct:GameState
 run	unity/generate_test_runner.rb	/^  def run(input_file, output_file, options = nil)$/;"	f	class:UnityTestRunnerGenerator
 run	unity/stylize_as_junit.rb	/^  def run$/;"	f	class:UnityToJUnit
 run	unity/unity_test_summary.rb	/^  def run$/;"	f	class:UnityTestSummary
@@ -1131,7 +1135,6 @@ setUp	unity/unity.h	/^    UNITY_WEAK_ATTRIBUTE void setUp(void) { }$/;"	f
 setUp	unity/unity.h	/^    void setUp(void) { }$/;"	f
 setUp	unity/unity.h	44;"	d
 set_xml_output	unity/parse_output.rb	/^  def set_xml_output$/;"	f	class:ParseOutput
-should_exit	player.c	/^bool should_exit(MessageStatus status, Message* message,$/;"	f
 sighup_handler	hub.c	/^void sighup_handler(int signal) {$/;"	f
 start_player	hub.c	/^bool start_player(HubState* hubState, int playerNum, char* name) {$/;"	f
 strategy_when_following	alice.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f

@@ -72,6 +72,7 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
 
     char* line;
     if (feof(file) || !safe_read_line(file, &line)) {
+        DEBUG_PRINT("read pipe is at EOF");
         return MS_EOF;
     }
 
@@ -92,11 +93,13 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
         free(line);
         return MS_INVALID;
     }
+
     if (!msg_payload_decode(type, payload, &message.data)) {
         DEBUG_PRINT("invalid payload");
         free(line);
         return MS_INVALID;
     }
+
     free(line);
     message.type = type;
     *outMessage = message;
@@ -110,6 +113,7 @@ MessageStatus msg_send(FILE* file, Message message) {
     // note newline at end
     errno = 0;
     int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
+    fflush(file);
     // DEBUG_PRINTF("errno: %d\n", errno);
     free(payload);
     return (ret >= 0) ? MS_OK : MS_EOF;
@@ -218,8 +222,10 @@ char* msg_encode_played(PlayedTuple tuple) {
 
     // player number length + 3 for card and comma + \0
     char* payload = calloc(strlen(playerStr) + 4, sizeof(char));
-    char cardStr[3];
-    sprintf(payload, "%s,%s", playerStr, fmt_card(cardStr, tuple.card, false));
+    char str[3];
+    sprintf(payload, "%s,%s", playerStr, fmt_card(str, tuple.card, false));
+
+    free(playerStr);
     return payload;
 }
 

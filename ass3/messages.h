@@ -1,6 +1,9 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
+#include <stdio.h>
+#include <stdbool.h>
+
 #include "deck.h"
 
 #define NUM_MESSAGE_TYPES 5

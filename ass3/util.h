@@ -5,17 +5,23 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <unistd.h>
 
 // used as an assert(false) which can't be disabled.
 // for BIG mistakes.
 #define INSTANT_SEGFAULT *((int*)0) = 42
 
+// to easily distinguish between children and parents. squinting at PIDs is
+// hard.
+#define PID_CHAR(pid) (pid % 26 + 'A')
+
 // macros to print a message along with function and line number.
+// ass3: now with PID
 // unfortunately, these crash the style.sh
-#define DEBUG_PRINT(str) fprintf(stderr, "%s:%d %s\n", __func__, __LINE__, \
-        str);
+#define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "%s:%d "fmt, __func__, __LINE__, __VA_ARGS__);
+        "(%c) %s:%d "fmt, PID_CHAR(getpid()), \
+        __func__, __LINE__, __VA_ARGS__);
 
 /* Parses the str into a non-negative integer, with the following
  * requirements:

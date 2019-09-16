@@ -45,7 +45,7 @@ test_messages: $(common_obj) testMessages.o
 	gcc $(CCFLAGS) $(common_obj) $(bob_obj) -o $@
 
 clean:
-	rm -f *.c 2310hub 2310alice 2310bob
+	rm -f *.o 2310hub 2310alice 2310bob
 
 sed_debug:
 	sed -r -i 's/^(\s+)noop_(PRINTF?)/\1DEBUG_\U\2/gI' $(all_src)

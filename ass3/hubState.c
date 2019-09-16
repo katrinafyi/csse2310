@@ -25,6 +25,15 @@ void hs_destroy(HubState* hubState) {
         hubState->playerHands = NULL;
     }
     if (hubState->pipes != NULL) {
+        for (int i = 0; i < gameState->numPlayers; i++) {
+            if (hubState->pipes[i].read != NULL) {
+                fclose(hubState->pipes[i].read);
+            }
+            if (hubState->pipes[i].write != NULL) {
+                fclose(hubState->pipes[i].write);
+            }
+            hubState->pipes[i] = (PipePair) { NULL, NULL };
+        }
         free(hubState->pipes);
         hubState->pipes = NULL;
     }

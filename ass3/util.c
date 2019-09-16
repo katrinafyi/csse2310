@@ -113,7 +113,7 @@ struct sigaction new_sigaction(void) {
 
 // see header
 void ignore_sigpipe(void) {
-    struct sigaction sa;
+    struct sigaction sa = new_sigaction();
 
     sa.sa_flags = SA_RESTART;
     sa.sa_handler = SIG_IGN;

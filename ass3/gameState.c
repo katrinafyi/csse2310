@@ -40,6 +40,7 @@ void gs_destroy(GameState* gameState) {
 }
 
 void gs_new_round(GameState* gameState, int leadPlayer) {
+    DEBUG_PRINTF("new round! led by %d\n", leadPlayer);
     // round number is set by gs_end_round
     gameState->leadPlayer = leadPlayer;
     gameState->currPlayer = leadPlayer;
