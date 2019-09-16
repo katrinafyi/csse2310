@@ -269,17 +269,13 @@ HubExitCode exec_hub_loop(HubState* hubState) {
         print_round_cards(hubState); // print cards played this round
         gs_end_round(gameState); // finalises round and declare winner
     }
-    // print final scores to terminal
+    // print final scores to terminal and return.
     print_player_scores(hubState);
-    // send final GAMEOVER to everyone
-    if (!broadcast_message(hubState, msg_game_over(), -1)) {
-        return H_PLAYER_EOF;
-    }
     return H_NORMAL;
 }
 
 HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
-        GameState* gameState, Deck* deck) {
+        GameState* gameState) {
     if (argc < 5) {
         return H_INCORRECT_ARGS;
     }
@@ -290,17 +286,20 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     int numPlayers = argc - 3; // 3 non-player arguments
     char** playerNames = argv + 3; // skip first 3 arguments
 
-    if (!deck_init_file(deck, argv[1])) {
+    Deck deck = {0}; // to store the full deck before dealing
+    if (!deck_init_file(&deck, argv[1])) {
         return H_DECK_ERROR;
     }
-    if (deck->numCards < numPlayers) {
+    if (deck.numCards < numPlayers) {
+        deck_destroy(&deck);
         return H_DECK_SHORT;
     }
 
     gs_init(gameState, numPlayers, threshold);
     hs_init(hubState, gameState);
 
-    hs_deal_cards(hubState, deck);
+    hs_deal_cards(hubState, &deck);
+    deck_destroy(&deck); // we wont need this anymore
 
     DEBUG_PRINTF("hub PID: %d\n", getpid());
     // start child players and waits for their @ symbol
@@ -315,7 +314,10 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     }
 
     // runs main game loop
-    return exec_hub_loop(hubState);
+    HubExitCode ret = exec_hub_loop(hubState);
+    // sends GAMEOVER to everyone, ignore return status.
+    broadcast_message(hubState, msg_game_over(), -1);
+    return ret;
 }
 
 /* Signal handler for SIGHUP.
@@ -353,14 +355,11 @@ int main(int argc, char** argv) {
 
     GameState gameState = {0};
     HubState hubState = {0};
-    Deck fullDeck = {0}; // deck of all cards to use
 
-    HubExitCode ret = exec_hub_main(argc, argv,
-            &hubState, &gameState, &fullDeck);
+    HubExitCode ret = exec_hub_main(argc, argv, &hubState, &gameState);
 
     gs_destroy(&gameState);
     hs_destroy(&hubState);
-    deck_destroy(&fullDeck);
 
     print_hub_message(ret);
     DEBUG_PRINTF("exiting hub with code: %d\n", ret);
