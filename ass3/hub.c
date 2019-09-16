@@ -34,7 +34,6 @@ char** player_args(HubState* hubState, int playerNum, char* name) {
 
 void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
     DEBUG_PRINTF("this is the child, pid: %d\n", getpid());
-
     fflush(stdout);
     fflush(stderr); // for extra safety
 
@@ -58,12 +57,11 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
 
     errno = 0;
     execv(name, argv); // if successful, will not return
-#ifdef DEBUG
-    perror(name); // if debugging, print reason for exec failure.
-#endif
+    DEBUG_PRINTF("execv failed (%s): %s\n", name, strerror(errno));
 
-    // die if exec failed
-    _exit(100); // _exit avoids messing with the parent's data and state
+    // die if exec failed. hub will detect missing @
+    // _exit avoids messing with the parent's data and state
+    _exit(100); 
 }
 
 bool start_player(HubState* hubState, int playerNum, char* name) {
@@ -169,7 +167,7 @@ HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
 
     Deck* hand = hubState->playerHands + currPlayer;
     // wait for PLAY from players
-    DEBUG_PRINTF("expecting %d PLAY\n", currPlayer);
+    DEBUG_PRINTF("hub expecting %d to PLAY\n", currPlayer);
     FILE* readFile = hubState->pipes[currPlayer].read;
     MessageStatus status = msg_receive(readFile, &message);
     if (hub_should_exit(status, &ret) ||

@@ -20,6 +20,9 @@ else
     printf '@'
 fi
 
+# close stdout
+exec 1>&-
+
 echo "$0: recording input to file: $f.in" >&2
 
 tee $f.in >/dev/null
