@@ -163,7 +163,7 @@ bool hub_should_exit(MessageStatus status, HubExitCode* outCode) {
 HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
     GameState* gameState = hubState->gameState;
     Message message;
-    HubExitCode ret;
+    HubExitCode ret = H_INVALID_CARD;
 
     Deck* hand = hubState->playerHands + currPlayer;
     // wait for PLAY from players
