@@ -5,11 +5,10 @@
 
 #include "deck.h"
 
-typedef struct {
+typedef struct GameState {
     int numPlayers;
     int threshold;
 
-    int roundNum;
     int leadPlayer;
     char leadSuit;
     int currPlayer;

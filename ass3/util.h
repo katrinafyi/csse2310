@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <signal.h>
 
 // used as an assert(false) which can't be disabled.
 // for BIG mistakes.
@@ -34,6 +35,7 @@ char* int_to_string(int number);
  *  - file is not NULL
  *  - line does not contain \0 characters
  *  - no IO errors occur
+ *  - first read is not EOF
  * Returns false if any of the above conditions fail, true on success.
  *
  * MALLOCs enough space for the line. Stores the allocated pointer into
@@ -51,8 +53,16 @@ bool safe_read_line(FILE* file, char** output);
  * Replaces split chars in the string with \0, so for i = 0, ..., numTokens-1,
  * tokens[i] points to the start of the i-th token which can be
  * treated as an individual \0 terminated string.
+ *
+ * Only splits into numTokens tokens. If the actual number of tokens is
+ * greater than numTokens, the last token in tokens will contain the rest of
+ * the string, unsplit.
  */
 int tokenise(char* line, char split, char** tokens, int numTokens);
+
+/* Intialises a new empty sigaction struct and returns it.
+ */
+struct sigaction new_sigaction(void);
 
 /* Ignores the SIGPIPE signal via sigaction configuration.
  */

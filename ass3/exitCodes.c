@@ -4,76 +4,38 @@
 
 #include "exitCodes.h"
 
+// see header
 void print_hub_message(HubExitCode code) {
-    char* str = NULL;
-    switch (code) {
-        case H_NORMAL:
-            break;
-        case H_INCORRECT_ARGS:
-            str = "Usage: 2310hub deck threshold player0 {player1}";
-            break;
-        case H_INCORRECT_THRESHOLD:
-            str = "Invalid threshold";
-            break;
-        case H_DECK_ERROR:
-            str = "Deck error";
-            break;
-        case H_DECK_SHORT:
-            str = "Not enough cards";
-            break;
-        case H_PLAYER_ERROR:
-            str = "Player error";
-            break;
-        case H_PLAYER_EOF:
-            str = "Player EOF";
-            break;
-        case H_INVALID_MESSAGE:
-            str = "Invalid message";
-            break;
-        case H_INVALID_CARD:
-            str = "Invalid card choice";
-            break;
-        case H_SIGNAL:
-            str = "Ended due to signal";
-            break;
-        default:
-            assert(0);
-    }
-    if (str != NULL) {
-        fprintf(stderr, "%s\n", str);
+    assert(0 <= code && code < 10);
+    static char* messages[10];
+    messages[0] = NULL;
+    messages[1] = "Usage: 2310hub deck threshold player0 {player1}";
+    messages[2] = "Invalid threshold";
+    messages[3] = "Deck error";
+    messages[4] = "Not enough cards";
+    messages[5] = "Player error";
+    messages[6] = "Player EOF";
+    messages[7] = "Invalid message";
+    messages[8] = "Invalid card choice";
+    messages[9] = "Ended due to signal";
+    if (messages[code] != NULL) {
+        fprintf(stderr, "%s\n", messages[code]);
     }
 }
 
+// see header
 void print_player_message(PlayerExitCode code) {
-    char* str = NULL;
-    switch (code) {
-        case P_NORMAL:
-            break;
-        case P_INCORRECT_ARGS:
-            str = "Usage: player players myid threshold handsize";
-            break;
-        case P_INCORRECT_PLAYERS:
-            str = "Invalid players";
-            break;
-        case P_INCORRECT_POSITION:
-            str = "Invalid position";
-            break;
-        case P_INCORRECT_THRESHOLD:
-            str = "Invalid threshold";
-            break;
-        case P_INCORRECT_HAND:
-            str = "Invalid hand size";
-            break;
-        case P_INVALID_MESSAGE:
-            str = "Invalid message";
-            break;
-        case P_HUB_EOF:
-            str = "EOF";
-            break;
-        default:
-            assert(0);
-    }
-    if (str != NULL) {
-        fprintf(stderr, "%s\n", str);
+    assert(0 <= code && code < 8);
+    static char* messages[8];
+    messages[0] = NULL;
+    messages[1] = "Usage: player players myid threshold handsize";
+    messages[2] = "Invalid players";
+    messages[3] = "Invalid position";
+    messages[4] = "Invalid threshold";
+    messages[5] = "Invalid hand size";
+    messages[6] = "Invalid message";
+    messages[7] = "EOF";
+    if (messages[code] != NULL) {
+        fprintf(stderr, "%s\n", messages[code]);
     }
 }

@@ -18,64 +18,74 @@ CurrentTestLineNumber	unity/unity_internals.h	/^    UNITY_LINE_TYPE CurrentTestL
 CurrentTestName	unity/unity_internals.h	/^    const char* CurrentTestName;$/;"	m	struct:UNITY_STORAGE_T
 CurrentTestStartTime	unity/unity_internals.h	/^    UNITY_TIME_TYPE CurrentTestStartTime;$/;"	m	struct:UNITY_STORAGE_T
 CurrentTestStopTime	unity/unity_internals.h	/^    UNITY_TIME_TYPE CurrentTestStopTime;$/;"	m	struct:UNITY_STORAGE_T
-DEBUG_PRINT	util.h	14;"	d
-DEBUG_PRINTF	util.h	16;"	d
+DEBUG_PRINT	util.h	15;"	d
+DEBUG_PRINTF	util.h	17;"	d
 DECK_H	deck.h	2;"	d
 Deck	deck.h	/^typedef struct Deck {$/;"	s
 Deck	deck.h	/^} Deck;$/;"	t	typeref:struct:Deck
 EXITCODES_H	exitCodes.h	2;"	d
 GAMESTATE_H	gameState.h	2;"	d
-GameState	gameState.h	/^} GameState;$/;"	t	typeref:struct:__anon3
+GameState	gameState.h	/^typedef struct GameState {$/;"	s
+GameState	gameState.h	/^} GameState;$/;"	t	typeref:struct:GameState
 HUBSTATE_H	hubState.h	2;"	d
-H_DECK_ERROR	exitCodes.h	/^    H_DECK_ERROR = 3,$/;"	e	enum:__anon1
-H_DECK_SHORT	exitCodes.h	/^    H_DECK_SHORT = 4,$/;"	e	enum:__anon1
-H_INCORRECT_ARGS	exitCodes.h	/^    H_INCORRECT_ARGS = 1,$/;"	e	enum:__anon1
-H_INCORRECT_THRESHOLD	exitCodes.h	/^    H_INCORRECT_THRESHOLD = 2,$/;"	e	enum:__anon1
-H_INVALID_CARD	exitCodes.h	/^    H_INVALID_CARD = 8,$/;"	e	enum:__anon1
-H_INVALID_MESSAGE	exitCodes.h	/^    H_INVALID_MESSAGE = 7,$/;"	e	enum:__anon1
-H_NORMAL	exitCodes.h	/^    H_NORMAL = 0,$/;"	e	enum:__anon1
-H_PLAYER_EOF	exitCodes.h	/^    H_PLAYER_EOF = 6,$/;"	e	enum:__anon1
-H_PLAYER_ERROR	exitCodes.h	/^    H_PLAYER_ERROR = 5,$/;"	e	enum:__anon1
-H_SIGNAL	exitCodes.h	/^    H_SIGNAL = 9,$/;"	e	enum:__anon1
-HubExitCode	exitCodes.h	/^} HubExitCode;$/;"	t	typeref:enum:__anon1
-HubState	hubState.h	/^} HubState;$/;"	t	typeref:struct:__anon5
-INSTANT_SEGFAULT	util.h	10;"	d
+H_DECK_ERROR	exitCodes.h	/^    H_DECK_ERROR = 3,$/;"	e	enum:HubExitCode
+H_DECK_SHORT	exitCodes.h	/^    H_DECK_SHORT = 4,$/;"	e	enum:HubExitCode
+H_INCORRECT_ARGS	exitCodes.h	/^    H_INCORRECT_ARGS = 1,$/;"	e	enum:HubExitCode
+H_INCORRECT_THRESHOLD	exitCodes.h	/^    H_INCORRECT_THRESHOLD = 2,$/;"	e	enum:HubExitCode
+H_INVALID_CARD	exitCodes.h	/^    H_INVALID_CARD = 8,$/;"	e	enum:HubExitCode
+H_INVALID_MESSAGE	exitCodes.h	/^    H_INVALID_MESSAGE = 7,$/;"	e	enum:HubExitCode
+H_NORMAL	exitCodes.h	/^    H_NORMAL = 0,$/;"	e	enum:HubExitCode
+H_PLAYER_EOF	exitCodes.h	/^    H_PLAYER_EOF = 6,$/;"	e	enum:HubExitCode
+H_PLAYER_ERROR	exitCodes.h	/^    H_PLAYER_ERROR = 5,$/;"	e	enum:HubExitCode
+H_SIGNAL	exitCodes.h	/^    H_SIGNAL = 9,$/;"	e	enum:HubExitCode
+HubExitCode	exitCodes.h	/^typedef enum HubExitCode {$/;"	g
+HubExitCode	exitCodes.h	/^} HubExitCode;$/;"	t	typeref:enum:HubExitCode
+HubState	hubState.h	/^typedef struct HubState {$/;"	s
+HubState	hubState.h	/^} HubState;$/;"	t	typeref:struct:HubState
+INSTANT_SEGFAULT	util.h	11;"	d
 IsStringInBiggerString	unity/unity.c	/^int IsStringInBiggerString(const char* longstring, const char* shortstring)$/;"	f
 LINE_BUFFER	util.c	9;"	d	file:
 MESSAGES_H	messages.h	2;"	d
-MSG_GAME_OVER	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:__anon6
-MSG_HAND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:__anon6
-MSG_NEW_ROUND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:__anon6
-MSG_NULL	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:__anon6
-MSG_PLAYED_CARD	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:__anon6
-MSG_PLAY_CARD	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:__anon6
-MS_EOF	messages.h	/^    MS_OK, MS_EOF, MS_INVALID$/;"	e	enum:__anon7
-MS_INVALID	messages.h	/^    MS_OK, MS_EOF, MS_INVALID$/;"	e	enum:__anon7
-MS_OK	messages.h	/^    MS_OK, MS_EOF, MS_INVALID$/;"	e	enum:__anon7
-Message	messages.h	/^} Message;$/;"	t	typeref:struct:__anon10
-MessageData	messages.h	/^} MessageData;$/;"	t	typeref:union:__anon9
-MessageStatus	messages.h	/^} MessageStatus;$/;"	t	typeref:enum:__anon7
-MessageType	messages.h	/^} MessageType;$/;"	t	typeref:enum:__anon6
+MSG_GAME_OVER	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:MessageType
+MSG_HAND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:MessageType
+MSG_NEW_ROUND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:MessageType
+MSG_NULL	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:MessageType
+MSG_PLAYED_CARD	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:MessageType
+MSG_PLAY_CARD	messages.h	/^    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:MessageType
+MS_EOF	messages.h	/^    MS_OK, MS_EOF, MS_INVALID$/;"	e	enum:MessageStatus
+MS_INVALID	messages.h	/^    MS_OK, MS_EOF, MS_INVALID$/;"	e	enum:MessageStatus
+MS_OK	messages.h	/^    MS_OK, MS_EOF, MS_INVALID$/;"	e	enum:MessageStatus
+Message	messages.h	/^typedef struct Message {$/;"	s
+Message	messages.h	/^} Message;$/;"	t	typeref:struct:Message
+MessageData	messages.h	/^typedef union MessageData {$/;"	u
+MessageData	messages.h	/^} MessageData;$/;"	t	typeref:union:MessageData
+MessageStatus	messages.h	/^typedef enum MessageStatus {$/;"	g
+MessageStatus	messages.h	/^} MessageStatus;$/;"	t	typeref:enum:MessageStatus
+MessageType	messages.h	/^typedef enum MessageType {$/;"	g
+MessageType	messages.h	/^} MessageType;$/;"	t	typeref:enum:MessageType
 NULL_CARD	deck.h	6;"	d
 NUM_MESSAGE_TYPES	messages.h	6;"	d
 NumberOfTests	unity/unity_internals.h	/^    UNITY_COUNTER_TYPE NumberOfTests;$/;"	m	struct:UNITY_STORAGE_T
 PLAYERINTERFACE_H	strategy.h	2;"	d
 PLAYERSTATE_H	playerState.h	2;"	d
-PLAYER_H	player.h	2;"	d
 PROGMEM	unity/unity.c	13;"	d	file:
-P_HUB_EOF	exitCodes.h	/^    P_HUB_EOF = 7,$/;"	e	enum:__anon2
-P_INCORRECT_ARGS	exitCodes.h	/^    P_INCORRECT_ARGS = 1,$/;"	e	enum:__anon2
-P_INCORRECT_HAND	exitCodes.h	/^    P_INCORRECT_HAND = 5,$/;"	e	enum:__anon2
-P_INCORRECT_PLAYERS	exitCodes.h	/^    P_INCORRECT_PLAYERS = 2,$/;"	e	enum:__anon2
-P_INCORRECT_POSITION	exitCodes.h	/^    P_INCORRECT_POSITION = 3,$/;"	e	enum:__anon2
-P_INCORRECT_THRESHOLD	exitCodes.h	/^    P_INCORRECT_THRESHOLD = 4,$/;"	e	enum:__anon2
-P_INVALID_MESSAGE	exitCodes.h	/^    P_INVALID_MESSAGE = 6,$/;"	e	enum:__anon2
-P_NORMAL	exitCodes.h	/^    P_NORMAL = 0,$/;"	e	enum:__anon2
+P_HUB_EOF	exitCodes.h	/^    P_HUB_EOF = 7,$/;"	e	enum:PlayerExitCode
+P_INCORRECT_ARGS	exitCodes.h	/^    P_INCORRECT_ARGS = 1,$/;"	e	enum:PlayerExitCode
+P_INCORRECT_HAND	exitCodes.h	/^    P_INCORRECT_HAND = 5,$/;"	e	enum:PlayerExitCode
+P_INCORRECT_PLAYERS	exitCodes.h	/^    P_INCORRECT_PLAYERS = 2,$/;"	e	enum:PlayerExitCode
+P_INCORRECT_POSITION	exitCodes.h	/^    P_INCORRECT_POSITION = 3,$/;"	e	enum:PlayerExitCode
+P_INCORRECT_THRESHOLD	exitCodes.h	/^    P_INCORRECT_THRESHOLD = 4,$/;"	e	enum:PlayerExitCode
+P_INVALID_MESSAGE	exitCodes.h	/^    P_INVALID_MESSAGE = 6,$/;"	e	enum:PlayerExitCode
+P_NORMAL	exitCodes.h	/^    P_NORMAL = 0,$/;"	e	enum:PlayerExitCode
 ParseOutput	unity/parse_output.rb	/^class ParseOutput$/;"	c
-PipePair	hubState.h	/^} PipePair;$/;"	t	typeref:struct:__anon4
-PlayedTuple	messages.h	/^} PlayedTuple;$/;"	t	typeref:struct:__anon8
-PlayerExitCode	exitCodes.h	/^} PlayerExitCode;$/;"	t	typeref:enum:__anon2
-PlayerState	playerState.h	/^} PlayerState;$/;"	t	typeref:struct:__anon11
+PipePair	hubState.h	/^typedef struct PipePair {$/;"	s
+PipePair	hubState.h	/^} PipePair;$/;"	t	typeref:struct:PipePair
+PlayedTuple	messages.h	/^typedef struct PlayedTuple {$/;"	s
+PlayedTuple	messages.h	/^} PlayedTuple;$/;"	t	typeref:struct:PlayedTuple
+PlayerExitCode	exitCodes.h	/^typedef enum PlayerExitCode {$/;"	g
+PlayerExitCode	exitCodes.h	/^} PlayerExitCode;$/;"	t	typeref:enum:PlayerExitCode
+PlayerState	playerState.h	/^typedef struct PlayerState {$/;"	s
+PlayerState	playerState.h	/^} PlayerState;$/;"	t	typeref:struct:PlayerState
 RETURN_IF_FAIL_OR_IGNORE	unity/unity.c	24;"	d	file:
 RUN_TEST	unity/unity_internals.h	702;"	d
 RUN_TEST	unity/unity_internals.h	714;"	d
@@ -486,45 +496,45 @@ TestFileFilter	unity/test_file_filter.rb	/^  class TestFileFilter$/;"	c	class:Ra
 TestIgnores	unity/unity_internals.h	/^    UNITY_COUNTER_TYPE TestIgnores;$/;"	m	struct:UNITY_STORAGE_T
 TypeSanitizer	unity/type_sanitizer.rb	/^module TypeSanitizer$/;"	m
 UNITY	unity/unity.h	9;"	d
-UNITY_ARRAY_TO_ARRAY	unity/unity_internals.h	/^    UNITY_ARRAY_TO_ARRAY,$/;"	e	enum:__anon15
-UNITY_ARRAY_TO_VAL	unity/unity_internals.h	/^    UNITY_ARRAY_TO_VAL = 0,$/;"	e	enum:__anon15
-UNITY_ARRAY_UNKNOWN	unity/unity_internals.h	/^    UNITY_ARRAY_UNKNOWN$/;"	e	enum:__anon15
+UNITY_ARRAY_TO_ARRAY	unity/unity_internals.h	/^    UNITY_ARRAY_TO_ARRAY,$/;"	e	enum:__anon4
+UNITY_ARRAY_TO_VAL	unity/unity_internals.h	/^    UNITY_ARRAY_TO_VAL = 0,$/;"	e	enum:__anon4
+UNITY_ARRAY_UNKNOWN	unity/unity_internals.h	/^    UNITY_ARRAY_UNKNOWN$/;"	e	enum:__anon4
 UNITY_BEGIN	unity/unity_internals.h	728;"	d
 UNITY_CLR_DETAILS	unity/unity_internals.h	501;"	d
 UNITY_CLR_DETAILS	unity/unity_internals.h	505;"	d
-UNITY_COMPARISON_T	unity/unity_internals.h	/^} UNITY_COMPARISON_T;$/;"	t	typeref:enum:__anon14
+UNITY_COMPARISON_T	unity/unity_internals.h	/^} UNITY_COMPARISON_T;$/;"	t	typeref:enum:__anon3
 UNITY_COUNTER_TYPE	unity/unity_internals.h	372;"	d
 UNITY_DETAIL1_NAME	unity/unity_internals.h	510;"	d
 UNITY_DETAIL2_NAME	unity/unity_internals.h	514;"	d
 UNITY_DISPLAY_RANGE_HEX	unity/unity_internals.h	399;"	d
 UNITY_DISPLAY_RANGE_INT	unity/unity_internals.h	397;"	d
 UNITY_DISPLAY_RANGE_UINT	unity/unity_internals.h	398;"	d
-UNITY_DISPLAY_STYLE_HEX16	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX16    = 2 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_HEX32	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX32    = 4 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_HEX64	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX64    = 8 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_HEX8	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX8     = 1 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_INT	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT      = (UNITY_INT_WIDTH \/ 8) + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_INT16	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT16    = 2 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_INT32	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT32    = 4 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_INT64	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT64    = 8 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_INT8	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT8     = 1 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon13
+UNITY_DISPLAY_STYLE_HEX16	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX16    = 2 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_HEX32	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX32    = 4 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_HEX64	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX64    = 8 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_HEX8	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_HEX8     = 1 + UNITY_DISPLAY_RANGE_HEX,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_INT	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT      = (UNITY_INT_WIDTH \/ 8) + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_INT16	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT16    = 2 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_INT32	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT32    = 4 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_INT64	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT64    = 8 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_INT8	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_INT8     = 1 + UNITY_DISPLAY_RANGE_INT,$/;"	e	enum:__anon2
 UNITY_DISPLAY_STYLE_POINTER	unity/unity_internals.h	158;"	d
 UNITY_DISPLAY_STYLE_POINTER	unity/unity_internals.h	161;"	d
 UNITY_DISPLAY_STYLE_POINTER	unity/unity_internals.h	164;"	d
-UNITY_DISPLAY_STYLE_T	unity/unity_internals.h	/^} UNITY_DISPLAY_STYLE_T;$/;"	t	typeref:enum:__anon13
-UNITY_DISPLAY_STYLE_UINT	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT     = (UNITY_INT_WIDTH \/ 8) + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_UINT16	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT16   = 2 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_UINT32	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT32   = 4 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_UINT64	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT64   = 8 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_UINT8	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT8    = 1 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon13
-UNITY_DISPLAY_STYLE_UNKNOWN	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UNKNOWN$/;"	e	enum:__anon13
+UNITY_DISPLAY_STYLE_T	unity/unity_internals.h	/^} UNITY_DISPLAY_STYLE_T;$/;"	t	typeref:enum:__anon2
+UNITY_DISPLAY_STYLE_UINT	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT     = (UNITY_INT_WIDTH \/ 8) + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_UINT16	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT16   = 2 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_UINT32	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT32   = 4 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_UINT64	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT64   = 8 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_UINT8	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UINT8    = 1 + UNITY_DISPLAY_RANGE_UINT,$/;"	e	enum:__anon2
+UNITY_DISPLAY_STYLE_UNKNOWN	unity/unity_internals.h	/^    UNITY_DISPLAY_STYLE_UNKNOWN$/;"	e	enum:__anon2
 UNITY_DOUBLE	unity/unity_internals.h	/^  typedef UNITY_DOUBLE_TYPE UNITY_DOUBLE;$/;"	t
 UNITY_DOUBLE	unity/unity_internals.h	/^  typedef UNITY_FLOAT UNITY_DOUBLE;$/;"	t
 UNITY_DOUBLE_PRECISION	unity/unity_internals.h	242;"	d
 UNITY_DOUBLE_TYPE	unity/unity_internals.h	232;"	d
 UNITY_DOUBLE_TYPE	unity/unity_internals.h	246;"	d
 UNITY_END	unity/unity_internals.h	732;"	d
-UNITY_EQUAL_TO	unity/unity_internals.h	/^    UNITY_EQUAL_TO         = 0x1,$/;"	e	enum:__anon14
+UNITY_EQUAL_TO	unity/unity_internals.h	/^    UNITY_EQUAL_TO         = 0x1,$/;"	e	enum:__anon3
 UNITY_EXCLUDE_DOUBLE	unity/unity_internals.h	185;"	d
 UNITY_EXCLUDE_DOUBLE	unity/unity_internals.h	225;"	d
 UNITY_EXCLUDE_FLOAT_PRINT	unity/unity_internals.h	188;"	d
@@ -537,7 +547,7 @@ UNITY_EXEC_TIME_STOP	unity/unity_internals.h	323;"	d
 UNITY_EXEC_TIME_STOP	unity/unity_internals.h	335;"	d
 UNITY_EXEC_TIME_STOP	unity/unity_internals.h	352;"	d
 UNITY_FAIL_AND_BAIL	unity/unity.c	22;"	d	file:
-UNITY_FLAGS_T	unity/unity_internals.h	/^} UNITY_FLAGS_T;$/;"	t	typeref:enum:__anon15
+UNITY_FLAGS_T	unity/unity_internals.h	/^} UNITY_FLAGS_T;$/;"	t	typeref:enum:__anon4
 UNITY_FLOAT	unity/unity_internals.h	/^typedef UNITY_FLOAT_TYPE UNITY_FLOAT;$/;"	t
 UNITY_FLOAT_INVALID_TRAIT	unity/unity_internals.h	/^    UNITY_FLOAT_INVALID_TRAIT$/;"	e	enum:UNITY_FLOAT_TRAIT
 UNITY_FLOAT_IS_DET	unity/unity_internals.h	/^    UNITY_FLOAT_IS_DET,$/;"	e	enum:UNITY_FLOAT_TRAIT
@@ -558,8 +568,8 @@ UNITY_FLUSH_CALL	unity/unity_internals.h	285;"	d
 UNITY_FRAMEWORK_H	unity/unity.h	8;"	d
 UNITY_GET_TIME	unity/unity_internals.h	321;"	d
 UNITY_GET_TIME	unity/unity_internals.h	333;"	d
-UNITY_GREATER_OR_EQUAL	unity/unity_internals.h	/^    UNITY_GREATER_OR_EQUAL = 0x2 + UNITY_EQUAL_TO,$/;"	e	enum:__anon14
-UNITY_GREATER_THAN	unity/unity_internals.h	/^    UNITY_GREATER_THAN     = 0x2,$/;"	e	enum:__anon14
+UNITY_GREATER_OR_EQUAL	unity/unity_internals.h	/^    UNITY_GREATER_OR_EQUAL = 0x2 + UNITY_EQUAL_TO,$/;"	e	enum:__anon3
+UNITY_GREATER_THAN	unity/unity_internals.h	/^    UNITY_GREATER_THAN     = 0x2,$/;"	e	enum:__anon3
 UNITY_IGNORE_AND_BAIL	unity/unity.c	23;"	d	file:
 UNITY_INCLUDE_DOUBLE	unity/unity_internals.h	227;"	d
 UNITY_INT	unity/unity_internals.h	/^    typedef UNITY_INT32  UNITY_INT;$/;"	t
@@ -612,8 +622,8 @@ UNITY_SET_DETAIL	unity/unity_internals.h	506;"	d
 UNITY_SET_DETAILS	unity/unity_internals.h	503;"	d
 UNITY_SET_DETAILS	unity/unity_internals.h	507;"	d
 UNITY_SHORTHAND_AS_OLD	unity/unity_internals.h	739;"	d
-UNITY_SMALLER_OR_EQUAL	unity/unity_internals.h	/^    UNITY_SMALLER_OR_EQUAL = 0x4 + UNITY_EQUAL_TO,$/;"	e	enum:__anon14
-UNITY_SMALLER_THAN	unity/unity_internals.h	/^    UNITY_SMALLER_THAN     = 0x4,$/;"	e	enum:__anon14
+UNITY_SMALLER_OR_EQUAL	unity/unity_internals.h	/^    UNITY_SMALLER_OR_EQUAL = 0x4 + UNITY_EQUAL_TO,$/;"	e	enum:__anon3
+UNITY_SMALLER_THAN	unity/unity_internals.h	/^    UNITY_SMALLER_THAN     = 0x4,$/;"	e	enum:__anon3
 UNITY_STORAGE_T	unity/unity_internals.h	/^struct UNITY_STORAGE_T$/;"	s
 UNITY_SUPPORT_64	unity/unity_internals.h	126;"	d
 UNITY_TEST_ASSERT	unity/unity_internals.h	765;"	d
@@ -843,11 +853,11 @@ UNITY_UINT32	unity/unity_internals.h	/^    typedef unsigned long   UNITY_UINT32;
 UNITY_UINT64	unity/unity_internals.h	/^    typedef unsigned long      UNITY_UINT64;$/;"	t
 UNITY_UINT64	unity/unity_internals.h	/^    typedef unsigned long long UNITY_UINT64;$/;"	t
 UNITY_UINT8	unity/unity_internals.h	/^    typedef unsigned char   UNITY_UINT8;$/;"	t
-UNITY_UNKNOWN	unity/unity_internals.h	/^    UNITY_UNKNOWN$/;"	e	enum:__anon14
+UNITY_UNKNOWN	unity/unity_internals.h	/^    UNITY_UNKNOWN$/;"	e	enum:__anon3
 UNITY_WEAK_ATTRIBUTE	unity/unity_internals.h	381;"	d
 UNITY_WEAK_ATTRIBUTE	unity/unity_internals.h	387;"	d
 UNITY_WEAK_PRAGMA	unity/unity_internals.h	388;"	d
-UNITY_WITHIN	unity/unity_internals.h	/^    UNITY_WITHIN           = 0x0,$/;"	e	enum:__anon14
+UNITY_WITHIN	unity/unity_internals.h	/^    UNITY_WITHIN           = 0x0,$/;"	e	enum:__anon3
 UTIL_H	util.h	2;"	d
 Unity	unity/unity.c	/^struct UNITY_STORAGE_T Unity;$/;"	v	typeref:struct:UNITY_STORAGE_T
 UnityAddMsgIfSpecified	unity/unity.c	/^static void UnityAddMsgIfSpecified(const char* msg)$/;"	f	file:
@@ -898,7 +908,7 @@ UnityPrintNumberByStyle	unity/unity.c	/^void UnityPrintNumberByStyle(const UNITY
 UnityPrintNumberHex	unity/unity.c	/^void UnityPrintNumberHex(const UNITY_UINT number, const char nibbles_to_print)$/;"	f
 UnityPrintNumberUnsigned	unity/unity.c	/^void UnityPrintNumberUnsigned(const UNITY_UINT number)$/;"	f
 UnityPrintPointlessAndBail	unity/unity.c	811;"	d	file:
-UnityQuickCompare	unity/unity.c	/^} UnityQuickCompare;$/;"	v	typeref:union:__anon12	file:
+UnityQuickCompare	unity/unity.c	/^} UnityQuickCompare;$/;"	v	typeref:union:__anon1	file:
 UnityStrBreaker	unity/unity.c	/^static const char PROGMEM UnityStrBreaker[]                = "-----------------------";$/;"	v	file:
 UnityStrByte	unity/unity.c	/^static const char PROGMEM UnityStrByte[]                   = " Byte ";$/;"	v	file:
 UnityStrDelta	unity/unity.c	/^static const char PROGMEM UnityStrDelta[]                  = " Values Not Within Delta ";$/;"	v	file:
@@ -946,16 +956,20 @@ UnityTestRunnerGenerator	unity/generate_test_runner.rb	/^class UnityTestRunnerGe
 UnityTestSummary	unity/unity_test_summary.rb	/^class UnityTestSummary$/;"	c
 UnityToJUnit	unity/stylize_as_junit.rb	/^class UnityToJUnit$/;"	c
 UnityVerbosity	unity/unity.c	/^int UnityVerbosity            = 1;$/;"	v
+alice_obj	Makefile	/^alice_obj = $(alice_src:.c=.o)$/;"	m
 alice_src	Makefile	/^alice_src = playerState.c alice.c player.c$/;"	m
+all_obj	Makefile	/^all_obj = $(all_src:.c=.o)$/;"	m
 all_src	Makefile	/^all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)$/;"	m
+bob_obj	Makefile	/^bob_obj = $(bob_src:.c=.o)$/;"	m
 bob_src	Makefile	/^bob_src = playerState.c bob.c player.c$/;"	m
-card	messages.h	/^    Card card;$/;"	m	struct:__anon8
-card	messages.h	/^    Card card;$/;"	m	union:__anon9
+card	messages.h	/^    Card card;$/;"	m	struct:PlayedTuple
+card	messages.h	/^    Card card;$/;"	m	union:MessageData
 cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
 cards_equal	deck.c	/^bool cards_equal(Card card1, Card card2) {$/;"	f
 change_to	unity/colour_prompt.rb	/^  def change_to(new_colour)$/;"	f	class:ColourCommandLine
 colour_print	unity/colour_prompt.rb	/^def colour_print(role, str)$/;"	f
 colour_puts	unity/colour_prompt.rb	/^def colour_puts(role, str)$/;"	f
+common_obj	Makefile	/^common_obj = $(common_src:.c=.o)$/;"	m
 common_src	Makefile	/^common_src = deck.c util.c exitCodes.c gameState.c messages.c$/;"	m
 create_externs	unity/generate_test_runner.rb	/^  def create_externs(output, tests, _mocks)$/;"	f	class:UnityTestRunnerGenerator
 create_filename	unity/generate_module.rb	/^  def create_filename(part1, part2 = '')$/;"	f
@@ -967,9 +981,9 @@ create_reset	unity/generate_test_runner.rb	/^  def create_reset(output, used_moc
 create_runtest	unity/generate_test_runner.rb	/^  def create_runtest(output, used_mocks)$/;"	f	class:UnityTestRunnerGenerator
 create_suite_setup	unity/generate_test_runner.rb	/^  def create_suite_setup(output)$/;"	f	class:UnityTestRunnerGenerator
 create_suite_teardown	unity/generate_test_runner.rb	/^  def create_suite_teardown(output)$/;"	f	class:UnityTestRunnerGenerator
-currPlayer	gameState.h	/^    int currPlayer;$/;"	m	struct:__anon3
-d	unity/unity.c	/^    double d;$/;"	m	union:__anon12	file:
-data	messages.h	/^    MessageData data;$/;"	m	struct:__anon10
+currPlayer	gameState.h	/^    int currPlayer;$/;"	m	struct:GameState
+d	unity/unity.c	/^    double d;$/;"	m	union:__anon1	file:
+data	messages.h	/^    MessageData data;$/;"	m	struct:Message
 deck_best_card	deck.c	/^int deck_best_card(Deck* deck, char suit, bool high) {$/;"	f
 deck_clear	deck.c	/^void deck_clear(Deck* deck) {$/;"	f
 deck_destroy	deck.c	/^void deck_destroy(Deck* deck) {$/;"	f
@@ -984,24 +998,25 @@ default_options	unity/generate_module.rb	/^  def self.default_options$/;"	F	clas
 default_options	unity/generate_test_runner.rb	/^  def self.default_options$/;"	F	class:UnityTestRunnerGenerator
 destroy	unity/generate_module.rb	/^  def destroy(module_name, pattern = nil)$/;"	f
 detect_os_specifics	unity/parse_output.rb	/^  def detect_os_specifics(line)$/;"	f	class:ParseOutput
-diamondsWon	gameState.h	/^    int* diamondsWon;$/;"	m	struct:__anon3
+diamondsWon	gameState.h	/^    int* diamondsWon;$/;"	m	struct:GameState
 do_load_deck	deck.c	/^bool do_load_deck(Deck* deck, FILE* file) {$/;"	f
 exec_child	hub.c	/^void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {$/;"	f
-exec_hub_loop	hub.c	/^HubExitCode exec_hub_loop(HubState* hubState) {$/;"	f
+exec_hub_loop	hub.c	/^HubExitCode exec_hub_loop(HubState* hubState, int numRounds) {$/;"	f
 exec_hub_main	hub.c	/^HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,$/;"	f
 exec_play_round	player.c	/^PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {$/;"	f
 exec_player_loop	player.c	/^PlayerExitCode exec_player_loop(PlayerState* playerState) {$/;"	f
 exec_player_main	player.c	/^PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,$/;"	f
-f	unity/unity.c	/^    float f;$/;"	m	union:__anon12	file:
+f	unity/unity.c	/^    float f;$/;"	m	union:__anon1	file:
 files_to_operate_on	unity/generate_module.rb	/^  def files_to_operate_on(module_name, pattern = nil)$/;"	f	class:UnityModuleGenerator
 find_includes	unity/generate_test_runner.rb	/^  def find_includes(source)$/;"	f	class:UnityTestRunnerGenerator
 find_mocks	unity/generate_test_runner.rb	/^  def find_mocks(includes)$/;"	f	class:UnityTestRunnerGenerator
 find_tests	unity/generate_test_runner.rb	/^  def find_tests(source)$/;"	f	class:UnityTestRunnerGenerator
 fmt_card	deck.c	/^char* fmt_card(char* str, Card card, bool dotSeparated) {$/;"	f
-gameState	hubState.h	/^  GameState* gameState;$/;"	m	struct:__anon5
-gameState	playerState.h	/^    GameState* gameState;$/;"	m	struct:__anon11
+gameState	hubState.h	/^  GameState* gameState;$/;"	m	struct:HubState
+gameState	playerState.h	/^    GameState* gameState;$/;"	m	struct:PlayerState
 generate	unity/generate_module.rb	/^  def generate(module_name, pattern = nil)$/;"	f
 generate	unity/generate_test_runner.rb	/^  def generate(input_file, output_file, tests, used_mocks, testfile_includes)$/;"	f	class:UnityTestRunnerGenerator
+get_card_to_play	player.c	/^Card get_card_to_play(PlayerState* playerState) {$/;"	f
 get_details	unity/stylize_as_junit.rb	/^  def get_details(_result_file, lines)$/;"	f
 get_details	unity/unity_test_summary.rb	/^  def get_details(_result_file, lines)$/;"	f
 grab_config	unity/generate_module.rb	/^  def self.grab_config(config_file)$/;"	F	class:UnityModuleGenerator
@@ -1013,18 +1028,20 @@ gs_is_round_over	gameState.c	/^bool gs_is_round_over(GameState* gameState) {$/;"
 gs_new_round	gameState.c	/^void gs_new_round(GameState* gameState, int leadPlayer) {$/;"	f
 gs_play_turn	gameState.c	/^void gs_play_turn(GameState* gameState, int player, Card card) {$/;"	f
 guard	make_header.py	/^            guard = header.upper() + '_H'$/;"	v
-hand	messages.h	/^    Deck hand;$/;"	m	union:__anon9
-hand	playerState.h	/^    Deck* hand;$/;"	m	struct:__anon11
+hand	messages.h	/^    Deck hand;$/;"	m	union:MessageData
+hand	playerState.h	/^    Deck* hand;$/;"	m	struct:PlayerState
+handSize	playerState.h	/^    int handSize;$/;"	m	struct:PlayerState
 hs_deal_cards	hubState.c	/^void hs_deal_cards(HubState* hubState, Deck* deck) {$/;"	f
 hs_destroy	hubState.c	/^void hs_destroy(HubState* hubState) {$/;"	f
 hs_init	hubState.c	/^void hs_init(HubState* hubState, GameState* gameState) {$/;"	f
 hs_played_card	hubState.c	/^void hs_played_card(HubState* hubState, int player, Card card) {$/;"	f
 hs_set_player_pipe	hubState.c	/^void hs_set_player_pipe(HubState* hubState, int player,$/;"	f
+hub_obj	Makefile	/^hub_obj = $(hub_src:.c=.o)$/;"	m
 hub_src	Makefile	/^hub_src = hubState.c hub.c$/;"	m
-i16	unity/unity.c	/^    UNITY_INT16 i16;$/;"	m	union:__anon12	file:
-i32	unity/unity.c	/^    UNITY_INT32 i32;$/;"	m	union:__anon12	file:
-i64	unity/unity.c	/^    UNITY_INT64 i64;$/;"	m	union:__anon12	file:
-i8	unity/unity.c	/^    UNITY_INT8 i8;$/;"	m	union:__anon12	file:
+i16	unity/unity.c	/^    UNITY_INT16 i16;$/;"	m	union:__anon1	file:
+i32	unity/unity.c	/^    UNITY_INT32 i32;$/;"	m	union:__anon1	file:
+i64	unity/unity.c	/^    UNITY_INT64 i64;$/;"	m	union:__anon1	file:
+i8	unity/unity.c	/^    UNITY_INT8 i8;$/;"	m	union:__anon1	file:
 ignore_sigpipe	util.c	/^void ignore_sigpipe(void) {$/;"	f
 initialize	unity/colour_prompt.rb	/^  def initialize$/;"	f	class:ColourCommandLine
 initialize	unity/generate_module.rb	/^  def initialize(options = nil)$/;"	f	class:UnityModuleGenerator
@@ -1039,16 +1056,15 @@ is_card_string	deck.c	/^bool is_card_string(char* str) {$/;"	f
 is_null_card	deck.c	/^bool is_null_card(Card card) {$/;"	f
 isinf	unity/unity_internals.h	205;"	d
 isnan	unity/unity_internals.h	211;"	d
-leadPlayer	gameState.h	/^    int leadPlayer;$/;"	m	struct:__anon3
-leadPlayer	messages.h	/^    int leadPlayer;$/;"	m	union:__anon9
-leadSuit	gameState.h	/^    char leadSuit;$/;"	m	struct:__anon3
+leadPlayer	gameState.h	/^    int leadPlayer;$/;"	m	struct:GameState
+leadPlayer	messages.h	/^    int leadPlayer;$/;"	m	union:MessageData
+leadSuit	gameState.h	/^    char leadSuit;$/;"	m	struct:GameState
 main	hub.c	/^int main(int argc, char** argv) {$/;"	f
 main	player.c	/^int main(int argc, char** argv) {$/;"	f
 main	testDeck.c	/^int main(int argc, char** argv) {$/;"	f
 main	testMessages.c	/^int main(int argc, char** argv) {$/;"	f
 main	testUtil.c	/^int main(int argc, char** argv) {$/;"	f
 make_deck	testDeck.c	/^Deck make_deck(void) {$/;"	f
-message_error	player.c	/^PlayerExitCode message_error(MessageStatus status) {$/;"	f
 msg_code	messages.c	/^char* msg_code(MessageType type) {$/;"	f
 msg_decode_card	messages.c	/^bool msg_decode_card(char* payload, Card* outCard) {$/;"	f
 msg_decode_hand	messages.c	/^bool msg_decode_hand(char* payload, Deck* outDeck) {$/;"	f
@@ -1068,21 +1084,22 @@ msg_played_card	messages.c	/^Message msg_played_card(int player, Card card) {$/;
 msg_receive	messages.c	/^MessageStatus msg_receive(FILE* file, Message* outMessage) {$/;"	f
 msg_send	messages.c	/^MessageStatus msg_send(FILE* file, Message message) {$/;"	f
 n	make_deck.py	/^    n = int(sys.argv[1])$/;"	v
+new_sigaction	util.c	/^struct sigaction new_sigaction(void) {$/;"	f
 noop_print	util.c	/^void noop_print(char* str) {$/;"	f
 noop_printf	util.c	/^void noop_printf(char* fmt, ...) {$/;"	f
 numCards	deck.h	/^    int numCards;$/;"	m	struct:Deck
-numPlayers	gameState.h	/^    int numPlayers;$/;"	m	struct:__anon3
+numPlayers	gameState.h	/^    int numPlayers;$/;"	m	struct:GameState
 out_c	unity/colour_prompt.rb	/^  def out_c(mode, colour, str)$/;"	f	class:ColourCommandLine
 parse	unity/stylize_as_junit.rb	/^  def self.parse(args)$/;"	F	class:ArgvParser
 parse_int	util.c	/^int parse_int(char* str) {$/;"	f
 parse_test_summary	unity/stylize_as_junit.rb	/^  def parse_test_summary(summary)$/;"	f
 parse_test_summary	unity/unity_test_summary.rb	/^  def parse_test_summary(summary)$/;"	f
-pipes	hubState.h	/^  PipePair* pipes;$/;"	m	struct:__anon5
-playedTuple	messages.h	/^    PlayedTuple playedTuple;$/;"	m	union:__anon9
-player	messages.h	/^    int player;$/;"	m	struct:__anon8
-playerHands	hubState.h	/^  Deck* playerHands;$/;"	m	struct:__anon5
-playerIndex	playerState.h	/^    int playerIndex;$/;"	m	struct:__anon11
-playerPoints	gameState.h	/^    int* playerPoints;$/;"	m	struct:__anon3
+pipes	hubState.h	/^  PipePair* pipes;$/;"	m	struct:HubState
+playedTuple	messages.h	/^    PlayedTuple playedTuple;$/;"	m	union:MessageData
+player	messages.h	/^    int player;$/;"	m	struct:PlayedTuple
+playerHands	hubState.h	/^  Deck* playerHands;$/;"	m	struct:HubState
+playerIndex	playerState.h	/^    int playerIndex;$/;"	m	struct:PlayerState
+playerPoints	gameState.h	/^    int* playerPoints;$/;"	m	struct:GameState
 player_args	hub.c	/^char** player_args(HubState* hubState, int playerNum, char* name) {$/;"	f
 posix_colour	unity/colour_prompt.rb	/^  def posix_colour(colour)$/;"	f	class:ColourCommandLine
 prepare_fixture_line	unity/parse_output.rb	/^  def prepare_fixture_line(line)$/;"	f	class:ParseOutput
@@ -1099,19 +1116,23 @@ push_xml_output_passed	unity/parse_output.rb	/^  def push_xml_output_passed(test
 push_xml_output_suite_info	unity/parse_output.rb	/^  def push_xml_output_suite_info$/;"	f	class:ParseOutput
 rank	deck.h	/^    int rank;$/;"	m	struct:Card
 ranks	make_deck.py	/^    ranks = string.hexdigits.lower().replace('0', '');$/;"	v
-read	hubState.h	/^  FILE* read;$/;"	m	struct:__anon4
+read	hubState.h	/^  FILE* read;$/;"	m	struct:PipePair
+register_sighup	hub.c	/^void register_sighup(void) {$/;"	f
 report	unity/colour_reporter.rb	/^def report(message)$/;"	f
 results_structure	unity/stylize_as_junit.rb	/^  def results_structure$/;"	f
-roundNum	gameState.h	/^    int roundNum;$/;"	m	struct:__anon3
+roundNum	gameState.h	/^    int roundNum;$/;"	m	struct:GameState
 run	unity/generate_test_runner.rb	/^  def run(input_file, output_file, options = nil)$/;"	f	class:UnityTestRunnerGenerator
 run	unity/stylize_as_junit.rb	/^  def run$/;"	f	class:UnityToJUnit
 run	unity/unity_test_summary.rb	/^  def run$/;"	f	class:UnityTestSummary
 safe_read_line	util.c	/^bool safe_read_line(FILE* file, char** output) {$/;"	f
 sanitize_c_identifier	unity/type_sanitizer.rb	/^  def self.sanitize_c_identifier(unsanitized)$/;"	F	class:TypeSanitizer
+send_player_hands	hub.c	/^bool send_player_hands(HubState* hubState) {$/;"	f
 setUp	unity/unity.h	/^    UNITY_WEAK_ATTRIBUTE void setUp(void) { }$/;"	f
 setUp	unity/unity.h	/^    void setUp(void) { }$/;"	f
 setUp	unity/unity.h	44;"	d
 set_xml_output	unity/parse_output.rb	/^  def set_xml_output$/;"	f	class:ParseOutput
+should_exit	player.c	/^bool should_exit(MessageStatus status, Message* message,$/;"	f
+sighup_handler	hub.c	/^void sighup_handler(int signal) {$/;"	f
 start_player	hub.c	/^bool start_player(HubState* hubState, int playerNum, char* name) {$/;"	f
 strategy_when_following	alice.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
 strategy_when_following	bob.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
@@ -1125,7 +1146,7 @@ suiteTearDown	unity/unity.h	/^    UNITY_WEAK_ATTRIBUTE int suiteTearDown(int num
 suiteTearDown	unity/unity.h	/^    int suiteTearDown(int num_failures) { return num_failures; }$/;"	f
 suiteTearDown	unity/unity.h	50;"	d
 suits	make_deck.py	/^    suits = 'SDCH'$/;"	v
-table	gameState.h	/^    Deck* table;$/;"	m	struct:__anon3
+table	gameState.h	/^    Deck* table;$/;"	m	struct:GameState
 tearDown	unity/unity.h	/^    UNITY_WEAK_ATTRIBUTE void tearDown(void) { }$/;"	f
 tearDown	unity/unity.h	/^    void tearDown(void) { }$/;"	f
 tearDown	unity/unity.h	46;"	d
@@ -1136,14 +1157,14 @@ test_ignored_unity_fixture	unity/parse_output.rb	/^  def test_ignored_unity_fixt
 test_passed	unity/parse_output.rb	/^  def test_passed(array)$/;"	f	class:ParseOutput
 test_passed_unity_fixture	unity/parse_output.rb	/^  def test_passed_unity_fixture(array)$/;"	f	class:ParseOutput
 test_suite_verify	unity/parse_output.rb	/^  def test_suite_verify(test_suite_name)$/;"	f	class:ParseOutput
-threshold	gameState.h	/^    int threshold;$/;"	m	struct:__anon3
+threshold	gameState.h	/^    int threshold;$/;"	m	struct:GameState
 to_card	deck.c	/^Card to_card(char* str) {$/;"	f
 tokenise	util.c	/^int tokenise(char* line, char split, char** tokens, int maxTokens) {$/;"	f
-type	messages.h	/^    MessageType type;$/;"	m	struct:__anon10
+type	messages.h	/^    MessageType type;$/;"	m	struct:Message
 usage	unity/stylize_as_junit.rb	/^  def usage(err_msg = nil)$/;"	f
 usage	unity/unity_test_summary.rb	/^  def usage(err_msg = nil)$/;"	f	class:UnityTestSummary
 win32_colour	unity/colour_prompt.rb	/^  def win32_colour(colour)$/;"	f	class:ColourCommandLine
-write	hubState.h	/^  FILE* write;$/;"	m	struct:__anon4
+write	hubState.h	/^  FILE* write;$/;"	m	struct:PipePair
 write_failures	unity/stylize_as_junit.rb	/^  def write_failures(results, stream)$/;"	f
 write_ignored	unity/stylize_as_junit.rb	/^  def write_ignored(results, stream)$/;"	f
 write_suite_footer	unity/stylize_as_junit.rb	/^  def write_suite_footer(stream)$/;"	f

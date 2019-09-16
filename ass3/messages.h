@@ -5,28 +5,28 @@
 
 #define NUM_MESSAGE_TYPES 5
 
-typedef enum {
+typedef enum MessageType {
     MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,
     MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL
 } MessageType;
 
-typedef enum {
+typedef enum MessageStatus {
     MS_OK, MS_EOF, MS_INVALID
 } MessageStatus;
 
-typedef struct {
+typedef struct PlayedTuple {
     int player;
     Card card;
 } PlayedTuple;
 
-typedef union {
+typedef union MessageData {
     Deck hand;
     int leadPlayer;
     PlayedTuple playedTuple;
     Card card;
 } MessageData;
 
-typedef struct {
+typedef struct Message {
     MessageType type;
     MessageData data;
 } Message;

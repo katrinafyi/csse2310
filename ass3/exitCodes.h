@@ -2,7 +2,7 @@
 #define EXITCODES_H
 
 /* Exit codes for the hub. */
-typedef enum {
+typedef enum HubExitCode {
     H_NORMAL = 0,
     H_INCORRECT_ARGS = 1,
     H_INCORRECT_THRESHOLD = 2,
@@ -16,7 +16,7 @@ typedef enum {
 } HubExitCode;
 
 /* Exit codes for the player. */
-typedef enum {
+typedef enum PlayerExitCode {
     P_NORMAL = 0,
     P_INCORRECT_ARGS = 1,
     P_INCORRECT_PLAYERS = 2,

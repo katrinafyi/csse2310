@@ -4,7 +4,7 @@
 #include "deck.h"
 #include "gameState.h"
 
-typedef struct {
+typedef struct PlayerState {
     GameState* gameState;
 
     int playerIndex;

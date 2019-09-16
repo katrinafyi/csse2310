@@ -12,18 +12,15 @@
 
 /* Returns true if the player should exit upon receiving the given message
  * with given status. If true, stores the appropriate exit code in outCode.
+ * If false, does not change outCode.
  * NULL can be passed to message to skip checking for MSG_GAME_OVER.
  *
  * This only returns true if exiting is correct behaviour in all cases. This
- * does not verify the message type is valid (contextually) for a particular 
+ * does not verify the message type is valid (contextually) for a particular
  * caller.
- *
- * Sets outCode to P_INVALID_MESSAGE by default, even if this returns true.
- * This is to simplify use in compound if conditions.
  */
-bool should_exit(MessageStatus status, Message* message,
+bool player_should_exit(MessageStatus status, Message* message,
         PlayerExitCode* outCode) {
-    *outCode = P_INVALID_MESSAGE;
     if (status != MS_OK) {
         DEBUG_PRINTF("error message status: %d\n", status);
         *outCode = status == MS_EOF ? P_HUB_EOF : P_INVALID_MESSAGE;
@@ -57,7 +54,7 @@ Card get_card_to_play(PlayerState* playerState) {
  * it should exit.
  */
 PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {
-    PlayerExitCode ret;
+    PlayerExitCode ret = P_INVALID_MESSAGE;
     MessageStatus status;
     Message message;
     *outContinue = false; // by default, don't continue.
@@ -73,7 +70,7 @@ PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {
 
             Card card = get_card_to_play(playerState);
             status = msg_send(stdout, msg_play_card(card));
-            if (should_exit(status, NULL, &ret)) {
+            if (player_should_exit(status, NULL, &ret)) {
                 return ret;
             }
 
@@ -83,7 +80,7 @@ PlayerExitCode exec_play_round(PlayerState* playerState, bool* outContinue) {
             DEBUG_PRINT("other turn, waiting for message");
             status = msg_receive(stdin, &message);
 
-            if (should_exit(status, &message, &ret) ||
+            if (player_should_exit(status, &message, &ret) ||
                     message.type != MSG_PLAYED_CARD) {
                 return ret;
             }
@@ -103,14 +100,14 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
 
     DEBUG_PRINT("expecting hand");
     MessageStatus status = msg_receive(stdin, &message);
-    if (should_exit(status, &message, &ret) || message.type != MSG_HAND) {
+    if (player_should_exit(status, &message, &ret) ||
+            message.type != MSG_HAND) {
         return ret;
     }
-    Deck* hand = malloc(sizeof(Deck)); // so ps_destroy work correctly
-    *hand = message.data.hand; // take a copy to prevent overwriting
-    ps_set_hand(playerState, hand);
-    if (hand->numCards != playerState->handSize) {
-        DEBUG_PRINT("hand size doesn't match");
+    Deck hand = message.data.hand; // temporarily copy hand
+    ps_set_hand(playerState, &hand); // ps_set_hand copies hand.
+    if (hand.numCards != playerState->handSize) { // verify hand size
+        DEBUG_PRINT("hand size doesn't match argument");
         return P_INVALID_MESSAGE;
     }
 
@@ -118,7 +115,7 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
     while (true) {
         DEBUG_PRINT("expecting new round");
         status = msg_receive(stdin, &message);
-        if (should_exit(status, &message, &ret) ||
+        if (player_should_exit(status, &message, &ret) ||
                 message.type != MSG_NEW_ROUND) {
             return ret;
         }
@@ -132,7 +129,7 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
             return ret;
         }
     }
-    assert(0);
+    assert(0); // will always return from within loop
 }
 
 PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,

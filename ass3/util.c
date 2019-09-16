@@ -105,8 +105,16 @@ int tokenise(char* line, char split, char** tokens, int maxTokens) {
 }
 
 // see header
+struct sigaction new_sigaction(void) {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
+    return sa;
+}
+
+// see header
 void ignore_sigpipe(void) {
-    struct sigaction sa = {{0}};
+    struct sigaction sa;
+
     sa.sa_flags = SA_RESTART;
     sa.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &sa, NULL);

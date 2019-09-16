@@ -26,7 +26,13 @@ void ps_destroy(PlayerState* playerState) {
 
 // see header
 void ps_set_hand(PlayerState* playerState, Deck* hand) {
-    playerState->hand = hand;
+    // copy hand into a place we manage so its lifetime is the same as 
+    // playerState's lifetime.
+    Deck* handPtr = malloc(sizeof(Deck));
+    *handPtr = *hand;
+
+    // point at our own value, NOT the given hand.
+    playerState->hand = handPtr;
 }
 
 // see header

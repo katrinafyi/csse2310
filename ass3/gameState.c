@@ -10,6 +10,8 @@
 void gs_init(GameState* gameState, int numPlayers, int threshold) {
     gameState->numPlayers = numPlayers;
     gameState->threshold = threshold;
+    gameState->currPlayer = 0;
+    gameState->leadPlayer = 0;
 
     Deck* table = malloc(sizeof(Deck));
     deck_init_empty(table, numPlayers);
@@ -38,6 +40,7 @@ void gs_destroy(GameState* gameState) {
 }
 
 void gs_new_round(GameState* gameState, int leadPlayer) {
+    // round number is set by gs_end_round
     gameState->leadPlayer = leadPlayer;
     gameState->currPlayer = leadPlayer;
     deck_clear(gameState->table);
@@ -86,4 +89,6 @@ void gs_end_round(GameState* gameState) {
     // increment points and give diamonds to winning player.
     gameState->playerPoints[winningPlayer]++;
     gameState->diamondsWon[winningPlayer] += diamonds;
+    // winning player is the lead player
+    gameState->leadPlayer = winningPlayer;
 }

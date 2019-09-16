@@ -4,12 +4,18 @@ bob_src = playerState.c bob.c player.c
 common_src = deck.c util.c exitCodes.c gameState.c messages.c
 all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)
 
+hub_obj = $(hub_src:.c=.o)
+alice_obj = $(alice_src:.c=.o)
+bob_obj = $(bob_src:.c=.o)
+common_obj = $(common_src:.c=.o)
+all_obj = $(all_src:.c=.o)
+
 CCFLAGS := -g -std=gnu99 -Wall -pedantic
 ifeq ($(DEBUG), 1)
     CCFLAGS += -D DEBUG=1
 endif
 
-.PHONY: sed_debug sed_noop all debug 2310hub 2310alice 2310bob
+.PHONY: sed_debug sed_noop all debug clean
 release: sed_noop all
 
 all: 2310hub 2310alice 2310bob
@@ -17,23 +23,29 @@ all: 2310hub 2310alice 2310bob
 test_compile:
 	bash ./testCompile.sh
 
-test_util: $(common_src) testUtil.c
-	gcc $(CCFLAGS) $^ -o $@
+test_util: $(common_obj) testUtil.o
+	gcc $(CCFLAGS) $(common_obj) testUtil.o -o $@
 
-test_deck: $(common_src) testDeck.c
-	gcc $(CCFLAGS) $^ -o $@
+test_deck: $(common_obj) testDeck.o
+	gcc $(CCFLAGS) $(common_obj) testDeck.o -o $@
 
-test_messages: $(common_src) testMessages.c
-	gcc $(CCFLAGS) $^ -o $@
+test_messages: $(common_obj) testMessages.o
+	gcc $(CCFLAGS) $(common_obj) testMessages.o -o $@
 
-2310hub: $(common_src) $(hub_src)
-	gcc $(CCFLAGS) $^ -o $@
+%.o: %.c
+	gcc $(CCFLAGS) $< -c -o $@
 
-2310alice: $(common_src) $(alice_src)
-	gcc $(CCFLAGS) $^ -o $@
+2310hub: $(common_obj) $(hub_obj)
+	gcc $(CCFLAGS) $(common_obj) $(hub_obj) -o $@
 
-2310bob: $(common_src) $(bob_src)
-	gcc $(CCFLAGS) $^ -o $@
+2310alice: $(common_obj) $(alice_obj)
+	gcc $(CCFLAGS) $(common_obj) $(alice_obj) -o $@
+
+2310bob: $(common_obj) $(bob_obj)
+	gcc $(CCFLAGS) $(common_obj) $(bob_obj) -o $@
+
+clean:
+	rm -f *.c 2310hub 2310alice 2310bob
 
 sed_debug:
 	sed -r -i 's/^(\s+)noop_(PRINTF?)/\1DEBUG_\U\2/gI' $(all_src)

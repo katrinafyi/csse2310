@@ -7,12 +7,12 @@
 #include "gameState.h"
 #include "deck.h"
 
-typedef struct {
+typedef struct PipePair {
   FILE* read;
   FILE* write;
 } PipePair;
 
-typedef struct {
+typedef struct HubState {
   GameState* gameState;
 
   PipePair* pipes;
