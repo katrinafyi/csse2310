@@ -65,6 +65,9 @@ bool safe_read_line(FILE* file, char** output) {
     // *output = realloc(*output, sizeof(char) * (position + 1));
     // if line contains nulls, strlen will be < position.
     bool isValid = errno == 0 && strlen(*output) == position;
+    // if we got EOF, this is only valid at the end of a line,
+    // i.e. if position is non-zero
+    isValid = isValid && (next != EOF || position > 0);
     if (!isValid) {
         // discard line if input is invalid.
         free(*output);
