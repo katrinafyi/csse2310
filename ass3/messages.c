@@ -75,6 +75,7 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
         DEBUG_PRINT("read pipe is at EOF");
         return MS_EOF;
     }
+    DEBUG_PRINTF("received: %s\n", line);
 
     MessageType type = MSG_NULL;
     char* payload = NULL;
@@ -113,6 +114,7 @@ MessageStatus msg_send(FILE* file, Message message) {
     // note newline at end
     errno = 0;
     int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
+    DEBUG_PRINTF("sending: %s%s\n", msg_code(message.type), payload);
     fflush(file);
     // DEBUG_PRINTF("errno: %d\n", errno);
     free(payload);

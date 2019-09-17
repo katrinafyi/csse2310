@@ -5,11 +5,10 @@
 
 #define NULL_CARD ((Card) { '~', 0 } )
 
-/* Card with an integer `num` (its rank) and a character `suit`.
+/* Card with an integer `rank` (its rank) and a character `suit`.
  * Assumptions:
- * 0 <= rank <= 16
- * suit is 'A', 'D', 'S' or 'C'
- * 0 rank indicates null card.
+ * 0 <= rank < 16
+ * suit is 'H', 'D', 'S' or 'C'
  */
 typedef struct Card {
     // suit of the card
@@ -99,7 +98,6 @@ bool is_card_string(char* str);
  * That is, it should be treated as a blank or missing card.
  */
 bool is_null_card(Card card);
-// yes, these 2 functions are probably named too similarly.
 
 /* Parses the given string into a Card struct, returning the struct.
  * str must be a non-blank card.

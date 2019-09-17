@@ -65,8 +65,8 @@ void hs_deal_cards(HubState* hubState, Deck* deck) {
 }
 
 // see header
-void hs_set_player_pipe(HubState* hubState, int player,
-        FILE* readFile, FILE* writeFile) {
+void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
+        FILE* writeFile) {
     hubState->pipes[player] = (PipePair) { .read = readFile,
             .write = writeFile };
 }

@@ -8,7 +8,7 @@
 void ps_init(PlayerState* playerState, GameState* gameState, int playerIndex) {
     playerState->playerIndex = playerIndex;
     playerState->gameState = gameState;
-    playerState->hand = NULL; // initialised when hand set.
+    playerState->hand = malloc(sizeof(Deck));
 }
 
 // see header
@@ -26,13 +26,9 @@ void ps_destroy(PlayerState* playerState) {
 
 // see header
 void ps_set_hand(PlayerState* playerState, Deck* hand) {
-    // copy hand into a place we manage so its lifetime is the same as 
+    // copy hand into a place we manage so its lifetime is the same as
     // playerState's lifetime.
-    Deck* handPtr = malloc(sizeof(Deck));
-    *handPtr = *hand;
-
-    // point at our own value, NOT the given hand.
-    playerState->hand = handPtr;
+    *(playerState->hand) = *hand;
 }
 
 // see header

@@ -42,14 +42,15 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
 
 #ifndef DEBUG
     // silence stderr if not debugging
-    int fdStderr = open("/dev/null", O_CLOEXEC);
+    int fdStderr = open("/dev/null", O_WRONLY); // open for write
     assert(fdStderr != -1);
     dup2(fdStderr, STDERR_FILENO);
     close(fdStderr);
 #endif
     // this should never be printed in release mode which is why it is
     // left in.
-    fprintf(stderr, "        child stderr is visible (DEBUG on)\n");
+    fprintf(stderr, TERM_RED"        warning: "
+            TERM_RESET"child stderr (DEBUG on)\n");
 
     // close original copies of each fd because they have been dup2'd
     close(fdStdin);
@@ -100,8 +101,8 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
     }
     DEBUG_PRINTF("child %d (%s) started. pid: %d (%c)\n",
             playerNum, name, forkResult, PID_CHAR(forkResult));
-    hubState->pipes[playerNum] = (PipePair)
-        { .read = readFile, .write = writeFile };
+    // store the pipe
+    hs_set_pipe(hubState, playerNum, readFile, writeFile);
     return true;
 }
 

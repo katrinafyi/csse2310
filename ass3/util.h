@@ -17,6 +17,7 @@
 
 // terminal escape codes
 #define TERM_GREY "\x1b[38;5;8m"
+#define TERM_RED "\x1b[38;5;9m"
 #define TERM_RESET "\x1b[0m"
 #define TERM_REVERSE "\x1b[7m"
 

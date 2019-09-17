@@ -84,8 +84,11 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
                     message.type != MSG_PLAYED_CARD) {
                 return ret;
             }
-
             PlayedTuple played = message.data.playedTuple;
+            if (played.player < 0 || played.player >= numPlayers) {
+                DEBUG_PRINT("player number out of bounds");
+                return P_INVALID_MESSAGE; // player number out of bounds
+            }
             gs_play_turn(gameState, played.player, played.card);
         }
     }
@@ -119,11 +122,16 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
                 message.type != MSG_NEW_ROUND) {
             return ret;
         }
-        gs_new_round(gameState, message.data.leadPlayer);
+        int leadPlayer = message.data.leadPlayer;
+        if (leadPlayer < 0 || leadPlayer >= gameState->numPlayers) {
+            DEBUG_PRINT("new round lead player out of bounds");
+            return P_INVALID_MESSAGE; // player number out of bounds
+        }
+        gs_new_round(gameState, leadPlayer);
 
         // flag is needed to allow exits when ret is P_NORMAL. this occurs
         // at game over.
-        bool cont = false; 
+        bool cont = false;
         ret = play_round(playerState, &cont);
         if (ret != P_NORMAL || !cont) {
             return ret;

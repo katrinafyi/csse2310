@@ -28,7 +28,8 @@ void hs_destroy(HubState* hubState);
 
 // get numPlayers from gs and deal cards.
 void hs_deal_cards(HubState* hubState, Deck* deck);
-void hs_set_player_pipe(HubState* hubState, int player, FILE* readFile, FILE* writeFile);
+void hs_set_pipe(HubState* hubState, int player, FILE* readFile, 
+        FILE* writeFile);
 
 // removes card from their hand.
 void hs_played_card(HubState* hubState, int player, Card card);
