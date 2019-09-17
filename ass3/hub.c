@@ -379,7 +379,7 @@ void sighup_handler(int signal) {
     // blocking SIGINT prevents us from sharing the same fate
 
     // not calling print_hub_message because that uses fprintf
-    write(STDERR_FILENO, "Ended due to signal", 19);
+    write(STDERR_FILENO, "Ended due to signal\n", 20);
     _exit(H_SIGNAL); // exit immediately
 }
 
