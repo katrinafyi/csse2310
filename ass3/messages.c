@@ -9,8 +9,6 @@
 #include "util.h"
 #include "deck.h"
 
-
-
 // see header
 char* msg_code(MessageType type) {
     static char* typeStrings[6] = {
@@ -25,7 +23,7 @@ char* msg_code(MessageType type) {
     return typeStrings[type];
 }
 
-
+// see header
 bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
     bool valid = false;
     switch (type) {
@@ -163,21 +161,21 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
 // see header
 char* msg_encode_hand(Deck deck) {
     // start with code
-    char* numStr = int_to_string(deck.numCards);
+    char* numPart = int_to_string(deck.numCards);
     // space for number string, comma, each card + its comma
     // and trailing \0
     char* payload = calloc(
-            strlen(numStr) + 2 + 3 * deck.numCards, sizeof(char));
+            strlen(numPart) + 2 + 3 * deck.numCards, sizeof(char));
     int n = 0;
     // snprintf returns number of non-null bytes written
-    n += sprintf(payload + n, "%s", numStr);
-    free(numStr);
+    n += sprintf(payload + n, "%s", numPart);
+    free(numPart);
     
     for (int i = 0; i < deck.numCards; i++) {
-        char cardStr[3];
+        char cardBuf[3];
         // note comma in print string
         n += sprintf(payload + n, ",%s", 
-                fmt_card(cardStr, deck.cards[i], false));
+                fmt_card(cardBuf, deck.cards[i], false));
     }
     return payload;
 }
@@ -220,14 +218,14 @@ bool msg_decode_played(char* payload, PlayedTuple* outTuple) {
 
 // see header
 char* msg_encode_played(PlayedTuple tuple) {
-    char* playerStr = int_to_string(tuple.player);
+    char* playerPart = int_to_string(tuple.player);
 
     // player number length + 3 for card and comma + \0
-    char* payload = calloc(strlen(playerStr) + 4, sizeof(char));
+    char* payload = calloc(strlen(playerPart) + 4, sizeof(char));
     char str[3];
-    sprintf(payload, "%s,%s", playerStr, fmt_card(str, tuple.card, false));
+    sprintf(payload, "%s,%s", playerPart, fmt_card(str, tuple.card, false));
 
-    free(playerStr);
+    free(playerPart);
     return payload;
 }
 
@@ -266,7 +264,7 @@ Message msg_new_round(int leadPlayer) {
 Message msg_played_card(int player, Card card) {
     Message message = {0};
     message.type = MSG_PLAYED_CARD;
-    message.data.playedTuple = (PlayedTuple) { player, card };
+    message.data.playedTuple = (PlayedTuple) {player, card};
     return message;
 }
 

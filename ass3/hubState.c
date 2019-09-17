@@ -32,7 +32,7 @@ void hs_destroy(HubState* hubState) {
             if (hubState->pipes[i].write != NULL) {
                 fclose(hubState->pipes[i].write);
             }
-            hubState->pipes[i] = (PipePair) { NULL, NULL };
+            hubState->pipes[i] = (PipePair) {NULL, NULL};
         }
         free(hubState->pipes);
         hubState->pipes = NULL;
@@ -67,8 +67,8 @@ void hs_deal_cards(HubState* hubState, Deck* deck) {
 // see header
 void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
         FILE* writeFile) {
-    hubState->pipes[player] = (PipePair) { .read = readFile,
-            .write = writeFile };
+    hubState->pipes[player] = (PipePair) {.read = readFile,
+            .write = writeFile};
 }
 
 // see header

@@ -49,8 +49,8 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
 #endif
     // this should never be printed in release mode which is why it is
     // left in.
-    fprintf(stderr, TERM_RED"        warning: "
-            TERM_RESET"child stderr (DEBUG on)\n");
+    fprintf(stderr, TERM_RED "        warning: "
+            TERM_RESET "child stderr (DEBUG on)\n");
 
     // close original copies of each fd because they have been dup2'd
     close(fdStdin);
@@ -77,7 +77,7 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
     // close pipe ends depending on if we're child or not
     int isChild = forkResult == 0 ? 1 : 0;
     close(fdWrite[isChild]); // close write end if we're the child
-    close(fdRead[1-isChild]); // close read end if we're the child
+    close(fdRead[1 - isChild]); // close read end if we're the child
     
     if (forkResult == 0) { // this is the CHILD
         char** argv = player_args(hubState, playerNum, name);

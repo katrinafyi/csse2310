@@ -10,7 +10,8 @@
 
 typedef enum MessageType {
     MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,
-    MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL
+            MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL
+    // style.sh wants weird indentation here
 } MessageType;
 
 typedef enum MessageStatus {
