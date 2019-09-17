@@ -18,7 +18,7 @@
 /* Determines and returns the appropriate args to start a child with the given
  * hubState, player number and executable file name.
  *
- * Returns a MALLOC's array of strings.
+ * Returns a MALLOC'd array of strings.
  */
 char** player_args(HubState* hubState, int playerNum, char* name) {
     char** argv = calloc(6, sizeof(char*));
@@ -74,7 +74,7 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
 
     // die if exec failed. hub will detect missing @
     // _exit avoids messing with the parent's data and state
-    _exit(100); 
+    _exit(100);
 }
 
 /* This is called by the hub to prepare pipes for communication with the chlid
