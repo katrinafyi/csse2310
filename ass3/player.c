@@ -22,12 +22,12 @@
 bool player_should_exit(MessageStatus status, Message* message,
         PlayerExitCode* outCode) {
     if (status != MS_OK) {
-        noop_printf("error message status: %d\n", status);
+        DEBUG_PRINTF("error message status: %d\n", status);
         *outCode = status == MS_EOF ? P_HUB_EOF : P_INVALID_MESSAGE;
         return true;
     }
     if (message != NULL && message->type == MSG_GAME_OVER) {
-        noop_print("flagging exit due to GAMEOVER");
+        DEBUG_PRINT("flagging exit due to GAMEOVER");
         *outCode = P_NORMAL;
         return true;
     }
@@ -70,9 +70,9 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
     int playerNum = playerState->playerIndex;
     for (int i = 0; i < numPlayers; i++) {
         int currPlayer = gameState->currPlayer;
-        noop_printf("player turn: %d\n", currPlayer);
+        DEBUG_PRINTF("player turn: %d\n", currPlayer);
         if (currPlayer == playerNum) {
-            noop_print("playing our turn"); // it's our turn
+            DEBUG_PRINT("playing our turn"); // it's our turn
 
             Card card = get_card_to_play(playerState);
             status = msg_send(stdout, msg_play_card(card));
@@ -83,7 +83,7 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
             ps_play(playerState, card);
             gs_play_turn(gameState, currPlayer, card);
         } else { // it's someone else's turn
-            noop_print("other turn, waiting for message");
+            DEBUG_PRINT("other turn, waiting for message");
             status = msg_receive(stdin, &message);
 
             if (player_should_exit(status, &message, &ret) ||
@@ -92,7 +92,7 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
             }
             PlayedTuple played = message.data.playedTuple;
             if (played.player < 0 || played.player >= numPlayers) {
-                noop_print("player number out of bounds");
+                DEBUG_PRINT("player number out of bounds");
                 return P_INVALID_MESSAGE; // player number out of bounds
             }
             gs_play_turn(gameState, played.player, played.card);
@@ -110,7 +110,7 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
     Message message;
     PlayerExitCode ret = P_INVALID_MESSAGE;
 
-    noop_print("expecting hand");
+    DEBUG_PRINT("expecting hand");
     MessageStatus status = msg_receive(stdin, &message);
     if (player_should_exit(status, &message, &ret) ||
             message.type != MSG_HAND) {
@@ -119,13 +119,13 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
     Deck hand = message.data.hand; // temporarily copy hand
     ps_set_hand(playerState, &hand); // ps_set_hand copies hand.
     if (hand.numCards != playerState->handSize) { // verify hand size
-        noop_print("hand size doesn't match argument");
+        DEBUG_PRINT("hand size doesn't match argument");
         return P_INVALID_MESSAGE;
     }
 
     GameState* gameState = playerState->gameState;
     for (int r = 0; r < hand.numCards; r++) {
-        noop_print("expecting new round");
+        DEBUG_PRINT("expecting new round");
         status = msg_receive(stdin, &message);
         if (player_should_exit(status, &message, &ret) ||
                 message.type != MSG_NEW_ROUND) {
@@ -133,7 +133,7 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
         }
         int leadPlayer = message.data.leadPlayer;
         if (leadPlayer < 0 || leadPlayer >= gameState->numPlayers) {
-            noop_print("new round lead player out of bounds");
+            DEBUG_PRINT("new round lead player out of bounds");
             return P_INVALID_MESSAGE; // player number out of bounds
         }
         gs_new_round(gameState, leadPlayer);
@@ -146,7 +146,7 @@ PlayerExitCode exec_player_loop(PlayerState* playerState) {
         }
         gs_end_round(gameState);
     }
-    noop_print("expecting game over");
+    DEBUG_PRINT("expecting game over");
     status = msg_receive(stdin, &message);
     if (player_should_exit(status, &message, &ret) ||
             message.type != MSG_GAME_OVER) {
@@ -211,6 +211,6 @@ int main(int argc, char** argv) {
     gs_destroy(&gameState);
 
     print_player_message(ret);
-    noop_printf("player exiting with code: %d\n", ret);
+    DEBUG_PRINTF("player exiting with code: %d\n", ret);
     return ret;
 }

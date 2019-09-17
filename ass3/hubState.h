@@ -8,30 +8,51 @@
 #include "gameState.h"
 #include "deck.h"
 
+/* Holds two ends of a pipe corresponding to the read/write ends (relative to
+ * the hub) for a particular player.
+ */
 typedef struct PipePair {
     FILE* read;
     FILE* write;
 } PipePair;
 
+/* Entire struct for the hub. Contains gameState struct as well as pipes for
+ * communication and copies of all player's hands.
+ */
 typedef struct HubState {
     GameState* gameState;
 
+    // array of pipes for each player.
     PipePair* pipes;
+    // array of hands for each player.
     Deck* playerHands;
 } HubState;
 
-// only mallocs everything.
+/* Attachs the given gameState to the hubState. Allocates memory for arrays
+ * based on numPlayers in gameState.
+ *
+ * Should be called after gameState is initialised!
+ */
 void hs_init(HubState* hubState, GameState* gameState);
 
+/* Frees memory associated with this state struct and all contained structs.
+ */
 void hs_destroy(HubState* hubState);
 
 
-// get numPlayers from gs and deal cards.
+/* Deals cards to players from the given deck. Uses state from hubState's
+ * gameState and stores in playerHands.
+ */
 void hs_deal_cards(HubState* hubState, Deck* deck);
-void hs_set_pipe(HubState* hubState, int player, FILE* readFile, 
+
+/* Sets the pipes for the given player to the given file pointers, storing
+ * them in hubState's fields.
+ */
+void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
         FILE* writeFile);
 
-// removes card from their hand.
+/* Removes the given card from the given player's hand.
+ */
 void hs_played_card(HubState* hubState, int player, Card card);
 
 #endif

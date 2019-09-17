@@ -1,7 +1,7 @@
 #ifndef EXITCODES_H
 #define EXITCODES_H
 
-/* Exit codes for the hub. */
+/* Exit codes for the hub, as defined in spec. */
 typedef enum HubExitCode {
     H_NORMAL = 0,
     H_INCORRECT_ARGS = 1,
@@ -15,7 +15,7 @@ typedef enum HubExitCode {
     H_SIGNAL = 9,
 } HubExitCode;
 
-/* Exit codes for the player. */
+/* Exit codes for the player, as defined in spec. */
 typedef enum PlayerExitCode {
     P_NORMAL = 0,
     P_INCORRECT_ARGS = 1,
@@ -27,7 +27,12 @@ typedef enum PlayerExitCode {
     P_HUB_EOF = 7,
 } PlayerExitCode;
 
+/* Prints the hub's error message associated with the given code to stderr.
+ */
 void print_hub_message(HubExitCode code);
+
+/* Prints the player's error message associated with the given code to stderr.
+ */
 void print_player_message(PlayerExitCode code);
 
 #endif

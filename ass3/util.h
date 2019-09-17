@@ -21,7 +21,8 @@
 #define TERM_RESET "\x1b[0m"
 #define TERM_REVERSE "\x1b[7m"
 
-// macros to print a message along with function and line number.
+// macros to print a message along with function and line number. these are
+// disabled by the sed_noop job in make.
 // ass3: now with PID and colours
 // unfortunately, these crash the style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
@@ -38,7 +39,7 @@
 /* Parses the str into a non-negative integer, with the following
  * requirements:
  *  - first character is + or a digit
- *  - contains decimal digits
+ *  - contains only decimal digits
  *  - no trailing whitespace or non-digit characters
  * Returns the integer on success or a negative number on failure.
  */

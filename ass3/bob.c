@@ -10,7 +10,7 @@
  * Chooses highest card of DHSC, in that order.
  */
 int strategy_when_leading(PlayerState* playerState) {
-    noop_print("bob leading");
+    DEBUG_PRINT("bob leading");
     return deck_search(playerState->hand, "DHSC", false);
 }
 
@@ -40,7 +40,7 @@ int strategy_when_following(PlayerState* playerState) {
 
     // alternate strategy if both diamond conditions met
     bool altStrategy = condition1 && condition2;
-    noop_printf("bob conditions: %d %d -> %d\n", condition1, condition2,
+    DEBUG_PRINTF("bob conditions: %d %d -> %d\n", condition1, condition2,
             altStrategy);
 
     // highest if alt strat, else lowest
