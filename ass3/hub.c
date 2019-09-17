@@ -217,7 +217,8 @@ void print_round_cards(HubState* hubState) {
             printf(" ");
         }
         Card card = gameState->table->cards[player];
-        printf("%c.%x", card.suit, card.rank);
+        char str[4];
+        printf("%s", fmt_card(str, card, true));
     }
     printf("\n");
 }

@@ -3,8 +3,10 @@
 
 #include "deck.h"
 #include "strategy.h"
+#include "util.h"
 
 int strategy_when_leading(PlayerState* playerState) {
+    DEBUG_PRINT("bob leading");
     return deck_search(playerState->hand, "DHSC", false);
 }
 
@@ -27,6 +29,8 @@ int strategy_when_following(PlayerState* playerState) {
     
     // alternate strategy if both diamond conditions met
     bool altStrategy = condition1 && condition2;
+    DEBUG_PRINTF("bob conditions: %d %d -> %d\n", condition1, condition2,
+            altStrategy);
 
     // highest if alt strat, else lowest
     int leadIndex = deck_best_card(playerState->hand, leadSuit, altStrategy);
