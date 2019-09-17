@@ -39,19 +39,21 @@ void gs_destroy(GameState* gameState) {
     }
 }
 
+// see header
 void gs_new_round(GameState* gameState, int leadPlayer) {
-    DEBUG_PRINTF("new round! led by %d\n", leadPlayer);
+    noop_printf("new round! led by %d\n", leadPlayer);
     // round number is set by gs_end_round
     gameState->leadPlayer = leadPlayer;
     gameState->currPlayer = leadPlayer;
     deck_clear(gameState->table);
 }
 
+// see header
 void gs_play_turn(GameState* gameState, int player, Card card) {
     assert(player == gameState->currPlayer);
 
     if (player == gameState->leadPlayer) {
-        DEBUG_PRINTF("setting lead suit %c\n", card.suit);
+        noop_printf("setting lead suit %c\n", card.suit);
         gameState->leadSuit = card.suit;
     }
     assert(0 <= player && player < gameState->table->numCards);
@@ -63,20 +65,14 @@ void gs_play_turn(GameState* gameState, int player, Card card) {
     gameState->currPlayer %= gameState->numPlayers;
 }
 
-bool gs_is_round_over(GameState* gameState) {
-    // every player has made a turn and the table is full.
-    return deck_is_full(gameState->table);
-}
-
+// see header
 void gs_end_round(GameState* gameState) {
-    DEBUG_PRINT("ending round");
+    noop_print("ending round");
 
     int winningPlayer = deck_best_card(gameState->table,
             gameState->leadSuit, true);
     assert(winningPlayer >= 0);
     Card winningCard = gameState->table->cards[winningPlayer];
-    DEBUG_PRINTF("player %d won with card %c%x\n", winningPlayer,
-            winningCard.suit, winningCard.rank);
     assert(winningCard.suit == gameState->leadSuit);
     
     // count diamonds on the table.
@@ -87,6 +83,12 @@ void gs_end_round(GameState* gameState) {
             diamonds++;
         }
     }
+
+    char cardBuf[3];
+    fmt_card(cardBuf, winningCard, false);
+    noop_printf("player %d won with card %s. won %d D\n", winningPlayer,
+            cardBuf, diamonds);
+
     // increment points and give diamonds to winning player.
     gameState->playerPoints[winningPlayer]++;
     gameState->diamondsWon[winningPlayer] += diamonds;

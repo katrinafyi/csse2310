@@ -26,9 +26,14 @@
 // unfortunately, these crash the style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "\x1b[38;5;%dm(%c) "TERM_GREY"%s:%d"TERM_RESET" "fmt, \
+        "\x1b[38;5;%dm(%c) " TERM_GREY "%s:%d" TERM_RESET " " fmt, \
         getpid() % 7 + 9, PID_CHAR(getpid()), \
         __func__, __LINE__, __VA_ARGS__);
+// formats in the style of:
+// (A) main:53 example message
+//
+// (A) character and colour are from PID.
+// shows function and line number of location, with message.
 
 /* Parses the str into a non-negative integer, with the following
  * requirements:

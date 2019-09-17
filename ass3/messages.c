@@ -46,6 +46,7 @@ bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
     return valid;
 }
 
+// see header
 char* msg_payload_encode(Message message) {
     switch (message.type) {
         case MSG_HAND:
@@ -70,10 +71,10 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
 
     char* line;
     if (feof(file) || !safe_read_line(file, &line)) {
-        DEBUG_PRINT("read pipe is at EOF");
+        noop_print("read pipe is at EOF");
         return MS_EOF;
     }
-    DEBUG_PRINTF("received: %s\n", line);
+    noop_printf("received: %s\n", line);
 
     MessageType type = MSG_NULL;
     char* payload = NULL;
@@ -88,13 +89,13 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
         }
     }
     if (type == MSG_NULL) {
-        DEBUG_PRINT("no matched code");
+        noop_print("no matched code");
         free(line);
         return MS_INVALID;
     }
 
     if (!msg_payload_decode(type, payload, &message.data)) {
-        DEBUG_PRINT("invalid payload");
+        noop_print("invalid payload");
         free(line);
         return MS_INVALID;
     }
@@ -112,7 +113,7 @@ MessageStatus msg_send(FILE* file, Message message) {
     // note newline at end
     errno = 0;
     int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
-    DEBUG_PRINTF("sending: %s%s\n", msg_code(message.type), payload);
+    noop_printf("sending: %s%s\n", msg_code(message.type), payload);
     fflush(file);
     // DEBUG_PRINTF("errno: %d\n", errno);
     free(payload);
@@ -124,12 +125,12 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
     char* firstSplit[2];
     // first, split into number of cards and the rest.
     if (tokenise(payload, ',', firstSplit, 2) != 2) {
-        DEBUG_PRINT("couldn't find header");
+        noop_print("couldn't find header");
         return false;
     }
     int numCards = parse_int(firstSplit[0]);
     if (numCards <= 0) {
-        DEBUG_PRINT("invalid num cards value");
+        noop_print("invalid num cards value");
         return false;
     }
     deck_init_empty(outDeck, numCards);
@@ -138,7 +139,7 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
     // one more allocated to make sure no junk is at end of string
     char** cardsSplit = calloc(numCards, sizeof(char*));
     if (tokenise(firstSplit[1], ',', cardsSplit, numCards) != numCards) {
-        DEBUG_PRINT("wrong number of cards");
+        noop_print("wrong number of cards");
         free(cardsSplit);
         deck_destroy(outDeck);
         return false;
@@ -199,16 +200,16 @@ bool msg_decode_played(char* payload, PlayedTuple* outTuple) {
     *outTuple = (PlayedTuple) {0};
     char* split[2];
     if (tokenise(payload, ',', split, 2) != 2) {
-        DEBUG_PRINT("missing comma");
+        noop_print("missing comma");
         return false;
     }
     int player = parse_int(split[0]);
     if (player < 0) {
-        DEBUG_PRINT("invalid player number");
+        noop_print("invalid player number");
         return false;
     }
     if (!is_card_string(split[1])) {
-        DEBUG_PRINT("invalid card");
+        noop_print("invalid card");
         return false;
     }
     outTuple->player = player;
