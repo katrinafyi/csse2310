@@ -9,15 +9,15 @@
 #include "deck.h"
 
 typedef struct PipePair {
-  FILE* read;
-  FILE* write;
+    FILE* read;
+    FILE* write;
 } PipePair;
 
 typedef struct HubState {
-  GameState* gameState;
+    GameState* gameState;
 
-  PipePair* pipes;
-  Deck* playerHands;
+    PipePair* pipes;
+    Deck* playerHands;
 } HubState;
 
 // only mallocs everything.
