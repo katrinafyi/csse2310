@@ -72,7 +72,7 @@ void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
 }
 
 // see header
-void hs_played_card(HubState* hubState, int player, Card card) {
+void hs_card_played(HubState* hubState, int player, Card card) {
     char cardBuf[3];
     DEBUG_PRINTF("removing %s from %d's hand\n", 
             fmt_card(cardBuf, card, false), player);

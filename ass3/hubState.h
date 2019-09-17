@@ -53,6 +53,6 @@ void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
 
 /* Removes the given card from the given player's hand.
  */
-void hs_played_card(HubState* hubState, int player, Card card);
+void hs_card_played(HubState* hubState, int player, Card card);
 
 #endif

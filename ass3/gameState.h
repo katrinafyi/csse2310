@@ -46,12 +46,12 @@ void gs_destroy(GameState* gameState);
  */
 void gs_new_round(GameState* gameState, int leadPlayer);
 
-/* Places the given card onto the table, played by the given player.
- * Increments currPlayer to next player in the rotation.
+/* A card has been played by some player. Player and card are as given.
+ * Increments currPlayer to next player in the rotation after this player.
  */
-void gs_play_turn(GameState* gameState, int player, Card card);
+void gs_card_played(GameState* gameState, int player, Card card);
 
-/* Ends the round, determining the winner and incrementing diamondsWon and 
+/* Ends the round, determining the winner and incrementing diamondsWon and
  * playerPoints as appropriate. Also sets the winner to the lead player.
  */
 void gs_end_round(GameState* gameState);

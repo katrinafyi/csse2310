@@ -49,7 +49,7 @@ void gs_new_round(GameState* gameState, int leadPlayer) {
 }
 
 // see header
-void gs_play_turn(GameState* gameState, int player, Card card) {
+void gs_card_played(GameState* gameState, int player, Card card) {
     assert(player == gameState->currPlayer);
 
     if (player == gameState->leadPlayer) {

@@ -221,9 +221,9 @@ HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
     if (!broadcast_message(hubState, message, currPlayer)) {
         return H_PLAYER_EOF;
     }
-    // gs_play_turn increments currPlayer in the struct
-    gs_play_turn(gameState, currPlayer, playedCard);
-    hs_played_card(hubState, currPlayer, playedCard);
+    // gs_card_played increments currPlayer in the struct
+    gs_card_played(gameState, currPlayer, playedCard);
+    hs_card_played(hubState, currPlayer, playedCard);
     return H_NORMAL;
 }
 

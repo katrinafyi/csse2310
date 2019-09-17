@@ -81,7 +81,7 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
             }
 
             ps_play(playerState, card);
-            gs_play_turn(gameState, currPlayer, card);
+            gs_card_played(gameState, currPlayer, card);
         } else { // it's someone else's turn
             DEBUG_PRINT("other turn, waiting for message");
             status = msg_receive(stdin, &message);
@@ -95,7 +95,7 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
                 DEBUG_PRINT("player number out of bounds");
                 return P_INVALID_MESSAGE; // player number out of bounds
             }
-            gs_play_turn(gameState, played.player, played.card);
+            gs_card_played(gameState, played.player, played.card);
         }
     }
     // at this point, everyone's taken a turn and we should go to next round

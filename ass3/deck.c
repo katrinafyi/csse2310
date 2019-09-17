@@ -134,7 +134,7 @@ int deck_best_card(Deck* deck, char suit, bool high) {
         if (deck->cards[i].suit != suit) {
             continue;
         }
-        if (is_null_card(best) || 
+        if (is_null_card(best) ||
                 deck->cards[i].rank * mult > best.rank * mult) {
             best = deck->cards[i];
             bestIndex = i;
