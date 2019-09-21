@@ -22,12 +22,12 @@ void deck_destroy(Deck* deck) {
 bool do_load_deck(Deck* deck, FILE* file) {
     char* numLine = NULL;
     if (!safe_read_line(file, &numLine)) { // this checks if file is NULL
-        DEBUG_PRINT("failed to read number line");
+        noop_print("failed to read number line");
         return false;
     }
     int numCards = parse_int(numLine);
     if (numCards < 0) {
-        DEBUG_PRINT("number of cards invalid");
+        noop_print("number of cards invalid");
         free(numLine);
         return false;
     }
@@ -37,11 +37,11 @@ bool do_load_deck(Deck* deck, FILE* file) {
     for (int i = 0; i < numCards; i++) {
         char* line;
         if (!safe_read_line(file, &line)) {
-            DEBUG_PRINT("read line failed");
+            noop_print("read line failed");
             return false;
         }
         if (strlen(line) != 2 || !is_card(line)) {
-            DEBUG_PRINTF("invalid card: |%s|\n", line);
+            noop_printf("invalid card: |%s|\n", line);
             free(line);
             return false;
         }
@@ -49,7 +49,7 @@ bool do_load_deck(Deck* deck, FILE* file) {
         free(line);
     }
     if (fgetc(file) != EOF) {
-        DEBUG_PRINT("junk at end of deck");
+        noop_print("junk at end of deck");
         return false;
     }
     deck->numCards = numCards; // only set if we succeeded
@@ -67,7 +67,7 @@ bool deck_init_file(Deck* deck, char* deckFile) {
     deck->numCards = 0; // just in case we iterate over an errored deck.
     deck->cards = NULL;
 
-    DEBUG_PRINTF("deck file loading: %s\n", deckFile);
+    noop_printf("deck file loading: %s\n", deckFile);
     FILE* file = fopen(deckFile, "r");
     if (file == NULL) {
         return false;

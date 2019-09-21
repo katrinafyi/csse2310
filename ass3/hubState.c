@@ -56,7 +56,7 @@ void hs_deal_cards(HubState* hubState, Deck* deck) {
         deck_init_empty(hubState->playerHands + p, handSize);
         for (int i = 0; i < handSize; i++) {
             Card card = deck->cards[drawn];
-            DEBUG_PRINTF("dealing %c%x to %d\n", card.suit, card.rank, p);
+            noop_printf("dealing %c%x to %d\n", card.suit, card.rank, p);
             hubState->playerHands[p].cards[i] = card;
             drawn++;
         }
@@ -74,7 +74,7 @@ void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
 // see header
 void hs_card_played(HubState* hubState, int player, Card card) {
     char cardBuf[3];
-    DEBUG_PRINTF("removing %s from %d's hand\n", 
+    noop_printf("removing %s from %d's hand\n", 
             fmt_card(cardBuf, card, false), player);
     deck_remove_card(hubState->playerHands + player, card);
 }
