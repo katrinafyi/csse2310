@@ -1,6 +1,7 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "deck.h"
