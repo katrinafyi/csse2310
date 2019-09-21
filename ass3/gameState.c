@@ -41,7 +41,7 @@ void gs_destroy(GameState* gameState) {
 
 // see header
 void gs_new_round(GameState* gameState, int leadPlayer) {
-    noop_printf("new round! led by %d\n", leadPlayer);
+    DEBUG_PRINTF("new round! led by %d\n", leadPlayer);
     // round number is set by gs_end_round
     gameState->leadPlayer = leadPlayer;
     gameState->currPlayer = leadPlayer;
@@ -53,7 +53,7 @@ void gs_card_played(GameState* gameState, int player, Card card) {
     assert(player == gameState->currPlayer);
 
     if (player == gameState->leadPlayer) {
-        noop_printf("setting lead suit %c\n", card.suit);
+        DEBUG_PRINTF("setting lead suit %c\n", card.suit);
         gameState->leadSuit = card.suit;
     }
     assert(0 <= player && player < gameState->table->numCards);
@@ -67,7 +67,7 @@ void gs_card_played(GameState* gameState, int player, Card card) {
 
 // see header
 void gs_end_round(GameState* gameState) {
-    noop_print("ending round");
+    DEBUG_PRINT("ending round");
 
     int winningPlayer = deck_best_card(gameState->table,
             gameState->leadSuit, true);
@@ -86,7 +86,7 @@ void gs_end_round(GameState* gameState) {
 
     char cardBuf[3];
     fmt_card(cardBuf, winningCard, false);
-    noop_printf("player %d won with card %s. won %d D\n", winningPlayer,
+    DEBUG_PRINTF("player %d won with card %s. won %d D\n", winningPlayer,
             cardBuf, diamonds);
 
     // increment points and give diamonds to winning player.
@@ -94,4 +94,18 @@ void gs_end_round(GameState* gameState) {
     gameState->diamondsWon[winningPlayer] += diamonds;
     // winning player is the lead player
     gameState->leadPlayer = winningPlayer;
+}
+
+// see header
+void gs_fprint_cards(GameState* gameState, FILE* file) {
+    int numPlayers = gameState->numPlayers;
+    int leadPlayer = gameState->leadPlayer;
+    for (int i = 0; i < numPlayers; i++) {
+        if (i > 0) {
+            fprintf(file, " ");
+        }
+        Card card = gameState->table->cards[(leadPlayer + i) % numPlayers];
+        fprintf(file, "%c.%d", card.suit, card.rank);
+    }
+    fprintf(file, "\n");
 }

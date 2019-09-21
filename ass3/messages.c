@@ -71,10 +71,10 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
 
     char* line;
     if (feof(file) || !safe_read_line(file, &line)) {
-        noop_print("read pipe is at EOF");
+        DEBUG_PRINT("read pipe is at EOF");
         return MS_EOF;
     }
-    noop_printf("received: %s\n", line);
+    DEBUG_PRINTF("received: %s\n", line);
 
     MessageType type = MSG_NULL;
     char* payload = NULL;
@@ -89,13 +89,13 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
         }
     }
     if (type == MSG_NULL) {
-        noop_print("no matched code");
+        DEBUG_PRINT("no matched code");
         free(line);
         return MS_INVALID;
     }
 
     if (!msg_payload_decode(type, payload, &message.data)) {
-        noop_print("invalid payload");
+        DEBUG_PRINT("invalid payload");
         free(line);
         return MS_INVALID;
     }
@@ -113,7 +113,7 @@ MessageStatus msg_send(FILE* file, Message message) {
     // note newline at end
     errno = 0;
     int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
-    noop_printf("sending: %s%s\n", msg_code(message.type), payload);
+    DEBUG_PRINTF("sending: %s%s\n", msg_code(message.type), payload);
     fflush(file);
     // DEBUG_PRINTF("errno: %d\n", errno);
     free(payload);
@@ -125,12 +125,12 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
     char* firstSplit[2];
     // first, split into number of cards and the rest.
     if (tokenise(payload, ',', firstSplit, 2) != 2) {
-        noop_print("couldn't find header");
+        DEBUG_PRINT("couldn't find header");
         return false;
     }
     int numCards = parse_int(firstSplit[0]);
     if (numCards <= 0) {
-        noop_print("invalid num cards value");
+        DEBUG_PRINT("invalid num cards value");
         return false;
     }
     deck_init_empty(outDeck, numCards);
@@ -139,7 +139,7 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
     // one more allocated to make sure no junk is at end of string
     char** cardsSplit = calloc(numCards, sizeof(char*));
     if (tokenise(firstSplit[1], ',', cardsSplit, numCards) != numCards) {
-        noop_print("wrong number of cards");
+        DEBUG_PRINT("wrong number of cards");
         free(cardsSplit);
         deck_destroy(outDeck);
         return false;
@@ -200,16 +200,16 @@ bool msg_decode_played(char* payload, PlayedTuple* outTuple) {
     *outTuple = (PlayedTuple) {0};
     char* split[2];
     if (tokenise(payload, ',', split, 2) != 2) {
-        noop_print("missing comma");
+        DEBUG_PRINT("missing comma");
         return false;
     }
     int player = parse_int(split[0]);
     if (player < 0) {
-        noop_print("invalid player number");
+        DEBUG_PRINT("invalid player number");
         return false;
     }
     if (!is_card_string(split[1])) {
-        noop_print("invalid card");
+        DEBUG_PRINT("invalid card");
         return false;
     }
     outTuple->player = player;

@@ -45,7 +45,7 @@ char** player_args(HubState* hubState, int playerNum, char* name) {
  * Will NEVER return.
  */
 void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
-    noop_printf("this is the child, pid: %d\n", getpid());
+    DEBUG_PRINTF("this is the child, pid: %d\n", getpid());
     fflush(stdout);
     fflush(stderr); // for extra safety
 
@@ -70,7 +70,7 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
 
     errno = 0;
     execv(name, argv); // if successful, will not return
-    noop_printf("execv failed (%s): %s\n", name, strerror(errno));
+    DEBUG_PRINTF("execv failed (%s): %s\n", name, strerror(errno));
 
     // die if exec failed. hub will detect missing @
     // _exit avoids messing with the parent's data and state
@@ -113,12 +113,12 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
     // validate child with @ symbol
     int atSymbol = fgetc(readFile);
     if (atSymbol != '@') {
-        noop_printf("no @ received from %d (%s)\n", playerNum, name);
+        DEBUG_PRINTF("no @ received from %d (%s)\n", playerNum, name);
         fclose(readFile);
         fclose(writeFile);
         return false;
     }
-    noop_printf("child %d (%s) started. pid: %d (%c)\n",
+    DEBUG_PRINTF("child %d (%s) started. pid: %d (%c)\n",
             playerNum, name, forkResult, PID_CHAR(forkResult));
     // store the pipe
     hs_set_pipe(hubState, playerNum, readFile, writeFile);
@@ -131,7 +131,7 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
 bool send_player_hands(HubState* hubState) {
     MessageStatus status;
     for (int p = 0; p < hubState->gameState->numPlayers; p++) {
-        noop_printf("sending HAND to %d\n", p);
+        DEBUG_PRINTF("sending HAND to %d\n", p);
 
         FILE* writeFile = hubState->pipes[p].write;
         Deck hand = hubState->playerHands[p];
@@ -175,7 +175,7 @@ bool broadcast_message(HubState* hubState, Message message, int exclude) {
  */
 bool hub_should_exit(MessageStatus status, HubExitCode* outCode) {
     if (status != MS_OK) {
-        noop_printf("error message status: %d\n", status);
+        DEBUG_PRINTF("error message status: %d\n", status);
         *outCode = status == MS_EOF ? H_PLAYER_EOF : H_INVALID_MESSAGE;
         return true;
     }
@@ -192,7 +192,7 @@ HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
 
     Deck* hand = hubState->playerHands + currPlayer;
     // wait for PLAY from players
-    noop_printf("hub expecting %d to PLAY\n", currPlayer);
+    DEBUG_PRINTF("hub expecting %d to PLAY\n", currPlayer);
     FILE* readFile = hubState->pipes[currPlayer].read;
     MessageStatus status = msg_receive(readFile, &message);
     if (hub_should_exit(status, &ret) ||
@@ -202,7 +202,7 @@ HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
     Card playedCard = message.data.card; // store played card
 
     if (deck_index_of(hand, message.data.card) == -1) {
-        noop_print("card not in player's hand");
+        DEBUG_PRINT("card not in player's hand");
         return H_INVALID_CARD;
     }
 
@@ -212,11 +212,11 @@ HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
             playedCard.suit != leadSuit);
     // if not lead player, and they have a lead suit card but didn't play it
     if (leadPlayer != currPlayer && violatesSuit) {
-        noop_print("does not follow lead suit");
+        DEBUG_PRINT("does not follow lead suit");
         return H_INVALID_CARD;
     }
     // send PLAYED to other players excluding this one
-    noop_print("echoing to other players");
+    DEBUG_PRINT("echoing to other players");
     message = msg_played_card(currPlayer, playedCard);
     if (!broadcast_message(hubState, message, currPlayer)) {
         return H_PLAYER_EOF;
@@ -232,22 +232,10 @@ HubExitCode one_player_turn(HubState* hubState, int currPlayer) {
  */
 void print_round_cards(HubState* hubState) {
     GameState* gameState = hubState->gameState;
-    int numPlayers = gameState->numPlayers;
-    int leadPlayer = gameState->leadPlayer;
 
     // prints message of cards this round, in order of play
     printf("Cards=");
-    for (int i = 0; i < numPlayers; i++) {
-        // iterate in order of play
-        int player = (leadPlayer + i) % numPlayers;
-        if (i > 0) {
-            printf(" ");
-        }
-        Card card = gameState->table->cards[player];
-        char str[4];
-        printf("%s", fmt_card(str, card, true));
-    }
-    printf("\n");
+    gs_fprint_cards(gameState, stdout);
 }
 
 /* Computes and prints player scores to stdout, considering threshold and
@@ -331,6 +319,8 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     int numPlayers = argc - 3; // 3 non-player arguments
     char** playerNames = argv + 3; // skip first 3 arguments
 
+
+
     Deck deck = {0}; // to store the full deck before dealing
     if (!deck_init_file(&deck, argv[1])) {
         return H_DECK_ERROR;
@@ -346,7 +336,7 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     hs_deal_cards(hubState, &deck);
     deck_destroy(&deck); // we wont need this anymore
 
-    noop_printf("hub PID: %d\n", getpid());
+    DEBUG_PRINTF("hub PID: %d\n", getpid());
     // start child players and waits for their @ symbol
     for (int p = 0; p < numPlayers; p++) {
         if (!start_player(hubState, p, playerNames[p])) {
@@ -408,6 +398,6 @@ int main(int argc, char** argv) {
     hs_destroy(&hubState);
 
     print_hub_message(ret);
-    noop_printf("exiting hub with code: %d\n", ret);
+    DEBUG_PRINTF("exiting hub with code: %d\n", ret);
     return ret;
 }

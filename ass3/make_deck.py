@@ -2,6 +2,7 @@
 import random
 import string
 import sys
+from itertools import product
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -11,9 +12,14 @@ if __name__ == '__main__':
     suits = 'SDCH'
     ranks = string.hexdigits.lower().replace('0', '');
 
-    n = int(sys.argv[1])
+    cards = list(product(suits, ranks))
 
+    n = int(sys.argv[1])
+    if n > len(cards):
+        raise ValueError(f'{n} exceeds the maximum number of cards, {len(cards)}')
     print(n)
+    random.shuffle(cards)
     for i in range(n):
-        print(random.choice(suits), random.choice(ranks), sep='')
+        s, r = cards[i]
+        print(s, r, sep='')
 

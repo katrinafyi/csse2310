@@ -16,12 +16,12 @@ ifeq ($(DEBUG), 1)
 endif
 
 .PHONY: sed_debug sed_noop all debug clean
-release: sed_noop all
+release: all
 
 all: 2310hub 2310alice 2310bob
 
-test_compile:
-	bash ./testCompile.sh
+check_debug:
+	./checkDebug.sh $(all_src)
 
 test_util: $(common_obj) testUtil.o
 	gcc $(CCFLAGS) $(common_obj) testUtil.o -o $@
@@ -35,13 +35,13 @@ test_messages: $(common_obj) testMessages.o
 %.o: %.c
 	gcc $(CCFLAGS) $< -c -o $@
 
-2310hub: $(common_obj) $(hub_obj)
+2310hub: $(common_obj) $(hub_obj) check_debug
 	gcc $(CCFLAGS) $(common_obj) $(hub_obj) -o $@
 
-2310alice: $(common_obj) $(alice_obj)
+2310alice: $(common_obj) $(alice_obj) check_debug
 	gcc $(CCFLAGS) $(common_obj) $(alice_obj) -o $@
 
-2310bob: $(common_obj) $(bob_obj)
+2310bob: $(common_obj) $(bob_obj) check_debug
 	gcc $(CCFLAGS) $(common_obj) $(bob_obj) -o $@
 
 clean:

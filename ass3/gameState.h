@@ -56,4 +56,11 @@ void gs_card_played(GameState* gameState, int player, Card card);
  */
 void gs_end_round(GameState* gameState);
 
+/* Prints the cards played in the current round to the given file. Cards are
+ * printed in the format S.R S.R S.R where S is suit and R is rank, and are
+ * in the order played (i.e. starting from lead player). A trailing \n is
+ * printed.
+ */
+void gs_fprint_cards(GameState* gameState, FILE* file);
+
 #endif
