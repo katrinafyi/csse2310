@@ -99,7 +99,7 @@ PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {
         }
     }
     // end of round normally, print output and go to next round
-    fprintf(stderr, "Lead player=%d: ", numPlayers);
+    fprintf(stderr, "Lead player=%d: ", gameState->leadPlayer);
     gs_fprint_cards(playerState->gameState, stderr);
     *outContinue = true;
     return P_NORMAL;

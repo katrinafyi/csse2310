@@ -105,7 +105,7 @@ void gs_fprint_cards(GameState* gameState, FILE* file) {
             fprintf(file, " ");
         }
         Card card = gameState->table->cards[(leadPlayer + i) % numPlayers];
-        fprintf(file, "%c.%d", card.suit, card.rank);
+        fprintf(file, "%c.%x", card.suit, card.rank);
     }
     fprintf(file, "\n");
 }
