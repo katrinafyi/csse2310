@@ -30,11 +30,6 @@ int main(int argc, char** argv) {
         // test encoding hands. LEAKS
         printf("encoded hand: |%s|\n", msg_encode_hand(message.data.hand));
     }
-    if (message.type == MSG_PLAYED_CARD) {
-        // test encoding tuple
-        printf("encoded tuple: |%s|\n", msg_encode_played(
-                message.data.playedTuple));
-    }
     // test full message sending!
     if (ret == MS_OK) { // but only for valid messages
         printf("send ret: %d\n", msg_send(writeFile, message));
@@ -44,7 +39,7 @@ int main(int argc, char** argv) {
         printf("recv: %s\n", line);
         free(line);
     }
-    fclose(readFile); // close and try to write after closed
+    fclose(readFile); // close and try to write after closed should EOF
     fflush(writeFile);
     printf("send after closed: %d\n", msg_send(writeFile, message));
     fclose(writeFile);

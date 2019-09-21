@@ -4,28 +4,15 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-ALLOW_ZERO	simpatico.py	/^ALLOW_ZERO = True$/;"	v
-ALL_OPS	simpatico.py	/^ALL_OPS = BINARY_OPERATORS + UNARY_OPERATORS + ASSIGNMENTS + LOGICAL_OPERATORS$/;"	v
-ANY	simpatico.py	/^    ANY = -1$/;"	v	class:Type
-BINARY_OPERATORS	simpatico.py	/^BINARY_OPERATORS = ["\/", "%", ">>", "<<", "|", "^", "->", ".", "?", ":"]$/;"	v
-BLOCK	simpatico.py	/^    BLOCK = 1$/;"	v	class:EnumStyle
-CCFLAGS	Makefile	/^CCFLAGS := -g -std=gnu99 -Wall -pedantic$/;"	m
-COMMENT	simpatico.py	/^COMMENT = '\\t'$/;"	v
 Card	deck.h	/^typedef struct Card {$/;"	s
 Card	deck.h	/^} Card;$/;"	t	typeref:struct:Card
-DEBUG	simpatico.py	/^DEBUG = False$/;"	v
 DEBUG_PRINT	util.h	28;"	d
 DEBUG_PRINTF	util.h	29;"	d
 DECK_H	deck.h	2;"	d
-DEFINED_TYPES	simpatico.py	/^DEFINED_TYPES = ['__UINTMAX_TYPE__', '__SIZE_TYPE__', '__CHAR16_Type__',$/;"	v
-DISALLOW_EXPRESSIONS	simpatico.py	/^DISALLOW_EXPRESSIONS = False$/;"	v
 Deck	deck.h	/^typedef struct Deck {$/;"	s
 Deck	deck.h	/^} Deck;$/;"	t	typeref:struct:Deck
 EXITCODES_H	exitCodes.h	2;"	d
-EnumStyle	simpatico.py	/^class EnumStyle(object):$/;"	c
-Errors	simpatico.py	/^class Errors(object):$/;"	c
 GAMESTATE_H	gameState.h	2;"	d
-GOTO_BANNED	simpatico.py	/^GOTO_BANNED = True$/;"	v
 GameState	gameState.h	/^typedef struct GameState {$/;"	s
 GameState	gameState.h	/^} GameState;$/;"	t	typeref:struct:GameState
 HUBSTATE_H	hubState.h	2;"	d
@@ -43,55 +30,9 @@ HubExitCode	exitCodes.h	/^typedef enum HubExitCode {$/;"	g
 HubExitCode	exitCodes.h	/^} HubExitCode;$/;"	t	typeref:enum:HubExitCode
 HubState	hubState.h	/^typedef struct HubState {$/;"	s
 HubState	hubState.h	/^} HubState;$/;"	t	typeref:struct:HubState
-INDENT_SIZE	simpatico.py	/^INDENT_SIZE = 4$/;"	v
-INLINE	simpatico.py	/^    INLINE = 2$/;"	v	class:EnumStyle
 INSTANT_SEGFAULT	util.h	12;"	d
-IS_TYPEDEF	simpatico.py	/^IS_TYPEDEF = True$/;"	v
-KW_AUTO	simpatico.py	/^    KW_AUTO = "auto"$/;"	v	class:Terminals
-KW_BOOL	simpatico.py	/^    KW_BOOL = "_Bool"$/;"	v	class:Terminals
-KW_BREAK	simpatico.py	/^    KW_BREAK = "break"$/;"	v	class:Terminals
-KW_CASE	simpatico.py	/^    KW_CASE = "case"$/;"	v	class:Terminals
-KW_CHAR	simpatico.py	/^    KW_CHAR = "char"$/;"	v	class:Terminals
-KW_COMPLEX	simpatico.py	/^    KW_COMPLEX = "_Complex"$/;"	v	class:Terminals
-KW_CONST	simpatico.py	/^    KW_CONST = "const"$/;"	v	class:Terminals
-KW_CONTINUE	simpatico.py	/^    KW_CONTINUE = "continue"$/;"	v	class:Terminals
-KW_DEFAULT	simpatico.py	/^    KW_DEFAULT = "default"$/;"	v	class:Terminals
-KW_DO	simpatico.py	/^    KW_DO = "do"$/;"	v	class:Terminals
-KW_DOUBLE	simpatico.py	/^    KW_DOUBLE = "double"$/;"	v	class:Terminals
-KW_ELSE	simpatico.py	/^    KW_ELSE = "else"$/;"	v	class:Terminals
-KW_ENUM	simpatico.py	/^    KW_ENUM = "enum"$/;"	v	class:Terminals
-KW_EXTERN	simpatico.py	/^    KW_EXTERN = "extern"$/;"	v	class:Terminals
-KW_FLOAT	simpatico.py	/^    KW_FLOAT = "float"$/;"	v	class:Terminals
-KW_FOR	simpatico.py	/^    KW_FOR = "for"$/;"	v	class:Terminals
-KW_GOTO	simpatico.py	/^    KW_GOTO = "goto"$/;"	v	class:Terminals
-KW_IF	simpatico.py	/^    KW_IF = "if"$/;"	v	class:Terminals
-KW_IMAGINARY	simpatico.py	/^    KW_IMAGINARY = "_Imaginary"$/;"	v	class:Terminals
-KW_INLINE	simpatico.py	/^    KW_INLINE = "inline"$/;"	v	class:Terminals
-KW_INT	simpatico.py	/^    KW_INT = "int"$/;"	v	class:Terminals
-KW_LONG	simpatico.py	/^    KW_LONG = "long"$/;"	v	class:Terminals
-KW_REGISTER	simpatico.py	/^    KW_REGISTER = "register"$/;"	v	class:Terminals
-KW_RESTRICT	simpatico.py	/^    KW_RESTRICT = "restrict"$/;"	v	class:Terminals
-KW_RETURN	simpatico.py	/^    KW_RETURN = "return"$/;"	v	class:Terminals
-KW_SHORT	simpatico.py	/^    KW_SHORT = "short"$/;"	v	class:Terminals
-KW_SIGNED	simpatico.py	/^    KW_SIGNED = "signed"$/;"	v	class:Terminals
-KW_SIZEOF	simpatico.py	/^    KW_SIZEOF = "sizeof"$/;"	v	class:Terminals
-KW_STATIC	simpatico.py	/^    KW_STATIC = "static"$/;"	v	class:Terminals
-KW_STRUCT	simpatico.py	/^    KW_STRUCT = "struct"$/;"	v	class:Terminals
-KW_SWITCH	simpatico.py	/^    KW_SWITCH = "switch"$/;"	v	class:Terminals
-KW_TYPEDEF	simpatico.py	/^    KW_TYPEDEF = "typedef"$/;"	v	class:Terminals
-KW_UNION	simpatico.py	/^    KW_UNION = "union"$/;"	v	class:Terminals
-KW_UNSIGNED	simpatico.py	/^    KW_UNSIGNED = "unsigned"$/;"	v	class:Terminals
-KW_VOID	simpatico.py	/^    KW_VOID = "void"$/;"	v	class:Terminals
-KW_VOLATILE	simpatico.py	/^    KW_VOLATILE = "volatile"$/;"	v	class:Terminals
-KW_WHILE	simpatico.py	/^    KW_WHILE = "while"$/;"	v	class:Terminals
-LEFT	simpatico.py	/^    LEFT = 1$/;"	v	class:PointerStyle
 LINE_BUFFER	util.c	9;"	d	file:
-LINE_CONTINUATION_SIZE	simpatico.py	/^LINE_CONTINUATION_SIZE = 8$/;"	v
-MAX	simpatico.py	/^    MAX = False$/;"	v	class:Styler
-MAX_FUNCTION_LENGTH	simpatico.py	/^MAX_FUNCTION_LENGTH = 50$/;"	v
-MAX_LINE_LENGTH	simpatico.py	/^MAX_LINE_LENGTH = 80 #include newlines$/;"	v
 MESSAGES_H	messages.h	2;"	d
-MISSING_TYPE	simpatico.py	/^MISSING_TYPE = False$/;"	v
 MSG_GAME_OVER	messages.h	/^            MSG_GAME_OVER, MSG_PLAY_CARD, MSG_NULL$/;"	e	enum:MessageType
 MSG_HAND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:MessageType
 MSG_NEW_ROUND	messages.h	/^    MSG_HAND, MSG_NEW_ROUND, MSG_PLAYED_CARD,$/;"	e	enum:MessageType
@@ -109,13 +50,9 @@ MessageStatus	messages.h	/^typedef enum MessageStatus {$/;"	g
 MessageStatus	messages.h	/^} MessageStatus;$/;"	t	typeref:enum:MessageStatus
 MessageType	messages.h	/^typedef enum MessageType {$/;"	g
 MessageType	messages.h	/^} MessageType;$/;"	t	typeref:enum:MessageType
-MissingHeaderError	simpatico.py	/^class MissingHeaderError(Exception):$/;"	c
 NULL_CARD	deck.h	6;"	d
 NUM_MESSAGE_TYPES	messages.h	10;"	d
-NoMoreTokensError	simpatico.py	/^class NoMoreTokensError(Exception):$/;"	c
-OUTPUT_REPORT_LIMIT_PER_CATEGORY_PER_FILE	simpatico.py	/^OUTPUT_REPORT_LIMIT_PER_CATEGORY_PER_FILE = 15$/;"	v
 PID_CHAR	util.h	16;"	d
-PLAYERINTERFACE_H	strategy.h	2;"	d
 PLAYERSTATE_H	playerState.h	2;"	d
 P_HUB_EOF	exitCodes.h	/^    P_HUB_EOF = 7,$/;"	e	enum:PlayerExitCode
 P_INCORRECT_ARGS	exitCodes.h	/^    P_INCORRECT_ARGS = 1,$/;"	e	enum:PlayerExitCode
@@ -133,85 +70,18 @@ PlayerExitCode	exitCodes.h	/^typedef enum PlayerExitCode {$/;"	g
 PlayerExitCode	exitCodes.h	/^} PlayerExitCode;$/;"	t	typeref:enum:PlayerExitCode
 PlayerState	playerState.h	/^typedef struct PlayerState {$/;"	s
 PlayerState	playerState.h	/^} PlayerState;$/;"	t	typeref:struct:PlayerState
-PointerStyle	simpatico.py	/^class PointerStyle(object):$/;"	c
-RIGHT	simpatico.py	/^    RIGHT = 2$/;"	v	class:PointerStyle
-SIMPLE_TYPES	simpatico.py	/^    SIMPLE_TYPES = {"include" : INCLUDE,$/;"	v	class:Type
-STOP_ON_DUPLICATED_WHITESPACE_CHECK	simpatico.py	/^STOP_ON_DUPLICATED_WHITESPACE_CHECK = DEBUG and False$/;"	v
-STOP_ON_MISSED_WHITESPACE	simpatico.py	/^STOP_ON_MISSED_WHITESPACE = DEBUG and True$/;"	v
-STORAGE_CLASS	simpatico.py	/^STORAGE_CLASS = ["register", "static", "extern", "auto", "typedef"]$/;"	v
-STRUCT_OPERATORS	simpatico.py	/^STRUCT_OPERATORS = [".", "->"]$/;"	v
-STRUCT_UNION	simpatico.py	/^STRUCT_UNION = ["struct", "union"]$/;"	v
-Styler	simpatico.py	/^class Styler(object):$/;"	c
+STRATEGY_H	strategy.h	2;"	d
 TERM_GREY	util.h	19;"	d
 TERM_RED	util.h	20;"	d
 TERM_RESET	util.h	21;"	d
 TERM_REVERSE	util.h	22;"	d
-TYPE_QUALIFIERS	simpatico.py	/^TYPE_QUALIFIERS = ["const", "restrict", "volatile"]$/;"	v
-TYPE_SPECIFIERS	simpatico.py	/^TYPE_SPECIFIERS = ['void', 'char', 'short', 'int', 'long', 'float', 'double',$/;"	v
-TYPE_STRINGS	simpatico.py	/^TYPE_STRINGS = ["ERROR_TYPE", "DEFINE", "INCLUDE", "COMMENT", "NEWLINE",$/;"	v
-Terminals	simpatico.py	/^class Terminals(object):$/;"	c
-Tokeniser	simpatico.py	/^class Tokeniser(object):$/;"	c
-Type	simpatico.py	/^class Type(object):$/;"	c
-UNARY_OPERATORS	simpatico.py	/^UNARY_OPERATORS = ["--", "++", "!", "~", '-', '+']$/;"	v
-UNSET	simpatico.py	/^    UNSET = -1$/;"	v	class:EnumStyle
-UNSET	simpatico.py	/^    UNSET = -1$/;"	v	class:PointerStyle
 UTIL_H	util.h	2;"	d
-Word	simpatico.py	/^class Word(object):$/;"	c
-__init__	simpatico.py	/^    def __init__(self):$/;"	m	class:EnumStyle
-__init__	simpatico.py	/^    def __init__(self):$/;"	m	class:PointerStyle
-__init__	simpatico.py	/^    def __init__(self):$/;"	m	class:Word
-__init__	simpatico.py	/^    def __init__(self, filename):$/;"	m	class:Tokeniser
-__init__	simpatico.py	/^    def __init__(self, filename, quiet = False, output_file = False,$/;"	m	class:Styler
-__init__	simpatico.py	/^    def __init__(self, writing_to_file = False):$/;"	m	class:Errors
-__repr__	simpatico.py	/^    def __repr__(self):$/;"	m	class:Errors	file:
-__repr__	simpatico.py	/^    def __repr__(self):$/;"	m	class:Word	file:
-__str__	simpatico.py	/^    def __str__(self):$/;"	m	class:Word	file:
-add_to_word	simpatico.py	/^    def add_to_word(self, char, n):$/;"	m	class:Tokeniser
-alice_obj	Makefile	/^alice_obj = $(alice_src:.c=.o)$/;"	m
-alice_src	Makefile	/^alice_src = playerState.c alice.c player.c$/;"	m
-all_obj	Makefile	/^all_obj = $(all_src:.c=.o)$/;"	m
-all_src	Makefile	/^all_src = $(hub_src) $(alice_src) $(bob_src) $(common_src)$/;"	m
-append	simpatico.py	/^    def append(self, char, space_left, line_number, char_location):$/;"	m	class:Word
-bob_obj	Makefile	/^bob_obj = $(bob_src:.c=.o)$/;"	m
-bob_src	Makefile	/^bob_src = playerState.c bob.c player.c$/;"	m
-bold_str	simpatico.py	/^    def bold_str(self):$/;"	m	class:Word
-braces	simpatico.py	/^    def braces(self, token, error_type):$/;"	m	class:Errors
 broadcast_message	hub.c	/^bool broadcast_message(HubState* hubState, Message message, int exclude) {$/;"	f
 card	messages.h	/^    Card card; \/\/ for PLAY$/;"	m	union:MessageData
 card	messages.h	/^    Card card;$/;"	m	struct:PlayedTuple
 cards	deck.h	/^    Card* cards;$/;"	m	struct:Deck
-cards	make_deck.py	/^    cards = list(product(suits, ranks))$/;"	v
 cards_equal	deck.c	/^bool cards_equal(Card card1, Card card2) {$/;"	f
-check_array_assignment	simpatico.py	/^    def check_array_assignment(self):$/;"	m	class:Styler
-check_attribute	simpatico.py	/^    def check_attribute(self):$/;"	m	class:Styler
-check_block	simpatico.py	/^    def check_block(self, closing_types = [Type.RBRACE],$/;"	m	class:Styler
-check_case_value	simpatico.py	/^    def check_case_value(self):$/;"	m	class:Styler
-check_comment	simpatico.py	/^    def check_comment(self, token, declType):$/;"	m	class:Styler
-check_condition	simpatico.py	/^    def check_condition(self):$/;"	m	class:Styler
-check_declaration	simpatico.py	/^    def check_declaration(self, match_types = True, external = False):$/;"	m	class:Styler
-check_define	simpatico.py	/^    def check_define(self):$/;"	m	class:Styler
-check_do	simpatico.py	/^    def check_do(self):$/;"	m	class:Styler
-check_enum	simpatico.py	/^    def check_enum(self, is_typedef = False):$/;"	m	class:Styler
-check_expression	simpatico.py	/^    def check_expression(self, return_on_comma = False):$/;"	m	class:Styler
-check_for	simpatico.py	/^    def check_for(self):$/;"	m	class:Styler
-check_index	simpatico.py	/^    def check_index(self):$/;"	m	class:Styler
-check_naming	simpatico.py	/^    def check_naming(self, token, name_type = Errors.VARIABLE):$/;"	m	class:Styler
-check_partial_struct	simpatico.py	/^    def check_partial_struct(self):$/;"	m	class:Styler
-check_post_identifier	simpatico.py	/^    def check_post_identifier(self):$/;"	m	class:Styler
-check_precompile	simpatico.py	/^    def check_precompile(self):$/;"	m	class:Styler
-check_sizeof	simpatico.py	/^    def check_sizeof(self):$/;"	m	class:Styler
-check_statement	simpatico.py	/^    def check_statement(self, allow_expressions = True):$/;"	m	class:Styler
-check_struct	simpatico.py	/^    def check_struct(self, isTypedef = False):$/;"	m	class:Styler
-check_switch	simpatico.py	/^    def check_switch(self):$/;"	m	class:Styler
-check_typedef	simpatico.py	/^    def check_typedef(self):$/;"	m	class:Styler
-check_whitespace	simpatico.py	/^    def check_whitespace(self, expected = -1, one_or_zero = not ALLOW_ZERO):$/;"	m	class:Styler
-comments	simpatico.py	/^    def comments(self, line_number, error_type):$/;"	m	class:Errors
-common_obj	Makefile	/^common_obj = $(common_src:.c=.o)$/;"	m
-common_src	Makefile	/^common_src = deck.c util.c exitCodes.c gameState.c messages.c$/;"	m
-consume_line	simpatico.py	/^    def consume_line(self):$/;"	m	class:Styler
 currPlayer	gameState.h	/^    int currPlayer;$/;"	m	struct:GameState
-current_type	simpatico.py	/^    def current_type(self):$/;"	m	class:Styler
-d	simpatico.py	/^def d(elements):$/;"	f
 data	messages.h	/^    MessageData data; \/\/ data is undefined if type has no extra data!$/;"	m	struct:Message
 deck_best_card	deck.c	/^int deck_best_card(Deck* deck, char suit, bool high) {$/;"	f
 deck_clear	deck.c	/^void deck_clear(Deck* deck) {$/;"	f
@@ -225,69 +95,44 @@ deck_remove_card	deck.c	/^void deck_remove_card(Deck* deck, Card card) {$/;"	f
 deck_search	deck.c	/^int deck_search(Deck* hand, char* order, bool high) {$/;"	f
 diamondsWon	gameState.h	/^    int* diamondsWon;$/;"	m	struct:GameState
 do_load_deck	deck.c	/^bool do_load_deck(Deck* deck, FILE* file) {$/;"	f
-empty	simpatico.py	/^    def empty(self):$/;"	m	class:Word
-end_word	simpatico.py	/^    def end_word(self):$/;"	m	class:Tokeniser
 exec_child	hub.c	/^void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {$/;"	f
 exec_hub_loop	hub.c	/^HubExitCode exec_hub_loop(HubState* hubState) {$/;"	f
 exec_hub_main	hub.c	/^HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,$/;"	f
 exec_player_loop	player.c	/^PlayerExitCode exec_player_loop(PlayerState* playerState) {$/;"	f
 exec_player_main	player.c	/^PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,$/;"	f
-files_parsed	simpatico.py	/^    files_parsed = 0$/;"	v	class:Styler
-finalise	simpatico.py	/^    def finalise(self):$/;"	m	class:Word
 fmt_card	deck.c	/^char* fmt_card(char* str, Card card, bool dotSeparated) {$/;"	f
-func_length	simpatico.py	/^    def func_length(self, line_number, length):$/;"	m	class:Errors
 gameState	hubState.h	/^    GameState* gameState;$/;"	m	struct:HubState
 gameState	playerState.h	/^    GameState* gameState;$/;"	m	struct:PlayerState
-get	simpatico.py	/^    def get(self, line_number):$/;"	m	class:Errors
 get_card_to_play	player.c	/^Card get_card_to_play(PlayerState* playerState) {$/;"	f
-get_position	simpatico.py	/^    def get_position(self):$/;"	m	class:Word
-get_spacing_left	simpatico.py	/^    def get_spacing_left(self):$/;"	m	class:Word
-get_string	simpatico.py	/^    def get_string(self):$/;"	m	class:Word
-get_tokens	simpatico.py	/^    def get_tokens(self):$/;"	m	class:Tokeniser
-get_type	simpatico.py	/^    def get_type(self):$/;"	m	class:Word
 gs_card_played	gameState.c	/^void gs_card_played(GameState* gameState, int player, Card card) {$/;"	f
 gs_destroy	gameState.c	/^void gs_destroy(GameState* gameState) {$/;"	f
 gs_end_round	gameState.c	/^void gs_end_round(GameState* gameState) {$/;"	f
+gs_fprint_cards	gameState.c	/^void gs_fprint_cards(GameState* gameState, FILE* file) {$/;"	f
 gs_init	gameState.c	/^void gs_init(GameState* gameState, int numPlayers, int threshold) {$/;"	f
 gs_new_round	gameState.c	/^void gs_new_round(GameState* gameState, int leadPlayer) {$/;"	f
-guard	make_header.py	/^            guard = header.upper() + '_H'$/;"	v
 hand	messages.h	/^    Deck hand; \/\/ for HAND$/;"	m	union:MessageData
 hand	playerState.h	/^    Deck* hand; \/\/ malloc'd, but should not be manually free'd$/;"	m	struct:PlayerState
 handSize	playerState.h	/^    int handSize;$/;"	m	struct:PlayerState
-has_matching_else	simpatico.py	/^    def has_matching_else(self):$/;"	m	class:Styler
-hide_violation_msgs	simpatico.py	/^    hide_violation_msgs = "-q" in sys.argv$/;"	v	class:Styler
 hs_card_played	hubState.c	/^void hs_card_played(HubState* hubState, int player, Card card) {$/;"	f
 hs_deal_cards	hubState.c	/^void hs_deal_cards(HubState* hubState, Deck* deck) {$/;"	f
 hs_destroy	hubState.c	/^void hs_destroy(HubState* hubState) {$/;"	f
 hs_init	hubState.c	/^void hs_init(HubState* hubState, GameState* gameState) {$/;"	f
 hs_set_pipe	hubState.c	/^void hs_set_pipe(HubState* hubState, int player, FILE* readFile,$/;"	f
-hub_obj	Makefile	/^hub_obj = $(hub_src:.c=.o)$/;"	m
 hub_should_exit	hub.c	/^bool hub_should_exit(MessageStatus status, HubExitCode* outCode) {$/;"	f
-hub_src	Makefile	/^hub_src = hubState.c hub.c$/;"	m
 ignore_sigpipe	util.c	/^void ignore_sigpipe(void) {$/;"	f
-indent	simpatico.py	/^    def indent(self, token, expected):$/;"	m	class:Errors
 int_to_string	util.c	/^char* int_to_string(int number) {$/;"	f
 is_card	deck.c	/^bool is_card(char* str) {$/;"	f
 is_card_string	deck.c	/^bool is_card_string(char* str) {$/;"	f
-is_macro	simpatico.py	/^    def is_macro(self):$/;"	m	class:Word
 is_null_card	deck.c	/^bool is_null_card(Card card) {$/;"	f
 leadPlayer	gameState.h	/^    int leadPlayer;$/;"	m	struct:GameState
 leadPlayer	messages.h	/^    int leadPlayer; \/\/ for NEWROUND$/;"	m	union:MessageData
 leadSuit	gameState.h	/^    char leadSuit;$/;"	m	struct:GameState
-line_length	simpatico.py	/^    def line_length(self, line_number, length):$/;"	m	class:Errors
-lookahead	simpatico.py	/^    def lookahead(self, expected):$/;"	m	class:Styler
 main	hub.c	/^int main(int argc, char** argv) {$/;"	f
 main	player.c	/^int main(int argc, char** argv) {$/;"	f
 main	testDeck.c	/^int main(int argc, char** argv) {$/;"	f
 main	testMessages.c	/^int main(int argc, char** argv) {$/;"	f
 main	testUtil.c	/^int main(int argc, char** argv) {$/;"	f
 make_deck	testDeck.c	/^Deck make_deck(void) {$/;"	f
-mark_as_macro	simpatico.py	/^    def mark_as_macro(self):$/;"	m	class:Word
-match	simpatico.py	/^    def match(self, req_type = Type.ANY, post_newline = NO_NEWLINE,$/;"	m	class:Styler
-match_pointers	simpatico.py	/^    def match_pointers(self):$/;"	m	class:Styler
-match_type	simpatico.py	/^    def match_type(self, is_typedef=False):$/;"	m	class:Styler
-missing_newline	simpatico.py	/^    def missing_newline(self, token):$/;"	m	class:Errors
-move_token_cursor	simpatico.py	/^    def move_token_cursor(self, position):$/;"	m	class:Styler
 msg_code	messages.c	/^char* msg_code(MessageType type) {$/;"	f
 msg_decode_card	messages.c	/^bool msg_decode_card(char* payload, Card* outCard) {$/;"	f
 msg_decode_hand	messages.c	/^bool msg_decode_hand(char* payload, Deck* outDeck) {$/;"	f
@@ -306,17 +151,13 @@ msg_play_card	messages.c	/^Message msg_play_card(Card card) {$/;"	f
 msg_played_card	messages.c	/^Message msg_played_card(int player, Card card) {$/;"	f
 msg_receive	messages.c	/^MessageStatus msg_receive(FILE* file, Message* outMessage) {$/;"	f
 msg_send	messages.c	/^MessageStatus msg_send(FILE* file, Message message) {$/;"	f
-n	make_deck.py	/^    n = int(sys.argv[1])$/;"	v
-naming	simpatico.py	/^    def naming(self, token, name_type):$/;"	m	class:Errors
 new_sigaction	util.c	/^struct sigaction new_sigaction(void) {$/;"	f
 noop_print	util.c	/^void noop_print(char* str) {$/;"	f
 noop_printf	util.c	/^void noop_printf(char* fmt, ...) {$/;"	f
 numCards	deck.h	/^    int numCards;$/;"	m	struct:Deck
 numPlayers	gameState.h	/^    int numPlayers;$/;"	m	struct:GameState
 one_player_turn	hub.c	/^HubExitCode one_player_turn(HubState* hubState, int currPlayer) {$/;"	f
-overall	simpatico.py	/^    def overall(self, line_number, message):$/;"	m	class:Errors
 parse_int	util.c	/^int parse_int(char* str) {$/;"	f
-peek	simpatico.py	/^    def peek(self, distance = 1):$/;"	m	class:Styler
 pipes	hubState.h	/^    PipePair* pipes;$/;"	m	struct:HubState
 play_round	player.c	/^PlayerExitCode play_round(PlayerState* playerState, bool* outContinue) {$/;"	f
 playedTuple	messages.h	/^    PlayedTuple playedTuple; \/\/ for PLAYED$/;"	m	union:MessageData
@@ -326,49 +167,29 @@ playerIndex	playerState.h	/^    int playerIndex;$/;"	m	struct:PlayerState
 playerPoints	gameState.h	/^    int* playerPoints;$/;"	m	struct:GameState
 player_args	hub.c	/^char** player_args(HubState* hubState, int playerNum, char* name) {$/;"	f
 player_should_exit	player.c	/^bool player_should_exit(MessageStatus status, Message* message,$/;"	f
-pointer_space_consistency	simpatico.py	/^    def pointer_space_consistency(self, token):$/;"	m	class:Errors
-previous_token	simpatico.py	/^    def previous_token(self):$/;"	m	class:Styler
 print_hub_message	exitCodes.c	/^void print_hub_message(HubExitCode code) {$/;"	f
-print_lines	simpatico.py	/^    def print_lines(self):$/;"	m	class:Errors
 print_player_message	exitCodes.c	/^void print_player_message(PlayerExitCode code) {$/;"	f
 print_player_scores	hub.c	/^void print_player_scores(HubState* hubState) {$/;"	f
 print_round_cards	hub.c	/^void print_round_cards(HubState* hubState) {$/;"	f
-process_globals	simpatico.py	/^    def process_globals(self):$/;"	m	class:Styler
 ps_destroy	playerState.c	/^void ps_destroy(PlayerState* playerState) {$/;"	f
 ps_init	playerState.c	/^void ps_init(PlayerState* playerState, GameState* gameState, int playerIndex) {$/;"	f
 ps_play	playerState.c	/^void ps_play(PlayerState* playerState, Card card) {$/;"	f
 ps_set_hand	playerState.c	/^void ps_set_hand(PlayerState* playerState, Deck* hand) {$/;"	f
-range	simpatico.py	/^    range = xrange$/;"	v
 rank	deck.h	/^    int rank;$/;"	m	struct:Card
-ranks	make_deck.py	/^    ranks = string.hexdigits.lower().replace('0', '');$/;"	v
 read	hubState.h	/^    FILE* read;$/;"	m	struct:PipePair
 register_sighup	hub.c	/^void register_sighup(void) {$/;"	f
 safe_read_line	util.c	/^bool safe_read_line(FILE* file, char** output) {$/;"	f
 send_player_hands	hub.c	/^bool send_player_hands(HubState* hubState) {$/;"	f
-set_type	simpatico.py	/^    def set_type(self, new_type):$/;"	m	class:Word
-should_have_block	simpatico.py	/^    def should_have_block(self, is_chained = False):$/;"	m	class:Styler
 sighup_handler	hub.c	/^void sighup_handler(int signal) {$/;"	f
-standard_header_defines	headers.py	/^standard_header_defines = {$/;"	v
-standard_header_types	headers.py	/^standard_header_types = {$/;"	v
 start_player	hub.c	/^bool start_player(HubState* hubState, int playerNum, char* name) {$/;"	f
 strategy_when_following	alice.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
 strategy_when_following	bob.c	/^int strategy_when_following(PlayerState* playerState) {$/;"	f
 strategy_when_leading	alice.c	/^int strategy_when_leading(PlayerState* playerState) {$/;"	f
 strategy_when_leading	bob.c	/^int strategy_when_leading(PlayerState* playerState) {$/;"	f
 suit	deck.h	/^    char suit;$/;"	m	struct:Card
-suits	make_deck.py	/^    suits = 'SDCH'$/;"	v
 table	gameState.h	/^    Deck* table;$/;"	m	struct:GameState
 threshold	gameState.h	/^    int threshold;$/;"	m	struct:GameState
 to_card	deck.c	/^Card to_card(char* str) {$/;"	f
-tokenise	simpatico.py	/^    def tokenise(self, megastring):$/;"	m	class:Tokeniser
 tokenise	util.c	/^int tokenise(char* line, char split, char** tokens, int maxTokens) {$/;"	f
 type	messages.h	/^    MessageType type;$/;"	m	struct:Message
-update_types	simpatico.py	/^    def update_types(self, new_types):$/;"	m	class:Styler
-use_output_file	simpatico.py	/^    use_output_file = "-o" in sys.argv$/;"	v	class:Styler
-verify	simpatico.py	/^    def verify(self, message, line, position, category):$/;"	m	class:Errors
-whitespace	simpatico.py	/^    def whitespace(self, token, expected):$/;"	m	class:Errors
-whitespace_between_functions	simpatico.py	/^    def whitespace_between_functions(self, token):$/;"	m	class:Errors
-whitespace_cuddled_pointer	simpatico.py	/^    def whitespace_cuddled_pointer(self, token):$/;"	m	class:Errors
-whitespace_surrounding_pointer	simpatico.py	/^    def whitespace_surrounding_pointer(self, token):$/;"	m	class:Errors
 write	hubState.h	/^    FILE* write;$/;"	m	struct:PipePair
-write_output_file	simpatico.py	/^    def write_output_file(self):$/;"	m	class:Styler

@@ -108,15 +108,16 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
 
 // see header
 MessageStatus msg_send(FILE* file, Message message) {
-    // only (reasonable) error is EOF caused by broken pipe
     char* payload = msg_payload_encode(message);
-    // note newline at end
+
     errno = 0;
     int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
     DEBUG_PRINTF("sending: %s%s\n", msg_code(message.type), payload);
     fflush(file);
     // DEBUG_PRINTF("errno: %d\n", errno);
     free(payload);
+
+    // only (reasonable) error is EOF caused by broken pipe
     return (ret >= 0) ? MS_OK : MS_EOF;
 }
 
@@ -136,7 +137,6 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
     deck_init_empty(outDeck, numCards);
 
     // split on each comma and parse cards
-    // one more allocated to make sure no junk is at end of string
     char** cardsSplit = calloc(numCards, sizeof(char*));
     if (tokenise(firstSplit[1], ',', cardsSplit, numCards) != numCards) {
         DEBUG_PRINT("wrong number of cards");

@@ -1,5 +1,5 @@
-#ifndef PLAYERINTERFACE_H
-#define PLAYERINTERFACE_H
+#ifndef STRATEGY_H
+#define STRATEGY_H
 
 #include "deck.h"
 #include "playerState.h"

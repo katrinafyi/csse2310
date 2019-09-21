@@ -57,6 +57,10 @@ char* msg_code(MessageType type);
  * a newline or EOF. If EOF is received immediately, MS_EOF is returned.
  * MS_INVALID is returned if the message is incorrectly formatted. Otherwise,
  * the parsed message struct is stored into messageOut and MS_OK is returned.
+ *
+ * Warning: this can allocate memory if the message data type requires it,
+ * e.g. HAND. This will leak if the caller is not equipped to handler that
+ * message type.
  */
 MessageStatus msg_receive(FILE* file, Message* messageOut);
 

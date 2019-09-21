@@ -69,7 +69,7 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
     close(fdStdout);
 
     errno = 0;
-    execv(name, argv); // if successful, will not return
+    execvp(name, argv); // if successful, will not return
     DEBUG_PRINTF("execv failed (%s): %s\n", name, strerror(errno));
 
     // die if exec failed. hub will detect missing @
@@ -87,11 +87,14 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
 bool start_player(HubState* hubState, int playerNum, char* name) {
     int fdWrite[2]; // named from OUR (the hub's) perspective!
     int fdRead[2];
-    assert(pipe(fdWrite) == 0);
-    assert(pipe(fdRead) == 0);
+    if (pipe(fdWrite) != 0 || pipe(fdRead) != 0) {
+        return false; // making a pipe failed.
+    }
 
     int forkResult = fork(); // and then there were two
-    assert(forkResult >= 0);
+    if (forkResult < 0) {
+        return false; // fork failed
+    }
     
     // close pipe ends depending on if we're child or not
     int isChild = forkResult == 0 ? 1 : 0;
@@ -99,6 +102,8 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
     close(fdRead[1 - isChild]); // close read end if we're the child
     
     if (forkResult == 0) { // this is the CHILD
+        // warning: player_args leaks memory all over the place which we can
+        // never free after calling exec :,(
         char** argv = player_args(hubState, playerNum, name);
         // child's stdin is read end of our write pipe
         // their stdout is write end of our read pipe
@@ -166,16 +171,12 @@ bool broadcast_message(HubState* hubState, Message message, int exclude) {
 }
 
 /* Returns true if the hub should exit upon receiving the given message
- * with given status. If true, stores the appropriate exit code in outCode.
+ * status. If true, stores the appropriate exit code in outCode.
  * If false, does not change outCode.
- *
- * This only returns true if exiting is correct behaviour in all cases. This
- * does not verify the message type is valid (contextually) for a particular
- * caller.
  */
 bool hub_should_exit(MessageStatus status, HubExitCode* outCode) {
     if (status != MS_OK) {
-        DEBUG_PRINTF("error message status: %d\n", status);
+        DEBUG_PRINTF("hub error message status: %d\n", status);
         *outCode = status == MS_EOF ? H_PLAYER_EOF : H_INVALID_MESSAGE;
         return true;
     }
@@ -345,7 +346,7 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     }
     // send players their hands.
     if (!send_player_hands(hubState)) {
-        return H_PLAYER_EOF;
+        return H_PLAYER_EOF; // should we send GAMEOVER here?
     }
     // runs main game loop
     HubExitCode ret = exec_hub_loop(hubState);
@@ -369,6 +370,7 @@ void sighup_handler(int signal) {
     // blocking SIGINT prevents us from sharing the same fate
 
     // not calling print_hub_message because that uses fprintf
+    // it is possible write failes or writes too few bytes.
     write(STDERR_FILENO, "Ended due to signal\n", 20);
     _exit(H_SIGNAL); // exit immediately
 }

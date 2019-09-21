@@ -84,7 +84,7 @@ int tokenise(char* line, char split, char** tokens, int maxTokens) {
     //DEBUG_PRINTF("tokenising: |%s|\n", line);
     for (int i = 0; i <= len; i++) {
         if (curNumTokens >= maxTokens) {
-            break;
+            break; // only split into maxTokens tokens at most
         }
 
         char c = line[i];
