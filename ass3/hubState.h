@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 #include "gameState.h"
 #include "deck.h"
@@ -26,6 +27,8 @@ typedef struct HubState {
     PipePair* pipes;
     // array of hands for each player.
     Deck* playerHands;
+    // array if player PIDs for SIGHUP handler.
+    pid_t* pids;
 } HubState;
 
 /* Attachs the given gameState to the hubState. Allocates memory for arrays
@@ -45,10 +48,11 @@ void hs_destroy(HubState* hubState);
  */
 void hs_deal_cards(HubState* hubState, Deck* deck);
 
-/* Sets the pipes for the given player to the given file pointers, storing
+/* Adds the player with the given index and PID.
+ * Sets the pipes for the given player to the given file pointers, storing
  * them in hubState's fields.
  */
-void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
+void hs_add_player(HubState* hubState, int player, pid_t pid, FILE* readFile,
         FILE* writeFile);
 
 /* Removes the given card from the given player's hand.

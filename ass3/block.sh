@@ -1,6 +1,6 @@
 #!/bin/bash
 
-trap "echo $0: SIGINT 1>&2" SIGINT
+trap "echo $0: SIGINT 1>&2; exit" SIGINT
 
 printf '@'
 while true; do

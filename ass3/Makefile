@@ -15,7 +15,7 @@ ifeq ($(DEBUG), 1)
     CCFLAGS += -D DEBUG=1
 endif
 
-.PHONY: sed_debug sed_noop all debug clean
+.PHONY: sed_debug sed_noop all debug clean check_debug
 release: all
 
 all: 2310hub 2310alice 2310bob

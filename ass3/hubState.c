@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/types.h>
 
 #include "hubState.h"
 #include "util.h"
@@ -9,6 +10,7 @@
 void hs_init(HubState* hubState, GameState* gameState) {
     hubState->playerHands = NULL; // not initialised until cards dealt.
     hubState->pipes = calloc(gameState->numPlayers, sizeof(PipePair));
+    hubState->pids = calloc(gameState->numPlayers, sizeof(pid_t));
 
     hubState->gameState = gameState;
 }
@@ -24,6 +26,7 @@ void hs_destroy(HubState* hubState) {
         free(hubState->playerHands);
         hubState->playerHands = NULL;
     }
+
     if (hubState->pipes != NULL) {
         for (int i = 0; i < gameState->numPlayers; i++) {
             if (hubState->pipes[i].read != NULL) {
@@ -37,6 +40,12 @@ void hs_destroy(HubState* hubState) {
         free(hubState->pipes);
         hubState->pipes = NULL;
     }
+
+    if (hubState->pids != NULL) {
+        free(hubState->pids);
+        hubState->pids = NULL;
+    }
+
     if (hubState->gameState != NULL) {
         gs_destroy(hubState->gameState);
         hubState->gameState = NULL;
@@ -65,10 +74,11 @@ void hs_deal_cards(HubState* hubState, Deck* deck) {
 }
 
 // see header
-void hs_set_pipe(HubState* hubState, int player, FILE* readFile,
+void hs_add_player(HubState* hubState, int player, pid_t pid, FILE* readFile,
         FILE* writeFile) {
     hubState->pipes[player] = (PipePair) {.read = readFile,
             .write = writeFile};
+    hubState->pids[player] = pid;
 }
 
 // see header

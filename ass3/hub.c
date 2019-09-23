@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/types.h>
 
 #include "exitCodes.h"
 #include "hubState.h"
@@ -14,6 +15,9 @@
 #include "messages.h"
 #include "deck.h"
 #include "util.h"
+
+// global state variable for signal handlers to kill children.
+HubState* hubStateGlobal;
 
 /* Determines and returns the appropriate args to start a child with the given
  * hubState, player number and executable file name.
@@ -23,7 +27,6 @@
 char** player_args(HubState* hubState, int playerNum, char* name) {
     char** argv = calloc(6, sizeof(char*));
     int n = 0; // because i don't trust myself to count
-
     argv[n++] = name;
     argv[n++] = int_to_string(hubState->gameState->numPlayers);
     argv[n++] = int_to_string(playerNum);
@@ -126,7 +129,7 @@ bool start_player(HubState* hubState, int playerNum, char* name) {
     noop_printf("child %d (%s) started. pid: %d (%c)\n",
             playerNum, name, forkResult, PID_CHAR(forkResult));
     // store the pipe
-    hs_set_pipe(hubState, playerNum, readFile, writeFile);
+    hs_add_player(hubState, playerNum, forkResult, readFile, writeFile);
     return true;
 }
 
@@ -359,20 +362,41 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
  * Exits with the appropriate exit code and message and kills children.
  */
 void sighup_handler(int signal) {
-    // temporarily block SIGINT on this process
-    sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGINT);
-    sigprocmask(SIG_BLOCK, &set, NULL);
-
-    // kill children using 0 because they have our group ID
-    kill(0, SIGINT);
-    // blocking SIGINT prevents us from sharing the same fate
+    // only if the game has been started
+    if (hubStateGlobal->gameState != NULL) {
+        for (int p = 0; p < hubStateGlobal->gameState->numPlayers; p++) {
+            pid_t pid = hubStateGlobal->pids[p];
+            // if this child is already dead (mo shindeiru) we don't kill it
+            if (pid != 0) {
+                // kill the child with this pid :o
+                write(STDERR_FILENO, "killing", 7);
+                kill(pid, SIGINT);
+            }
+        }
+    }
 
     // not calling print_hub_message because that uses fprintf
     // it is possible write failes or writes too few bytes.
     write(STDERR_FILENO, "Ended due to signal\n", 20);
     _exit(H_SIGNAL); // exit immediately
+}
+
+void sigchld_handler(int signal, siginfo_t* siginfo, void* context) {
+    write(STDERR_FILENO, "died", 4);
+    if (hubStateGlobal->gameState == NULL) {
+        return; // game not initialised yet.
+    }
+    write(STDERR_FILENO, "clearing", 8);
+    pid_t pid = siginfo->si_pid;
+    // find the player with that pid.
+    for (int p = 0; p < hubStateGlobal->gameState->numPlayers; p++) {
+            write(STDERR_FILENO, "found", 5);
+        if (hubStateGlobal->pids[p] == pid) {
+            // this player has died. we don't need to kill them on SIGHUP
+            hubStateGlobal->pids[p] = (pid_t)0;
+            break;
+        }
+    }
 }
 
 /* Registers the SIGHUP handler to exit the program.
@@ -383,16 +407,28 @@ void register_sighup(void) {
     sigaction(SIGHUP, &sa, NULL);
 }
 
+void register_sigchld(void) {
+    struct sigaction sa = new_sigaction();
+    // don't be notified if a child stops temporarily, restart system calls
+    // and use more detailed sigaction handler
+    sa.sa_flags = SA_NOCLDSTOP | SA_RESTART | SA_SIGINFO;
+    sa.sa_sigaction = sigchld_handler;
+    sigaction(SIGCHLD, &sa, NULL);
+}
+
 /* Entry point of hub process. Sets signal handlers, manages initialisation
  * and destruction of states, and prints error messages. */
 int main(int argc, char** argv) {
-    // ignore SIGPIPE caused by writes to a dead child
-    ignore_sigpipe();
-    // register exit on SIGHUP
-    register_sighup();
-
     GameState gameState = {0};
     HubState hubState = {0};
+    hubStateGlobal = &hubState;
+
+    // ignore SIGPIPE caused by writes to a dead child
+    ignore_sigpipe();
+    // register handlers to record and kill children.
+    register_sigchld();
+    register_sighup();
+
 
     HubExitCode ret = exec_hub_main(argc, argv, &hubState, &gameState);
 
