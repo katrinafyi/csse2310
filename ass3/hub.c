@@ -320,10 +320,9 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
     if (threshold < 2) { // includes error case -1
         return H_INCORRECT_THRESHOLD;
     }
+
     int numPlayers = argc - 3; // 3 non-player arguments
     char** playerNames = argv + 3; // skip first 3 arguments
-
-
 
     Deck deck = {0}; // to store the full deck before dealing
     if (!deck_init_file(&deck, argv[1])) {
@@ -363,40 +362,23 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
  */
 void sighup_handler(int signal) {
     // only if the game has been started
+    // hubStateGlobal is always set because it is set before the handler is
+    // registered.
     if (hubStateGlobal->gameState != NULL) {
         for (int p = 0; p < hubStateGlobal->gameState->numPlayers; p++) {
             pid_t pid = hubStateGlobal->pids[p];
-            // if this child is already dead (mo shindeiru) we don't kill it
+            // we hope the child is not mou shindeiru (TL: already dead).
+            // kill the child with this pid, if it is non-zero.
             if (pid != 0) {
-                // kill the child with this pid :o
-                write(STDERR_FILENO, "killing", 7);
                 kill(pid, SIGINT);
             }
         }
     }
 
     // not calling print_hub_message because that uses fprintf
-    // it is possible write failes or writes too few bytes.
+    // it is possible write fails or writes too few bytes.
     write(STDERR_FILENO, "Ended due to signal\n", 20);
     _exit(H_SIGNAL); // exit immediately
-}
-
-void sigchld_handler(int signal, siginfo_t* siginfo, void* context) {
-    write(STDERR_FILENO, "died", 4);
-    if (hubStateGlobal->gameState == NULL) {
-        return; // game not initialised yet.
-    }
-    write(STDERR_FILENO, "clearing", 8);
-    pid_t pid = siginfo->si_pid;
-    // find the player with that pid.
-    for (int p = 0; p < hubStateGlobal->gameState->numPlayers; p++) {
-            write(STDERR_FILENO, "found", 5);
-        if (hubStateGlobal->pids[p] == pid) {
-            // this player has died. we don't need to kill them on SIGHUP
-            hubStateGlobal->pids[p] = (pid_t)0;
-            break;
-        }
-    }
 }
 
 /* Registers the SIGHUP handler to exit the program.
@@ -405,15 +387,6 @@ void register_sighup(void) {
     struct sigaction sa = new_sigaction();
     sa.sa_handler = sighup_handler;
     sigaction(SIGHUP, &sa, NULL);
-}
-
-void register_sigchld(void) {
-    struct sigaction sa = new_sigaction();
-    // don't be notified if a child stops temporarily, restart system calls
-    // and use more detailed sigaction handler
-    sa.sa_flags = SA_NOCLDSTOP | SA_RESTART | SA_SIGINFO;
-    sa.sa_sigaction = sigchld_handler;
-    sigaction(SIGCHLD, &sa, NULL);
 }
 
 /* Entry point of hub process. Sets signal handlers, manages initialisation
@@ -426,9 +399,7 @@ int main(int argc, char** argv) {
     // ignore SIGPIPE caused by writes to a dead child
     ignore_sigpipe();
     // register handlers to record and kill children.
-    register_sigchld();
     register_sighup();
-
 
     HubExitCode ret = exec_hub_main(argc, argv, &hubState, &gameState);
 
