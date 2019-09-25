@@ -27,8 +27,8 @@
 // unfortunately, these crash the style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "\x1b[38;5;%dm(%c) " TERM_GREY "%s:%d" TERM_RESET " " fmt, \
-        getpid() % 7 + 9, PID_CHAR(getpid()), \
+        "\x1b[38;5;%dm(%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt, \
+        getpid() % 7 + 9, getpid(), \
         __func__, __LINE__, __VA_ARGS__);
 // formats in the style of:
 // (A) main:53 example message

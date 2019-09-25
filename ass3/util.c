@@ -40,7 +40,7 @@ bool safe_read_line(FILE* file, char** output) {
     if (file == NULL) {
         return false;
     }
-    int allocated = LINE_BUFFER; // allocates space in LINE_BUFFER chunks
+    int allocated = LINE_BUFFER; // initial buffer size only
     *output = malloc(sizeof(char) * allocated);
     int position = 0;
     int next;
@@ -61,8 +61,6 @@ bool safe_read_line(FILE* file, char** output) {
             }
         }
     }
-    // free up space we don't need
-    // *output = realloc(*output, sizeof(char) * (position + 1));
     // if line contains nulls, strlen will be < position.
     bool isValid = errno == 0 && strlen(*output) == position;
     // if we got EOF, this is only valid at the end of a line,
@@ -78,7 +76,9 @@ bool safe_read_line(FILE* file, char** output) {
 
 // see header
 int tokenise(char* line, char split, char** tokens, int maxTokens) {
+    // need to store len because it is changed once we add \0 into the string
     int len = strlen(line);
+
     int curNumTokens = 1;
     tokens[0] = line; // first token start at start of string.
     //DEBUG_PRINTF("tokenising: |%s|\n", line);

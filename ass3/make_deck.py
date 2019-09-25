@@ -10,7 +10,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     suits = 'SDCH'
-    ranks = string.hexdigits.lower().replace('0', '');
+    ranks = set(string.hexdigits.lower().replace('0', ''));
 
     cards = list(product(suits, ranks))
 

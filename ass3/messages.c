@@ -79,7 +79,8 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
     MessageType type = MSG_NULL;
     char* payload = NULL;
     for (int t = 0; t < NUM_MESSAGE_TYPES; t++) {
-        char* code = msg_code(t);
+        char* code = msg_code(t); // get string code expected for this type
+
         // warning: PLAY and PLAYED have a common prefix
         // so played must be checked first and we must break on match.
         if (strncmp(line, code, strlen(code)) == 0) {
@@ -126,7 +127,7 @@ bool msg_decode_hand(char* payload, Deck* outDeck) {
     char* firstSplit[2];
     // first, split into number of cards and the rest.
     if (tokenise(payload, ',', firstSplit, 2) != 2) {
-        noop_print("couldn't find header");
+        noop_print("couldn't find number of cards");
         return false;
     }
     int numCards = parse_int(firstSplit[0]);

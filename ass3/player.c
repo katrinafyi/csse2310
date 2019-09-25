@@ -187,14 +187,15 @@ PlayerExitCode exec_player_main(int argc, char** argv, GameState* gameState,
     if (handSize < 1) {
         return P_INCORRECT_HAND;
     }
-    playerState->handSize = handSize;
+    playerState->handSize = handSize; // store expected hand size
 
+    // init the state structs.
     gs_init(gameState, numPlayers, threshold);
     ps_init(playerState, gameState, playerNum);
 
     printf("@");
     fflush(stdout);
-    return exec_player_loop(playerState);
+    return exec_player_loop(playerState); // play the game!
 }
 
 /* Entry point of player. Sets signal handlers, manages structs and prints

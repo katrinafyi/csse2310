@@ -75,7 +75,7 @@ void exec_child(int fdStdin, int fdStdout, char* name, char** argv) {
     execvp(name, argv); // if successful, will not return
     noop_printf("execv failed (%s): %s\n", name, strerror(errno));
 
-    // die if exec failed. hub will detect missing @
+    // die if exec failed. hub will detect missing @.
     // _exit avoids messing with the parent's data and state
     _exit(100);
 }
@@ -361,7 +361,7 @@ HubExitCode exec_hub_main(int argc, char** argv, HubState* hubState,
  * Exits with the appropriate exit code and message and kills children.
  */
 void sighup_handler(int signal) {
-    // only if the game has been started
+    // only if the game has been started.
     // hubStateGlobal is always set because it is set before the handler is
     // registered.
     if (hubStateGlobal->gameState != NULL) {
@@ -370,13 +370,15 @@ void sighup_handler(int signal) {
             // we hope the child is not mou shindeiru (TL: already dead).
             // kill the child with this pid, if it is non-zero.
             if (pid != 0) {
+                // we are aware of a race condition if SIGHUP is received
+                // during starting players.
                 kill(pid, SIGINT);
             }
         }
     }
 
     // not calling print_hub_message because that uses fprintf
-    // it is possible write fails or writes too few bytes.
+    // it is possible write fails or writes too few bytes, unhandled.
     write(STDERR_FILENO, "Ended due to signal\n", 20);
     _exit(H_SIGNAL); // exit immediately
 }
@@ -394,7 +396,7 @@ void register_sighup(void) {
 int main(int argc, char** argv) {
     GameState gameState = {0};
     HubState hubState = {0};
-    hubStateGlobal = &hubState;
+    hubStateGlobal = &hubState; // assign global variable reference.
 
     // ignore SIGPIPE caused by writes to a dead child
     ignore_sigpipe();

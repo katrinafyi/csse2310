@@ -42,7 +42,9 @@ void gs_destroy(GameState* gameState) {
 // see header
 void gs_new_round(GameState* gameState, int leadPlayer) {
     noop_printf("new round! led by %d\n", leadPlayer);
-    // round number is set by gs_end_round
+
+    // blindly follow hub message
+    // assert(leadPlayer == gameSate->leadPlayer);
     gameState->leadPlayer = leadPlayer;
     gameState->currPlayer = leadPlayer;
     deck_clear(gameState->table);
@@ -50,6 +52,7 @@ void gs_new_round(GameState* gameState, int leadPlayer) {
 
 // see header
 void gs_card_played(GameState* gameState, int player, Card card) {
+    // ensures cards are played in the correct order.
     assert(player == gameState->currPlayer);
 
     if (player == gameState->leadPlayer) {
@@ -59,7 +62,6 @@ void gs_card_played(GameState* gameState, int player, Card card) {
     assert(0 <= player && player < gameState->table->numCards);
     gameState->table->cards[player] = card;
 
-    assert(gameState->currPlayer == player);
     gameState->currPlayer = player;
     gameState->currPlayer++;
     gameState->currPlayer %= gameState->numPlayers;
