@@ -27,20 +27,20 @@ int strategy_when_following(PlayerState* playerState) {
     char leadSuit = playerState->gameState->leadSuit;
 
     // if someone has won at least thresohld-2 D cards
-    bool condition1 = false;
+    bool thresholdMet = false;
     for (int p = 0; p < numPlayers; p++) {
         if (playerState->gameState->diamondsWon[p] >= threshold - 2) {
-            condition1 = true;
+            thresholdMet = true;
             break;
         }
     }
     Deck* table = playerState->gameState->table;
     // if some D cards have been played this round
-    bool condition2 = (deck_best_card(table, 'D', true) != -1);
+    bool diamondPlayed = (deck_best_card(table, 'D', true) != -1);
 
     // alternate strategy if both diamond conditions met
-    bool altStrategy = condition1 && condition2;
-    noop_printf("bob conditions: %d %d -> %d\n", condition1, condition2,
+    bool altStrategy = thresholdMet && diamondPlayed;
+    noop_printf("bob conditions: %d %d -> %d\n", thresholdMet, diamondPlayed,
             altStrategy);
 
     // highest if alt strat, else lowest

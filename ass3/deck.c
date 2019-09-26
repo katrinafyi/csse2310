@@ -61,6 +61,7 @@ void deck_init_empty(Deck* deck, int numCards) {
     deck->numCards = numCards;
     deck->cards = calloc(numCards, sizeof(Card));
     deck_clear(deck); // sets cards to NULL_CARD
+    assert(deck_is_empty(deck));
 }
 
 // see header
