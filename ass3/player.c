@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
     ps_destroy(&playerState);
     gs_destroy(&gameState);
 
-    print_player_message(ret);
+    fprintf(stderr, "%s", player_message(ret));
     noop_printf("player exiting with code: %d\n", ret);
     return ret;
 }

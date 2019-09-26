@@ -27,12 +27,14 @@ typedef enum PlayerExitCode {
     P_HUB_EOF = 7,
 } PlayerExitCode;
 
-/* Prints the hub's error message associated with the given code to stderr.
+/* Returns the hub message associated with the given exit code.
+ * Returns a statically allocated string.
  */
-void print_hub_message(HubExitCode code);
+const char* hub_message(HubExitCode code);
 
-/* Prints the player's error message associated with the given code to stderr.
+/* Returns the player message associated with the given exit code.
+ * Returns a statically allocated string.
  */
-void print_player_message(PlayerExitCode code);
+const char* player_message(PlayerExitCode code);
 
 #endif

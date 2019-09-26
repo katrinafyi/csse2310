@@ -11,14 +11,14 @@
 
 // see header
 char* msg_code(MessageType type) {
-    static char* typeStrings[6] = {
-        "HAND",
-        "NEWROUND",
-        "PLAYED",
-        "GAMEOVER",
-        "PLAY",
-        "NULL" // internal use only
-    };
+    static char* typeStrings[6];
+    typeStrings[MSG_HAND] = "HAND";
+    typeStrings[MSG_NEW_ROUND] = "NEWROUND";
+    typeStrings[MSG_PLAYED_CARD] = "PLAYED";
+    typeStrings[MSG_GAME_OVER] = "GAMEOVER";
+    typeStrings[MSG_PLAY_CARD] = "PLAY";
+    typeStrings[MSG_NULL] = "NULL"; // internal use only
+
     assert(0 <= type && type < 6);
     return typeStrings[type];
 }

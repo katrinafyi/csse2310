@@ -8,7 +8,8 @@
 void ps_init(PlayerState* playerState, GameState* gameState, int playerIndex) {
     playerState->playerIndex = playerIndex;
     playerState->gameState = gameState;
-    playerState->hand = malloc(sizeof(Deck));
+    // calloc zeros memory
+    playerState->hand = calloc(1, sizeof(Deck));
 }
 
 // see header

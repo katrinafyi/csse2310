@@ -377,9 +377,12 @@ void sighup_handler(int signal) {
         }
     }
 
-    // not calling print_hub_message because that uses fprintf
-    // it is possible write fails or writes too few bytes, unhandled.
-    write(STDERR_FILENO, "Ended due to signal\n", 20);
+
+    // get error message associated with SIGHUP. these functions are
+    // safe to use in signal handlers.
+    // warning: write can fail or write too few bytes, unhandled.
+    const char* errorMessage = hub_message(H_SIGNAL);
+    write(STDERR_FILENO, errorMessage, strlen(errorMessage));
     _exit(H_SIGNAL); // exit immediately
 }
 
@@ -408,7 +411,7 @@ int main(int argc, char** argv) {
     gs_destroy(&gameState);
     hs_destroy(&hubState);
 
-    print_hub_message(ret);
+    fprintf(stderr, "%s", hub_message(ret));
     noop_printf("exiting hub with code: %d\n", ret);
     return ret;
 }
