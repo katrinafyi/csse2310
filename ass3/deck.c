@@ -60,6 +60,7 @@ bool do_load_deck(Deck* deck, FILE* file) {
 void deck_init_empty(Deck* deck, int numCards) {
     deck->numCards = numCards;
     deck->cards = calloc(numCards, sizeof(Card));
+    deck_clear(deck); // sets cards to NULL_CARD
 }
 
 // see header
