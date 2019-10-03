@@ -12,7 +12,7 @@
 int parse_int(char* str) {
     // reject unless leading char is digit or +
     if (!(isdigit(*str) || *str == '+')) {
-        noop_print("invalid first char");
+        DEBUG_PRINT("invalid first char");
         return -1;
     }
     char* end;
@@ -21,7 +21,7 @@ int parse_int(char* str) {
     // original string is empty or not complete match.
     // invalid number.
     if (errno != 0 || *end != '\0') {
-        noop_print("check error");
+        DEBUG_PRINT("check error");
         return -1;
     }
     return num;
