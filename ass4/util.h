@@ -7,13 +7,13 @@
 #include <signal.h>
 #include <unistd.h>
 
+// if ptr is non-null, frees it and sets it to null. otherwise, do nothing.
+// useful in _destroy functions.
+#define TRY_FREE(ptr) (ptr != NULL ? (free(ptr), ptr = NULL) : NULL)
+
 // used as an assert(false) which can't be disabled.
 // for BIG mistakes.
-#define INSTANT_SEGFAULT *((char**)0) = "manual segfault"
-
-// to easily distinguish between children and parents. squinting at PIDs is
-// hard.
-#define PID_CHAR(pid) (pid % 26 + 'A')
+#define INSTANT_SEGFAULT() *((char**)0) = "manual segfault"
 
 // terminal escape codes
 #define TERM_GREY "\x1b[38;5;8m"
@@ -29,11 +29,11 @@
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
         "\x1b[38;5;%dm(%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt, \
         getpid() % 7 + 9, getpid(), \
-        __func__, __LINE__, __VA_ARGS__);
+        __func__, __LINE__, __VA_ARGS__)
 // formats in the style of:
-// (A) main:53 example message
+// (pid) main:53 example message
 //
-// (A) character and colour are from PID.
+// (pid) colour depends on the pid
 // shows function and line number of location, with message.
 
 /* Parses the str into a non-negative integer, with the following

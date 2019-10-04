@@ -29,13 +29,12 @@ typedef enum MessageStatus {
  */
 typedef struct MessageData {
     int depotPort; // depot port from IM
-    char* depotName; // depot name from IM
+    char* depotName; // MALLOC! depot name from IM or destination
 
-    Material material; // material and quantity
-    char* destName; // transfer destination
+    Material material; // mat_destroy! material and quantity
 
     int deferKey; // key for defer/execute
-    struct Message* deferMessage; // submessage for deferred messages
+    struct Message* deferMessage; // MALLOC! submessage for deferred messages
 } MessageData;
 
 /* A message which can be sent or received. Has the given type and data
@@ -66,9 +65,10 @@ char* msg_code(MessageType type);
 MessageStatus msg_receive(FILE* file, Message* outMessage);
 
 /* Parses the given message into outMessage. As above but input is taken from
- * given string instead of the file. Returns true on success, false otherwise.
+ * given string instead of the file. Returns status of message parsing, MS_EOF 
+ * will never be returned.
  */
-bool msg_parse(char* line, Message* outMessage);
+MessageStatus msg_parse(char* line, Message* outMessage);
 
 /* Sends a message to the given file. message is assumed to be correct and will
  * be sent (MS_INVALID is never returned).
@@ -77,6 +77,11 @@ bool msg_parse(char* line, Message* outMessage);
  * Note that this does not consistently detect a broken pipe!
  */
 MessageStatus msg_send(FILE* file, Message message);
+
+/* Destroys the given message, freeing its contained structures and setting
+ * pointers to NULL.
+ */
+void msg_destroy(Message* message);
 
 /* Decodes the given payload string into the given data struct, assuming
  * the message is of the given type.
@@ -93,22 +98,9 @@ bool msg_payload_decode(MessageType type, char* payload, MessageData* data);
  */
 char* msg_payload_encode(Message message);
 
-// The consume_ family of functions take arguments of the current payload
-// being parsed. Each function will modify the value of *start to point to
-// the part _after_ the parsed content. 
-
-// They return a bool of true in success or false on failure.
-
-// consumes a non-negative integer
-bool consume_int(char** start, int* outInt);
-// consumes a string until the next colon. stores a MALLOC'd string into
-// *outStr.
-bool consume_str(char** start, char** outStr);
-// consumes a single colon
-bool consume_colon(char** start);
-// consumes an entire message
-bool consume_message(char** start, Message** outMessage);
-// consumes trailing \0. that is, ensures message is fully parsed.
-bool consume_eof(char** start);
+/* Prints the message in an (arbitrary) format for debugging,
+ * if debug is enabled.
+ */
+void msg_debug(Message* message);
 
 #endif

@@ -13,6 +13,20 @@
 #define COLON ':'
 
 // see header
+void msg_destroy(Message* message) {
+    TRY_FREE(message->data.depotName);
+
+    if (message->data.deferMessage != NULL) {
+        // free recursive defer message.
+        msg_destroy(message->data.deferMessage);
+        TRY_FREE(message->data.deferMessage);
+    }
+
+    // Material struct is stored wholly inside Message, so no malloc here
+    mat_destroy(&message->data.material);
+}
+
+// see header
 char* msg_code(MessageType type) {
     static char* msgCodes[NUM_MESSAGE_TYPES + 1]; // +1 for NULL code.
     msgCodes[MSG_CONNECT] = "Connect";
@@ -22,13 +36,29 @@ char* msg_code(MessageType type) {
     msgCodes[MSG_TRANSFER] = "Transfer";
     msgCodes[MSG_DEFER] = "Defer";
     msgCodes[MSG_EXECUTE] = "Execute";
-    msgCodes[MSG_NULL] = "NULL";
+    msgCodes[MSG_NULL] = "(null msg type)";
 
-    assert(0 <= type && type < NUM_MESSAGE_TYPES);
+    assert(0 <= type && type < NUM_MESSAGE_TYPES + 1);
     return msgCodes[type];
 }
 
-// see header
+// The consume_ family of functions take arguments of the current payload
+// being parsed. Each function will modify the value of *start to point to
+// the part _after_ the parsed content. 
+
+// They return a bool of true in success or false on failure.
+
+// consumes a single colon
+bool consume_colon(char** start) {
+    if (**start != COLON) {
+        DEBUG_PRINT("expected colon");
+        return false;
+    }
+    (*start)++; // advance one character
+    return true;
+}
+
+// consumes a non-negative integer
 bool consume_int(char** start, int* outInt) {
     // we can't use parse_int because the number may not span the entire
     // string.
@@ -50,7 +80,7 @@ bool consume_int(char** start, int* outInt) {
     return true;
 }
 
-// see header
+// consumes a string until the next colon or end of the string
 bool consume_str(char** start, char** outStr) {
     int len; // length of the string to consume
     
@@ -77,17 +107,16 @@ bool consume_str(char** start, char** outStr) {
     return true;
 }
 
-// see header
-bool consume_colon(char** start) {
-    if (**start != COLON) {
-        DEBUG_PRINT("expected colon");
-        return false;
-    }
-    (*start)++; // advance one character
-    return true;
+// consumes a quantity:name pair representing a material.
+bool consume_material(char** start, Material* outMaterial) {
+    // note we do not use mat_init here because we directly write to 
+    // outMaterial.
+    return consume_int(start, &outMaterial->quantity) && 
+            consume_colon(start) &&
+            consume_str(start, &outMaterial->name);
 }
 
-// see header
+// consumes an entire message. useful for recursive messages (Defer).
 bool consume_message(char** start, Message** outMessagePtr) {
     Message message = {0};
     message.type = MSG_NULL;
@@ -117,14 +146,17 @@ bool consume_message(char** start, Message** outMessagePtr) {
         DEBUG_PRINT("invalid payload");
         return false;
     }
+    // store this message on the heap
     Message* msgPtr = malloc(sizeof(Message));
     *msgPtr = message;
+
+    // update the out param with the value of the message location
     *outMessagePtr = msgPtr;
     *start = *start + len; // entire string is consumed.
     return true;
 }
 
-// see header
+// consumes the eof, fails if *start is not pointing to \0.
 bool consume_eof(char** start) {
     bool valid = **start == '\0';
     if (!valid) {
@@ -161,9 +193,7 @@ bool parse_im(char* payload, MessageData* data) {
 bool parse_deliver_withdraw(char* payload, MessageData* data) {
     char** start = &payload;
     return consume_colon(start) && 
-            consume_int(start, &data->material.quantity) &&
-            consume_colon(start) &&
-            consume_str(start, &data->material.name) && 
+            consume_material(start, &data->material) &&
             consume_eof(start);
 }
 
@@ -173,9 +203,7 @@ bool parse_deliver_withdraw(char* payload, MessageData* data) {
 bool parse_transfer(char* payload, MessageData* data) {
     char** start = &payload;
     return consume_colon(start) && 
-            consume_int(start, &data->material.quantity) &&
-            consume_colon(start) &&
-            consume_str(start, &data->material.name) && 
+            consume_material(start, &data->material) &&
             consume_colon(start) &&
             consume_str(start, &data->depotName) &&
             consume_eof(start);
@@ -241,7 +269,7 @@ char* msg_payload_encode(Message message) {
 }
 
 
-bool msg_parse(char* line, Message* outMessage) {
+MessageStatus msg_parse(char* line, Message* outMessage) {
     // consume will modify this value. we need to keep the original around
     // to free().
     char** start = &line;
@@ -249,11 +277,14 @@ bool msg_parse(char* line, Message* outMessage) {
     Message* msgPtr = NULL;
     if (!consume_message(start, &msgPtr)) {
         DEBUG_PRINT("failed to parse");
-        return false;
+        outMessage->type = MSG_NULL;
+        return MS_INVALID;
     }
+    // copy the message into the provided pointer, freeing the temporary
+    // pointer allocated by consume_message.
     *outMessage = *msgPtr;
     free(msgPtr);
-    return true;
+    return MS_OK;
 }
 
 // see header
@@ -267,13 +298,9 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
     }
     DEBUG_PRINTF("received: %s\n", line);
 
-    if (!msg_parse(line, outMessage)) {
-        free(line);
-        return MS_INVALID;
-    }
-
+    MessageStatus status = msg_parse(line, outMessage);
     free(line);
-    return MS_OK;
+    return status;
 }
 
 // see header
@@ -289,4 +316,18 @@ MessageStatus msg_send(FILE* file, Message message) {
 
     // only (reasonable) error is EOF caused by broken pipe
     return (ret >= 0) ? MS_OK : MS_EOF;
+}
+
+// see header
+void msg_debug(Message* message) {
+    MessageData data = message->data;
+
+    DEBUG_PRINTF("msg type: %s\n", msg_code(message->type));
+    DEBUG_PRINTF("    data: port=%d, depot=%s, mat={%d, %s}, key=%d\n", 
+            data.depotPort, data.depotName, data.material.quantity, 
+            data.material.name, data.deferKey);
+    if (data.deferMessage != NULL) {
+        DEBUG_PRINT("deferred message:");
+        msg_debug(data.deferMessage);
+    }
 }
