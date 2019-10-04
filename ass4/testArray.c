@@ -28,13 +28,15 @@ int main(int argc, char** argv) {
     printf("numItems: %d\n", arr->numItems);
     arraymap_sort(arr);
     array_foreach(arr, print_item);
+
     putchar('\n');
+    printf("item 0: %s\n", ARRAY_ITEM(char, arr, 0));
 
     void* item = arraymap_get(arr, "1");
     if (item == NULL) {
-        puts("val not found");
+        puts("1 val not found");
     } else {
-        printf("val found at %p: %s\n", item, (char*) item);
+        printf("1 val found at %p: %s\n", item, (char*) item);
     }
 
     array_destroy(arr);

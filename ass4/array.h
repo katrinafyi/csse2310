@@ -1,13 +1,21 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #define ARRAY_INITIAL_SIZE 32
 
 /* Returns the item in the array at the given index. Item is cast to a POINTER
  * to the given type.
  */
-#define ARRAY_INDEX(type, array, index) \
+#define ARRAY_ITEM(type, array, index) \
     ( (type*) array_get_at(array, index) )
+
+// locks the array for writing
+#define ARRAY_WRLOCK(array) pthread_rwlock_wrlock(&array->lock)
+// locks the array for reading
+#define ARRAY_RDLOCK(array) pthread_rwlock_rdlock(&array->lock)
+// unlocks the array
+#define ARRAY_UNLOCK(array) pthread_rwlock_unlock(&array->lock)
 
 
 /* Key mapper function. Takes items from the array and maps it to some key
@@ -28,8 +36,11 @@ typedef int (*ArraySorter)(void*, void*);
 /* Basic array structure which automatically grows. To handle arbitrary types,
  * this stores void*'s.
  *
- * Using mapper and sorter, this doubles as a horrible map/dictionary 
+ * Using mapper and sorter, this doubles as a horrible map/dictionary
  * implementation.
+ *
+ * This stores a lock which we can use but these functions DO NOT lock by
+ * themself.
  */
 typedef struct Array {
     void** items; // items in array
@@ -37,6 +48,7 @@ typedef struct Array {
     int numAllocated; // space allocated. should be >= numItems
     ArrayMapper mapper; // maps items to some key.
     ArraySorter sorter; // comparison function on the keys.
+    pthread_rwlock_t lock; // rwlock for synchronising reads/writes.
 } Array;
 
 /* Initialises an array with the default initial size.
