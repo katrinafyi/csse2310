@@ -21,20 +21,29 @@
 #define TERM_RESET "\x1b[0m"
 #define TERM_REVERSE "\x1b[7m"
 
+#ifdef DEBUG
+
 // macros to print a message along with function and line number. these are
 // disabled by the sed_noop job in make.
 // ass3: now with PID and colours
 // unfortunately, these crash the style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
-#define DEBUG_PRINTF(fmt, ...) fprintf(stderr, \
-        "\x1b[38;5;%dm(%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt, \
-        getpid() % 7 + 9, getpid(), \
+#define DEBUG_PRINTF(fmt, ...) fprintf(stderr,\
+        "\x1b[38;5;%dm(%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
+        getpid() % 7 + 9, getpid(),\
         __func__, __LINE__, __VA_ARGS__)
 // formats in the style of:
 // (pid) main:53 example message
 //
 // (pid) colour depends on the pid
 // shows function and line number of location, with message.
+
+#else
+
+#define DEBUG_PRINT(str) NULL
+#define DEBUG_PRINTF(fmt, ...) NULL
+
+#endif
 
 /* Parses the str into a non-negative integer, with the following
  * requirements:

@@ -7,8 +7,8 @@
 /* Returns the item in the array at the given index. Item is cast to a POINTER
  * to the given type.
  */
-#define ARRAY_ITEM(type, array, index) \
-    ( (type*) array_get_at(array, index) )
+#define ARRAY_ITEM(type, array, index) ((type*) (array_get_at(array, index)))
+// excessive parens are for simpatico
 
 // locks the array for writing
 #define ARRAY_WRLOCK(array) pthread_rwlock_wrlock(&array->lock)

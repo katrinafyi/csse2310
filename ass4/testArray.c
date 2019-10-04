@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
 
     putchar('\n');
     printf("item 0: %s\n", ARRAY_ITEM(char, arr, 0));
+    DEBUG_PRINTF("%s\n", "hi simpatico!");
 
     void* item = arraymap_get(arr, "1");
     if (item == NULL) {
