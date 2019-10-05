@@ -17,11 +17,17 @@
 // unlocks the array
 #define ARRAY_UNLOCK(array) pthread_rwlock_unlock(&array->lock)
 
+/* pointer item stored within the array. */
+typedef void* ArrayItem;
+/* pointer to an arbitrary key value of some item in the array. */
+typedef void* ArrayKey;
+// this is ONLY for documentation purposes. using void* everywhere is
+// acceptable.
 
 /* Key mapper function. Takes items from the array and maps it to some key
  * value.
  */
-typedef void* (*ArrayMapper)(void*);
+typedef ArrayKey (*ArrayMapper)(ArrayItem);
 
 /* Sort function for the array map. Takes two item keys and returns negative if
  * a < b, 0 if a == b and positive if a > b. Essentially, a - b if a and b
@@ -29,7 +35,7 @@ typedef void* (*ArrayMapper)(void*);
  * Used for sorting and comparison purposes. Item keys passed to this function
  * are values returned by mapper function.
  */
-typedef int (*ArraySorter)(void*, void*);
+typedef int (*ArraySorter)(ArrayKey, ArrayKey);
 
 
 
@@ -43,7 +49,7 @@ typedef int (*ArraySorter)(void*, void*);
  * themself.
  */
 typedef struct Array {
-    void** items; // items in array
+    ArrayItem* items; // items in array, actually just a list of void*'s
     int numItems; // number of items in array
     int numAllocated; // space allocated. should be >= numItems
     ArrayMapper mapper; // maps items to some key.
@@ -75,10 +81,14 @@ void array_foreach(Array* array, void (*func)(void*));
  */
 void array_free_items(Array* array);
 
-/* Append the given item to the end of the array, returning new number of items
- * in array.
+/* Append the given item to the end of the array.
  */
-int array_add(Array* array, void* item);
+void array_add(Array* array, void* item);
+
+/* Takes a copy of *item which has size size and stores it into a new MALLOC'd
+ * pointer. Appends this new pointer to the array and returns it.
+ */
+void* array_add_copy(Array* array, void* item, size_t size);
 
 /* Get the item at the given index, asserting the index is valid.
  */
@@ -97,7 +107,7 @@ void array_remove(Array* array, void* item);
  */
 void array_remove_at(Array* array, int index);
 
-/* Sorts the array map in-place, in the order defined by sortKey.
+/* Sorts the array map in-place, in the total ordering defined by sortKey.
  */
 void arraymap_sort(Array* array);
 

@@ -1,10 +1,9 @@
-#define _GNU_SOURCE 1
-
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "array.h"
-
+#include "util.h"
 
 
 // see header
@@ -33,12 +32,12 @@ void arraymap_init(Array* array, ArrayMapper mapper, ArraySorter sorter) {
 
 // see header
 void array_destroy(Array* array) {
-    // don't do anything to items themselves.
     if (array->items != NULL) {
-        free(array->items);
+        // use array->items to indicate whether the lock is initialised.
+        pthread_rwlock_destroy(&array->lock);
     }
-
-    pthread_rwlock_destroy(&array->lock);
+    // don't automatically free() individual items
+    TRY_FREE(array->items);
 }
 
 // see header
@@ -54,7 +53,7 @@ void array_free_items(Array* array) {
 }
 
 // see header
-int array_add(Array* array, void* item) {
+void array_add(Array* array, void* item) {
     // double array size.
     if (array->numItems == array->numAllocated) {
         int newAlloc = 2 * array->numAllocated;
@@ -67,8 +66,17 @@ int array_add(Array* array, void* item) {
 
     array->items[array->numItems] = item;
     array->numItems++;
+}
 
-    return array->numItems;
+// see header
+void* array_add_copy(Array* array, void* item, size_t size) {
+    void* new = malloc(size);
+    assert(new != NULL);
+    // copy *item into *new, assuming item is of size given.
+    memcpy(new, item, size);
+    // add to array
+    array_add(array, new);
+    return new;
 }
 
 // see header
@@ -111,22 +119,35 @@ void array_remove(Array* array, void* item) {
     assert(0); // item was not found in array.
 }
 
-/* qsort_r calls the sort comparer with pointers to the values being sorted
- * but our array sorter takes the items themselvers (which are void*'s), so
- * this wrapper dereferences the pointers.
- * Also converts the 3rd data argument to an Array*.
- *
- * Returns negative, 0 or positive if a < b, a = b or a > b respectively.
- */
-int qsort_sorter(const void* a, const void* b, void* data) {
-    Array* array = (Array*) data;
-    return array->sorter(
-            array->mapper(*(void**)a), array->mapper(*(void**)b));
-}
-
 // see header
 void arraymap_sort(Array* array) {
-    qsort_r(array->items, array->numItems, sizeof(void*),
-            qsort_sorter, array);
+    // *grumble* C/POSIX compliance making me write a sorting algorithm
+
+    // this is insertion sort, efficient for almost sorted arrays but O(n^2)
+    // in worst-case.
+
+    // invariant: A[:i] is sorted (using python slice notation) so we start
+    // at i = 1 because a 1-element list is trivially sorted.
+    for (int i = 1; i < array->numItems; i++) {
+
+        // starting at j=i, we compare A[j] with A[j-1] and swap them if
+        // A[j] should sort before A[j-1]. stop after j = 1 because j-1=0
+        // invariant: A[j:i] is sorted. when j=0 and we quit this loop, j=0
+        // so this enforces the outer invariant.
+        for (int j = i; j > 0; j--) {
+            void* thisItem = array->items[j];
+            void* thisKey = array->mapper(thisItem);
+
+            void* othItem = array->items[j - 1];
+            void* othKey = array->mapper(othItem);
+
+            // currently, order is [..., othItem, thisItem, ...]
+            if (array->sorter(othKey, thisKey) > 0) {
+                // if othKey > thisKey, othItem is out of order. swap
+                array->items[j] = othItem;
+                array->items[j - 1] = thisItem;
+            }
+        }
+    }
 }
 

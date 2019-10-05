@@ -26,7 +26,7 @@
 // macros to print a message along with function and line number. these are
 // disabled by the sed_noop job in make.
 // ass3: now with PID and colours
-// unfortunately, these crash the style.sh
+// ass4: fixed these crashing style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr,\
         "\x1b[38;5;%dm(%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
@@ -58,6 +58,11 @@ int parse_int(char* str);
  * string. Should always succeed.
  */
 char* int_to_string(int number);
+
+/* Formats the given format string and arguments into a new MALLOC'd string,
+ * returning the string.
+ */
+char* asprintf(char* fmt, ...);
 
 /* Helper method to read an arbitrary length line from a file. Ensures that
  *  - file is not NULL
@@ -98,6 +103,7 @@ void ignore_sigpipe(void);
 
 // The style.sh chokes on our DEBUG_PRINT macros up top, so we replace them
 // with these noop functions when building in 'release' mode.
+// ass4: not anymore but we keep these just in case.
 
 /* Stubs to placate the style checker. */
 void noop_print(char* str);

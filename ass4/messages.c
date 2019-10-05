@@ -165,6 +165,9 @@ bool consume_eof(char** start) {
     return valid;
 }
 
+// the parse_ family of functions will parse the payload for particular
+// message types, storing them into the appropriate fields of the given data
+// struct.
 
 /* Parses a Connect message into the given data struct, returning true on
  * success.

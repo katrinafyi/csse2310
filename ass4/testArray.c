@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     arraymap_init(arr, identity, (ArraySorter) strcmp);
 
     for (int i = 0; i < argc; i++) {
-        array_add(arr, argv[i]);
+        array_add_copy(arr, argv[i], (strlen(argv[i]) + 1) * sizeof(char));
     }
     printf("numItems: %d\n", arr->numItems);
     arraymap_sort(arr);
@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
     } else {
         printf("1 val found at %p: %s\n", item, (char*) item);
     }
-
+    array_free_items(arr);
     array_destroy(arr);
+    array_destroy(arr); // testing idempotence
 }

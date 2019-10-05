@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <string.h>
 #include <signal.h>
+#include <stdarg.h>
 
 #define LINE_BUFFER 10
 
@@ -32,6 +33,27 @@ char* int_to_string(int number) {
     int len = snprintf(NULL, 0, "%d", number);
     char* str = malloc((len + 1) * sizeof(char));
     snprintf(str, len + 1, "%d", number);
+    return str;
+}
+
+// see header
+char* asprintf(char* fmt, ...) {
+    va_list ap; // varargs fun
+
+    va_start(ap, fmt); // fmt is the last fixed parameter
+    int len = vsnprintf(NULL, 0, fmt, ap);
+    va_end(ap); // finish using this ap
+    assert(len >= 0);
+
+    // allocate sufficient space for this string and \0
+    char* str = malloc((len + 1) * sizeof(char));
+
+    // write to the new string, with new va list
+    va_start(ap, fmt);
+    int ret = vsnprintf(str, len + 1, fmt, ap); // use our copy of ap
+    va_end(ap);
+
+    assert(ret >= 0);
     return str;
 }
 
