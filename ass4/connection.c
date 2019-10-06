@@ -14,7 +14,7 @@ void conn_init(Connection* connection, int port, char* name) {
 }
 
 // see header
-void conn_set_socket(Connection* connection, FILE* readFile, FILE* writeFile) {
+void conn_set_files(Connection* connection, FILE* readFile, FILE* writeFile) {
     connection->readFile = readFile;
     connection->writeFile = writeFile;
 }

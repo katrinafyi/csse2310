@@ -55,11 +55,17 @@ void ds_destroy(DepotState* depotState) {
 }
 
 // see header
-void ds_add_connection(DepotState* depotState, int port, char* name) {
+Connection* ds_add_connection(DepotState* depotState, int port, char* name,
+            FILE* readFile, FILE* writeFile) {
     Connection conn = {0};
     conn_init(&conn, port, name);
+    conn_set_files(&conn, readFile, writeFile);
+
     DEBUG_PRINTF("adding connection to %s on %d\n", name, port);
-    array_add_copy(depotState->connections, &conn, sizeof(Connection));
+    Connection* newConn = array_add_copy(depotState->connections, &conn, 
+            sizeof(Connection));
+    arraymap_sort(depotState->connections);
+    return newConn;
 }
 
 // see header
@@ -70,6 +76,7 @@ void ds_ensure_mat(DepotState* depotState, char* matName) {
         mat_init(&mat, 0, matName);
         DEBUG_PRINTF("adding empty material: %s\n", matName);
         array_add_copy(depotState->materials, &mat, sizeof(Material));
+        arraymap_sort(depotState->materials);
     }
 }
 
@@ -82,4 +89,18 @@ void ds_alter_mat(DepotState* depotState, char* matName, int delta) {
     Material* mat = arraymap_get(materials, matName);
     assert(mat != NULL);
     mat->quantity += delta;
+}
+
+// see header
+DeferGroup* ds_ensure_defer_group(DepotState* depotState, int key) {
+    // note & on key.
+    DeferGroup* dg = arraymap_get(depotState->deferGroups, &key);
+    if (dg != NULL) {
+        return dg;
+    }
+
+    DEBUG_PRINTF("adding new defer group with key %d\n", key);
+    DeferGroup dgNew = {0};
+    dg_init(&dgNew, key);
+    return array_add_copy(depotState->deferGroups, &dgNew, sizeof(DeferGroup));
 }

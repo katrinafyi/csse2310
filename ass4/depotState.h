@@ -2,6 +2,9 @@
 #define DEPOTSTATE_H
 
 #include <stdlib.h>
+
+#include "deferGroup.h"
+#include "connection.h"
 #include "array.h"
 
 /* State struct for storing the internal state of one depot, managing its own
@@ -28,9 +31,10 @@ void ds_init(DepotState* depotState, char* name);
 void ds_destroy(DepotState* depotState);
 
 /* Adds a connection to a depot at the given port and with the given
- * name.
+ * name. Also requires the read and write FILE*'s for this connection.
  */
-void ds_add_connection(DepotState* depotState, int port, char* name);
+Connection* ds_add_connection(DepotState* depotState, int port, char* name,
+        FILE* readFile, FILE* writeFile);
 
 /* Ensures the given material name is present in our materials, adding it with
  * 0 stock if it does not exist.
@@ -43,4 +47,8 @@ void ds_ensure_mat(DepotState* depotState, char* matName);
  */
 void ds_alter_mat(DepotState* depotState, char* matName, int delta);
 
+/* Ensures a defer group with the given key is present in the defer group list
+ * and adds it if not present. Returns a pointer to the defer group.
+ */
+DeferGroup* ds_ensure_defer_group(DepotState* depotState, int key);
 #endif

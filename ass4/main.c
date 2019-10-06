@@ -12,11 +12,12 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
 #include <arpa/inet.h>
 
 
 #include "exitCodes.h"
+#include "connection.h"
+#include "material.h"
 #include "depotState.h"
 #include "messages.h"
 #include "util.h"
@@ -24,11 +25,168 @@
 #define BANNED_NAME_CHARS " \n\r:"
 #define CONNECTION_QUEUE 32
 
+// normally, i avoid declaring functions in .c files but the control flow
+// here is particularly convoluted.
+// see implementations for comments.
+void start_depot_thread(DepotState* depotState, int fd);
+// see implementation.
+bool start_active_socket(int* fdOut, char* port);
+// see implementaiton
+void execute_message(DepotState* depotState, Message* message);
+
+
 typedef struct ThreadData {
     int fd;
     DepotState* depotState;
 } ThreadData;
 
+
+/* Returns whether the given string is a valid depot or material name,
+ * according to rules in spec.
+ */
+bool is_name_valid(char* name) {
+    int len = strlen(name);
+    char* banned = BANNED_NAME_CHARS;
+    for (int i = 0; i < len; i++) {
+        // check if any char in name appears in banned list.
+        if (strchr(banned, name[i]) != NULL) {
+            DEBUG_PRINTF("name invalid: |%s|\n", name);
+            return false;
+        }
+    }
+    return len > 0; // ensure name non-empty
+}
+
+
+void execute_connect(DepotState* depotState, Message* message) {
+    char* port = asprintf("%d", message->data.depotPort);
+    int fd;
+    bool started = start_active_socket(&fd, port);
+    free(port);
+    if (started) {
+        start_depot_thread(depotState, fd);
+    }
+}
+
+void execute_deliver_withdraw(DepotState* depotState, Message* message) {
+    ARRAY_WRLOCK(depotState->materials);
+
+    int delta = message->data.material.quantity;
+    if (message->type != MSG_DELIVER) {
+        delta = -delta; // negative change to represent withdraw
+    }
+
+    ds_alter_mat(depotState, message->data.material.name, delta);
+    ARRAY_UNLOCK(depotState->materials);
+}
+
+void execute_transfer(DepotState* depotState, Message* message) {
+    ARRAY_RDLOCK(depotState->connections);
+
+    Connection* conn = arraymap_get(depotState->connections,
+            message->data.depotName);
+    if (conn == NULL) {
+        DEBUG_PRINTF("depot not found: %s\n", message->data.depotName);
+        ARRAY_UNLOCK(depotState->connections);
+        msg_destroy(message);
+        return;
+    }
+    DEBUG_PRINTF("withdrawing, then delivering to %d\n", conn->port);
+    Material mat = message->data.material;
+    ds_alter_mat(depotState, mat.name, -mat.quantity);
+
+    // ignore return value
+    msg_send(conn->writeFile, msg_deliver(mat.quantity, mat.name));
+
+    ARRAY_UNLOCK(depotState->connections);
+}
+
+void execute_defer(DepotState* depotState, Message* message) {
+    Message* deferMessage = message->data.deferMessage;
+    switch (deferMessage->type) {
+        case MSG_DELIVER:
+        case MSG_WITHDRAW:
+        case MSG_TRANSFER:
+            break; // only these message types are valid for Defer
+        default:
+            DEBUG_PRINT("unsupported deferred message type");
+            msg_destroy(message);
+            return; // silently ignore
+    }
+    ARRAY_RDLOCK(depotState->deferGroups);
+    DeferGroup* dg = ds_ensure_defer_group(depotState, message->data.deferKey);
+    
+    ARRAY_WRLOCK(dg->messages);
+    dg_add_message(dg, *message->data.deferMessage);
+    // message moved into new location in array. free and set to null
+    TRY_FREE(message->data.deferMessage);
+    ARRAY_UNLOCK(dg->messages);
+
+    ARRAY_UNLOCK(depotState->deferGroups);
+
+    // we can destroy message now because the sub-message has been copied
+    // and its reference in *message is set to NULL.
+}
+
+void execute_execute(DepotState* depotState, Message* message) {
+    // admittedly not the best naming
+
+    ARRAY_WRLOCK(depotState->deferGroups);
+    DeferGroup* dg = arraymap_get(depotState->deferGroups, 
+            &message->data.deferKey);
+    if (dg == NULL) {
+        DEBUG_PRINT("defer key not found");
+        ARRAY_UNLOCK(depotState->deferGroups);
+        return;
+    }
+
+    // don't need to lock on defer group because we have an exclusive write
+    // lock on the entire array of defer groups
+    for (int i = 0; i < dg->messages->numItems; i++) {
+        DEBUG_PRINTF("executing %d\n", i);
+        Message* msg = ARRAY_ITEM(Message, dg->messages, i);
+        msg_debug(msg);
+        execute_message(depotState, msg);
+    }
+
+    // frees messages and destroys messages array
+    dg_destroy(dg);
+
+    // remove defer group from array of defer groups
+    array_remove(depotState->deferGroups, dg);
+    // and free memory
+    free(dg);
+
+    ARRAY_UNLOCK(depotState->deferGroups);
+}
+
+void execute_message(DepotState* depotState, Message* message) {
+    switch (message->type) {
+        case MSG_CONNECT:
+            execute_connect(depotState, message);
+            break;
+        case MSG_IM: // ignore improperly sequenced IM
+            DEBUG_PRINT("ignoring unexpected IM");
+            break;
+        case MSG_DELIVER:
+        case MSG_WITHDRAW:
+            execute_deliver_withdraw(depotState, message);
+            break;
+        case MSG_TRANSFER:
+            execute_transfer(depotState, message);
+            break;
+        case MSG_DEFER:
+            execute_defer(depotState, message);
+            break;
+        case MSG_EXECUTE:
+            execute_execute(depotState, message);
+            break;
+        default:
+            assert(0);
+    }
+    // we're done with this message.
+    msg_destroy(message);
+}
 
 void* depot_thread(void* threadDataArg) {
     ThreadData* threadData = threadDataArg;
@@ -36,24 +194,45 @@ void* depot_thread(void* threadDataArg) {
     int fdRead = threadData->fd;
     int fdWrite = dup(fdRead);
 
-    free(threadDataArg); // we wont be needing this anymore
+    free(threadDataArg); // data copied into local variables.
     DEBUG_PRINT("depot thread started");
-    
     FILE* readFile = fdopen(fdRead, "r");
     FILE* writeFile = fdopen(fdWrite, "w");
-    char* line;
-    while (1) {
-        fprintf(writeFile, "IM:100:depotname\n");
-        fflush(writeFile);
-        if (!safe_read_line(readFile, &line)) {
-            break;
-        }
-        printf("received on %d: %s\n", fdRead, line);
-        free(line);
+
+    Message msg = msg_im(depotState->port, depotState->name);
+    if (msg_send(writeFile, msg) != MS_OK) {
+        DEBUG_PRINT("sending IM failed, terminating thread.");
+        return NULL;
     }
-    fclose(readFile);
-    fclose(writeFile);
-    DEBUG_PRINT("thread ended");
+    if (msg_receive(readFile, &msg) != MS_OK || msg.type != MSG_IM ||
+            !is_name_valid(msg.data.depotName)) {
+        DEBUG_PRINT("invalid IM, terminating thread.");
+        msg_destroy(&msg);
+        return NULL;
+    }
+    // add to list of connections
+    ARRAY_WRLOCK(depotState->connections);
+    Connection* conn = ds_add_connection(depotState, msg.data.depotPort,
+            msg.data.depotName, readFile, writeFile);
+    ARRAY_UNLOCK(depotState->connections);
+
+    msg_destroy(&msg);
+    MessageStatus status = MS_OK;
+    while (status != MS_EOF) { // break on EOF
+        status = msg_receive(readFile, &msg);
+        if (status != MS_OK) {
+            DEBUG_PRINT("receive message failed");
+            continue; // ignore invalid messages
+        }
+        execute_message(depotState, &msg);
+    }
+    DEBUG_PRINTF("thread closing normally, depot: %s\n", conn->name);
+    // destroy connection and remove from list of connections
+    ARRAY_WRLOCK(depotState->connections);
+    conn_destroy(conn);
+    array_remove(depotState->connections, conn);
+    free(conn); // because array stored a new copy of the connection
+    ARRAY_UNLOCK(depotState->connections);
     return NULL;
 }
 
@@ -76,16 +255,15 @@ bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
 
     struct addrinfo* ai; // for address info returned by getaddrinfo
     int error = getaddrinfo("localhost", port, &hints, &ai);
+    *aiOut = ai;
+
     if (error != 0) {
         DEBUG_PRINTF("getaddrinfo: %s\n", gai_strerror(error));
         return false;
     }
-
     *fdOut = socket(AF_INET, SOCK_STREAM, 0); // 0 is default protocol
-    *aiOut = ai;
     return true;
 }
-
 
 bool start_active_socket(int* fdOut, char* port) {
     struct addrinfo* ai;
@@ -94,14 +272,15 @@ bool start_active_socket(int* fdOut, char* port) {
     if (!new_socket(port, &sock, &ai)) {
         return false;
     }
-    if (connect(sock, ai->ai_addr, sizeof(struct sockaddr)) != 0) {
+    if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
         DEBUG_PRINT("connect failed");
+        freeaddrinfo(ai);
         return false;
     }
+    freeaddrinfo(ai);
     *fdOut = sock;
     return true;
 }
-
 
 bool start_passive_socket(int* fdOut, int* portOut) {
     struct addrinfo* ai;
@@ -110,7 +289,8 @@ bool start_passive_socket(int* fdOut, int* portOut) {
     if (!new_socket(NULL, &server, &ai)) {
         return false;
     }
-    if (bind(server, ai->ai_addr, sizeof(struct sockaddr)) != 0) {
+    if (bind(server, ai->ai_addr, ai->ai_addrlen) != 0) {
+        freeaddrinfo(ai);
         DEBUG_PRINTF("bind failed: %s\n", strerror(errno));
         return false;
     }
@@ -141,6 +321,7 @@ sigset_t* blocked_sigset(void) {
     static sigset_t ss;
     sigemptyset(&ss);
     sigaddset(&ss, SIGHUP);
+    sigaddset(&ss, SIGUSR1);
     return &ss;
 }
 
@@ -153,7 +334,32 @@ void* sighup_thread(void* depotStateArg) {
         int sig;
         sigwait(blocked, &sig);
         DEBUG_PRINTF("signal: %d %s\n", sig, strsignal(sig));
+
+        if (sig != SIGHUP) {
+            break;
+        }
+
+        ARRAY_RDLOCK(depotState->materials);
+        printf("Goods:\n");
+        for (int i = 0; i < depotState->materials->numItems; i++) {
+            Material* mat = ARRAY_ITEM(Material, depotState->materials, i);
+            printf("%s %d\n", mat->name, mat->quantity);
+        }
+        ARRAY_UNLOCK(depotState->materials);
+
+        ARRAY_RDLOCK(depotState->connections);
+        printf("Neighbours:\n");
+        for (int i = 0; i < depotState->connections->numItems; i++) {
+            Connection* conn = ARRAY_ITEM(Connection, 
+                    depotState->connections, i);
+            printf("%s\n", conn->name);
+        }
+        ARRAY_UNLOCK(depotState->connections);
     }
+    // terminate the program
+    DEBUG_PRINT("terminating program due to signal!");
+    ds_destroy(depotState);
+    exit(0);
 }
 
 DepotExitCode exec_server(DepotState* depotState) {
@@ -163,21 +369,17 @@ DepotExitCode exec_server(DepotState* depotState) {
     sigset_t* blocked = blocked_sigset();
     pthread_sigmask(SIG_BLOCK, blocked, NULL);
 
-    int server;
-    int port;
-    // start server socket in listen mode
-    if (!start_passive_socket(&server, &port)) {
-        return false;
-    }
-    depotState->port = port;
-
     // start sighup thread
     pthread_t signalThread; // unused
     pthread_create(&signalThread, NULL, sighup_thread, depotState);
 
-    int test;
-    start_active_socket(&test, depotState->name);
-    start_depot_thread(depotState, test);
+    int server;
+    int port;
+    // start server socket in listen mode
+    if (!start_passive_socket(&server, &port)) {
+        return D_NORMAL; // no special exit code
+    }
+    depotState->port = port;
 
     while (1) {
         // listen for connections
@@ -185,24 +387,7 @@ DepotExitCode exec_server(DepotState* depotState) {
         DEBUG_PRINT("accepted connection");
         start_depot_thread(depotState, fd);
     }
-
-    return D_NORMAL;
-}
-
-/* Returns whether the given string is a valid depot or material name,
- * according to rules in spec.
- */
-bool is_name_valid(char* name) {
-    int len = strlen(name);
-    char* banned = BANNED_NAME_CHARS;
-    for (int i = 0; i < len; i++) {
-        // check if any char in name appears in banned list.
-        if (strchr(banned, name[i]) != NULL) {
-            DEBUG_PRINTF("name invalid: |%s|\n", name);
-            return false;
-        }
-    }
-    return len > 0; // ensure name non-empty
+    assert(0);
 }
 
 /* Argument checks and initialises depot state. Bootstraps server listener. */

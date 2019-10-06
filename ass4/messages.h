@@ -108,4 +108,17 @@ char* msg_payload_encode(Message message);
  */
 void msg_debug(Message* message);
 
+/* Creates a new IM message with the given port and depot name, returning the
+ * message.
+ * WARNING: the returned message is non-compliant and MUST NOT be passed to
+ * msg_destroy.
+ */
+Message msg_im(int port, char* name);
+
+/* Creates a new Deliver message for the given material, returning the message
+ * WARNING: the returned message is non-compliant and MUST NOT be passed to
+ * msg_destroy.
+ */
+Message msg_deliver(int quantity, char* name);
+
 #endif

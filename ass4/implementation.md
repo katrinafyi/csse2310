@@ -3,7 +3,7 @@
 ## Locking
 - To avoid deadlocks, if a function requires multiple locks, it MUST lock in
   this order:
-  materials, connections, deferGroups, deferGroup messages.
+  connections, materials, deferGroups, deferGroup messages.
 - The locks associated with arrays SHOULD be used.
 - Locking will ONLY be done by functions within main.c. Other functions are
   unsynchroniesd.

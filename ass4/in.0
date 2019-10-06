@@ -1,0 +1,9 @@
+IM:1337:netcat
+Deliver:100:wood
+Withdraw:99:wood
+Deliver:99:beer
+Deliver:99:apples
+Transfer:99:apples:netcat
+Connect:1
+Transfer:100:xd:netcat
+Connect:50000

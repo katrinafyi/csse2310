@@ -386,3 +386,21 @@ void msg_debug(Message* message) {
         msg_debug(data.deferMessage);
     }
 }
+
+// see header
+Message msg_im(int port, char* name) {
+    Message msg = {0};
+    msg.type = MSG_IM;
+    msg.data.depotPort = port;
+    msg.data.depotName = name;
+    return msg;
+}
+
+// see header
+Message msg_deliver(int quantity, char* name) {
+    Message msg = {0};
+    msg.type = MSG_DELIVER;
+    msg.data.material.quantity = quantity;
+    msg.data.material.name = name;
+    return msg;
+}
