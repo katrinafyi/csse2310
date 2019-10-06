@@ -119,41 +119,19 @@ bool consume_material(char** start, Material* outMaterial) {
 
 // consumes an entire message. useful for recursive messages (Defer).
 bool consume_message(char** start, Message** outMessagePtr) {
-    Message message = {0};
-    message.type = MSG_NULL;
-
-    char* line = *start;
-    int len = strlen(line);
-
-    MessageType type = MSG_NULL;
-    char* payload = NULL;
-    for (int t = 0; t < NUM_MESSAGE_TYPES; t++) {
-        char* code = msg_code(t); // get string code expected for this type
-
-        // check prefix of line.
-        if (strncmp(line, code, strlen(code)) == 0) {
-            type = t;
-            payload = line + strlen(code);
-            break;
-        }
-    }
-    if (type == MSG_NULL) {
-        DEBUG_PRINT("no matched code");
+    // allocate on stack until we validate the message.
+    Message message;
+    MessageStatus status = msg_parse(*start, &message);
+    if (status != MS_OK) {
         return false;
     }
-    message.type = type;
 
-    if (!msg_payload_decode(type, payload, &message.data)) {
-        DEBUG_PRINT("invalid payload");
-        return false;
-    }
-    // store this message on the heap
-    Message* msgPtr = malloc(sizeof(Message));
-    *msgPtr = message;
-
-    // update the out param with the value of the message location
-    *outMessagePtr = msgPtr;
-    *start = *start + len; // entire string is consumed.
+    // if we get here, message was valid. store new message in heap.
+    Message* newMsg = malloc(sizeof(Message));
+    *newMsg = message;
+    // update the out param with the new message location
+    *outMessagePtr = newMsg;
+    *start = *start + strlen(*start); // entire string is consumed.
     return true;
 }
 
@@ -320,20 +298,34 @@ char* msg_payload_encode(Message message) {
 
 // see header
 MessageStatus msg_parse(char* line, Message* outMessage) {
-    // consume will modify this value. we need to keep the original around
-    // to free().
-    char** start = &line;
-    // consume_message stores a malloc'd pointer into its argument.
-    Message* msgPtr = NULL;
-    if (!consume_message(start, &msgPtr)) {
-        DEBUG_PRINT("failed to parse");
-        outMessage->type = MSG_NULL;
+    Message message = {0};
+    message.type = MSG_NULL;
+    *outMessage = message; // zero outMessage for safety
+
+    MessageType type = MSG_NULL;
+    char* payload = NULL;
+    for (int t = 0; t < NUM_MESSAGE_TYPES; t++) {
+        char* code = msg_code(t); // get string code expected for this type
+
+        // check prefix of line.
+        if (strncmp(line, code, strlen(code)) == 0) {
+            type = t;
+            // payload is everything after message code.
+            payload = line + strlen(code);
+            break;
+        }
+    }
+    if (type == MSG_NULL) {
+        DEBUG_PRINT("no matched code");
         return MS_INVALID;
     }
-    // copy the message into the provided pointer, freeing the temporary
-    // pointer allocated by consume_message.
-    *outMessage = *msgPtr;
-    free(msgPtr);
+    message.type = type; // type found
+
+    if (!msg_payload_decode(type, payload, &message.data)) {
+        DEBUG_PRINT("invalid payload");
+        return MS_INVALID;
+    }
+    *outMessage = message; // store parsed message in out param
     return MS_OK;
 }
 
