@@ -118,9 +118,4 @@ void array_remove_at(Array* array, int index);
  */
 void arraymap_sort(Array* array);
 
-/* Sort comparison function for lexicographic order. Thin wrapper around
- * strcmp. Takes char*'s as void*'s. Apart from that, identical to strcmp.
- */
-int strcmp_sorter(void* a, void* b);
-
 #endif

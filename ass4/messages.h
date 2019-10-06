@@ -14,7 +14,7 @@
  */
 typedef enum MessageType {
     MSG_CONNECT, MSG_IM, MSG_DELIVER, MSG_WITHDRAW, MSG_TRANSFER,
-    MSG_DEFER, MSG_EXECUTE, MSG_NULL
+            MSG_DEFER, MSG_EXECUTE, MSG_NULL
 } MessageType;
 
 /* Status which could occur when reading or writing messages.

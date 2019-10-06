@@ -1,5 +1,13 @@
 # Assignment 4 Implementation Spec
 
+## Locking
+- To avoid deadlocks, if a function requires multiple locks, it MUST lock in
+  this order:
+  materials, connections, deferGroups, deferGroup messages.
+- The locks associated with arrays SHOULD be used.
+- Locking will ONLY be done by functions within main.c. Other functions are
+  unsynchroniesd.
+
 ## State Structs
 - A struct with associated _init and _destroy methods is called a state struct.
 - An _init method MUST be accompanied by a _destroy method and vice-versa.

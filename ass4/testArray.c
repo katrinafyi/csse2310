@@ -4,6 +4,7 @@
 
 #include "util.h"
 #include "array.h"
+#include "arrayHelpers.h"
 
 // identity function, returning exactly its argument
 void* identity(void* item) {
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
     Array* arr = &arrData;
 
     // initialise array map, sorted lexicographically.
-    arraymap_init(arr, identity, strcmp_sorter);
+    arraymap_init(arr, identity, ah_strcmp);
 
     for (int i = 0; i < argc; i++) {
         array_add_copy(arr, argv[i], (strlen(argv[i]) + 1) * sizeof(char));

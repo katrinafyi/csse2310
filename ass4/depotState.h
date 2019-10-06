@@ -24,10 +24,10 @@ void ds_init(DepotState* depotState);
  */
 void ds_destroy(DepotState* depotState);
 
-/* Adds a connection to the given depot, at the given port and with the given
+/* Adds a connection to a depot at the given port and with the given
  * name.
  */
-void ds_add_depot(DepotState* depotState, int port, char* name);
+void ds_add_connection(DepotState* depotState, int port, char* name);
 
 /* Ensures the given material name is present in our materials, adding it with
  * 0 stock if it does not exist.

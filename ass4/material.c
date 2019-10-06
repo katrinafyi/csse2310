@@ -13,10 +13,9 @@ void mat_init(Material* material, int quantity, char* name) {
 
 // see header
 void mat_destroy(Material* material) {
+    if (material == NULL) {
+        return;
+    }
     TRY_FREE(material->name);
 }
 
-// see header
-void mat_destroy_void(void* material) {
-    mat_destroy(material);
-}

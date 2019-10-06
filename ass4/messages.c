@@ -49,6 +49,7 @@ char* msg_code(MessageType type) {
 
 // They return a bool of true in success or false on failure.
 
+
 // consumes a single colon
 bool consume_colon(char** start) {
     if (**start != COLON) {
@@ -154,7 +155,7 @@ bool consume_eof(char** start) {
 bool parse_connect(char* payload, MessageData* data) {
     char** start = &payload;
     return consume_colon(start) && consume_int(start, &data->depotPort) &&
-        consume_eof(start);
+            consume_eof(start);
 }
 
 /* Parses a IM message into the given data struct, returning true on

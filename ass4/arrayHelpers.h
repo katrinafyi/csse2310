@@ -33,5 +33,7 @@ void ah_mat_destroy(void*);
 void ah_conn_destroy(void*);
 // destroys the given deger group, passed as DeferGroup* cast to void*
 void ah_dg_destroy(void*);
+// destroys the given message, passed as Message* cast to void*
+void ah_msg_destroy(void*);
 
 #endif

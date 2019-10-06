@@ -17,7 +17,7 @@ void conn_init(Connection* connection, int port, char* name);
 
 /* Attaches the given read/write FILE*'s to this connection.
  */
-void conn_set_files(Connection* connection, FILE* readFile, FILE* writeFile);
+void conn_set_socket(Connection* connection, FILE* readFile, FILE* writeFile);
 
 /* Destroys a connection and frees its memory.
  */

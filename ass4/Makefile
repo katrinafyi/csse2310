@@ -1,7 +1,7 @@
 common_src = util.c array.c messages.c material.c depotState.c connection.c \
-	     exitCodes.c arrayHelpers.c
+	     exitCodes.c arrayHelpers.c deferGroup.c
 depot_src = main.c
-test_src = testUtil.c testMessages.c testArray.c testDepotState.c
+test_src = testUtil.c testMessages.c testArray.c testDepotState.c testDefer.c\
 all_src = $(common_src) $(depot_src) $(test_src)
 
 common_obj = $(common_src:.c=.o)
@@ -41,6 +41,9 @@ test_messages: $(common_obj) testMessages.o
 	gcc $(CCFLAGS) $^ -o $@
 
 test_array: $(common_obj) testArray.o
+	gcc $(CCFLAGS) $^ -o $@
+
+test_defer: $(common_obj) testDefer.o
 	gcc $(CCFLAGS) $^ -o $@
 
 %.o: %.c

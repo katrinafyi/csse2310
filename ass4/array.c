@@ -168,9 +168,3 @@ void arraymap_sort(Array* array) {
         }
     }
 }
-
-// see header
-int strcmp_sorter(void* a, void* b) {
-    return strcmp((char*)a, (char*)b);
-}
-
