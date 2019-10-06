@@ -8,17 +8,20 @@
  * resources and connections to other depots.
  */
 typedef struct DepotState {
+    char* name; // name of this depot, NOT malloc
+    int port;
     Array* materials; // array map of materials we store, keyed by name
     Array* connections; // array map of open connections, keyed by name
-    Array* deferGroups; // arra map of defer groups, keyed by key
+    Array* deferGroups; // array map of defer groups, keyed by key
 } DepotState;
 // IMPORTANT: to avoid deadlocks, always lock in this order:
 //     materials, connections, deferGroups
 // as necessary.
 
 /* Initialises the depot state struct, instantiating contained arrays.
+ * Given name is the name of this depot.
  */
-void ds_init(DepotState* depotState);
+void ds_init(DepotState* depotState, char* name);
 
 /* Destroys the depot state, freeing memory used.
  */

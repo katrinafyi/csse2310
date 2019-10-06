@@ -10,7 +10,9 @@
 #include "arrayHelpers.h"
 
 // see header
-void ds_init(DepotState* depotState) {
+void ds_init(DepotState* depotState, char* name) {
+    depotState->name = name;
+
     // array of Material, keyed by material name
     depotState->materials = calloc(1, sizeof(Array));
     arraymap_init(depotState->materials, ah_mat_mapper, ah_strcmp);
