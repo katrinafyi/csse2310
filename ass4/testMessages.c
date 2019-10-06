@@ -7,8 +7,13 @@ int main(int argc, char** argv) {
 
     Message message = {0};
     if (msg_parse(argv[1], &message) == MS_OK) {
-        DEBUG_PRINT("success");
+        printf("success, trying to re-encode\n");
+        char* encoded = msg_encode(message);
+        printf("encoded: %s\n", encoded);
+        free(encoded);
     }
+
+
     msg_debug(&message);
     msg_destroy(&message);
 

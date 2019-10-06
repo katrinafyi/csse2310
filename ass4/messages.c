@@ -14,13 +14,14 @@
 
 // see header
 void msg_destroy(Message* message) {
+    if (message == NULL) {
+        return;
+    }
     TRY_FREE(message->data.depotName);
 
-    if (message->data.deferMessage != NULL) {
-        // free recursive defer message.
-        msg_destroy(message->data.deferMessage);
-        TRY_FREE(message->data.deferMessage);
-    }
+    // free recursive defer message.
+    msg_destroy(message->data.deferMessage);
+    TRY_FREE(message->data.deferMessage);
 
     // Material struct is stored wholly inside Message, so no malloc here
     mat_destroy(&message->data.material);
@@ -234,6 +235,33 @@ bool parse_execute(char* payload, MessageData* data) {
             consume_eof(start);
 }
 
+// the format_ family of functions all return MALLOC'd strings when given 
+// specific data to format. these are (approximately) the inverse of the
+// consume_ functions.
+
+// formats an integer and string, colon separated.
+char* format_int_str(int number, char* str) {
+    return asprintf("%d%c%s", number, COLON, str);
+}
+
+// foramts a single integer
+char* format_int(int number) {
+    return asprintf("%d", number);
+}
+
+// formats an int followed by two strings, colon separated
+char* format_int_str_str(int number, char* str1, char* str2) {
+    return asprintf("%d%c%s%c%s", number, COLON, str1, COLON, str2);
+}
+
+// formats a defer payload, taking the key and deferred message
+char* format_defer(int key, Message message) {
+    char* encoded = msg_encode(message);
+    char* ret = asprintf("%d%c%s", key, COLON, encoded);
+    free(encoded);
+    return ret;
+}
+
 // see header
 bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
     bool valid = false;
@@ -265,18 +293,37 @@ bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
 
 // see header
 char* msg_payload_encode(Message message) {
+    // format_ functions are similar to consume_ in terms of functionality.
+    // because we don't really need strict format checks here, we skip the 
+    // abstraction of the parse_ methods.
+    MessageData data = message.data;
+    Material mat = data.material;
     switch (message.type) {
+        case MSG_CONNECT:
+            return format_int(data.depotPort);
+        case MSG_IM:
+            return format_int_str(data.depotPort, data.depotName);
+        case MSG_DELIVER:
+        case MSG_WITHDRAW:
+            return format_int_str(mat.quantity, mat.name);
+        case MSG_TRANSFER:
+            return format_int_str_str(mat.quantity, mat.name, data.depotName);
+        case MSG_DEFER:
+            // note dereference of deferMessage
+            return format_defer(data.deferKey, *data.deferMessage);
+        case MSG_EXECUTE:
+            return format_int(data.deferKey);
         default:
             assert(0);
     }
 }
 
-
+// see header
 MessageStatus msg_parse(char* line, Message* outMessage) {
     // consume will modify this value. we need to keep the original around
     // to free().
     char** start = &line;
-    // consume stores a malloc'd pointer into its argument.
+    // consume_message stores a malloc'd pointer into its argument.
     Message* msgPtr = NULL;
     if (!consume_message(start, &msgPtr)) {
         DEBUG_PRINT("failed to parse");
@@ -288,6 +335,18 @@ MessageStatus msg_parse(char* line, Message* outMessage) {
     *outMessage = *msgPtr;
     free(msgPtr);
     return MS_OK;
+}
+
+// see header
+char* msg_encode(Message message) {
+    char* code = msg_code(message.type); // NOT malloc'd
+    char* payload = msg_payload_encode(message);
+
+    assert(payload != NULL); // every message has payload now
+    char* ret = asprintf("%s%c%s", code, COLON, payload);
+    
+    free(payload);
+    return ret;
 }
 
 // see header
@@ -308,15 +367,15 @@ MessageStatus msg_receive(FILE* file, Message* outMessage) {
 
 // see header
 MessageStatus msg_send(FILE* file, Message message) {
-    char* payload = msg_payload_encode(message);
+    char* encoded = msg_encode(message);
+    DEBUG_PRINTF("sending: %s\n", encoded);
 
     errno = 0;
-    int ret = fprintf(file, "%s%s\n", msg_code(message.type), payload);
-    DEBUG_PRINTF("sending: %s%s\n", msg_code(message.type), payload);
+    int ret = fprintf(file, "%s\n", encoded);
     fflush(file);
-    // DEBUG_PRINTF("errno: %d\n", errno);
-    free(payload);
 
+    // DEBUG_PRINTF("errno: %d\n", errno);
+    free(encoded);
     // only (reasonable) error is EOF caused by broken pipe
     return (ret >= 0) ? MS_OK : MS_EOF;
 }

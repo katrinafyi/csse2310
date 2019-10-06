@@ -35,11 +35,11 @@ char* int_to_string(int number) {
 
 // see header
 char* asprintf(char* fmt, ...) {
-    va_list ap; // varargs fun
+    va_list args; // varargs fun
 
-    va_start(ap, fmt); // fmt is the last fixed parameter
-    int len = vsnprintf(NULL, 0, fmt, ap);
-    va_end(ap); // finish using this ap
+    va_start(args, fmt); // fmt is the last fixed parameter
+    int len = vsnprintf(NULL, 0, fmt, args); // get length of printed string
+    va_end(args); // finish using this ap
     assert(len >= 0);
 
     // allocate sufficient space for this string and \0
@@ -47,9 +47,9 @@ char* asprintf(char* fmt, ...) {
     assert(str != NULL);
 
     // write to the new string, with new va list
-    va_start(ap, fmt);
-    int ret = vsnprintf(str, len + 1, fmt, ap); // use our copy of ap
-    va_end(ap);
+    va_start(args, fmt);
+    int ret = vsnprintf(str, len + 1, fmt, args); // use our copy of ap
+    va_end(args);
 
     assert(ret >= 0);
     return str;

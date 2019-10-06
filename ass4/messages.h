@@ -53,6 +53,14 @@ typedef struct Message {
  */
 char* msg_code(MessageType type);
 
+/* Sends a message to the given file. message is assumed to be correct and will
+ * be sent (MS_INVALID is never returned).
+ *
+ * Returns MS_OK on success, MS_EOF on failure.
+ * Note that this does not consistently detect a broken pipe!
+ */
+MessageStatus msg_send(FILE* file, Message message);
+
 /* Receives a message from the given file. Message should be terminated with
  * a newline or EOF. If EOF is received immediately, MS_EOF is returned.
  * MS_INVALID is returned if the message is incorrectly formatted. Otherwise,
@@ -70,13 +78,10 @@ MessageStatus msg_receive(FILE* file, Message* outMessage);
  */
 MessageStatus msg_parse(char* line, Message* outMessage);
 
-/* Sends a message to the given file. message is assumed to be correct and will
- * be sent (MS_INVALID is never returned).
- *
- * Returns MS_OK on success, MS_EOF on failure.
- * Note that this does not consistently detect a broken pipe!
+/* Encodes the given message into the string representing that message.
+ * Assumes the message is valid; a MALLOC'd string will always be returned.
  */
-MessageStatus msg_send(FILE* file, Message message);
+char* msg_encode(Message message);
 
 /* Destroys the given message, freeing its contained structures and setting
  * pointers to NULL.
