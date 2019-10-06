@@ -214,19 +214,20 @@ void* depot_thread(void* threadDataArg) {
     ARRAY_WRLOCK(depotState->connections);
     Connection* conn = ds_add_connection(depotState, msg.data.depotPort,
             msg.data.depotName, readFile, writeFile);
+    conn->thread = pthread_self(); // store current thread ID
+    msg_destroy(&msg);
     ARRAY_UNLOCK(depotState->connections);
 
-    msg_destroy(&msg);
     MessageStatus status = MS_OK;
     while (status != MS_EOF) { // break on EOF
         status = msg_receive(readFile, &msg);
         if (status != MS_OK) {
-            DEBUG_PRINT("receive message failed");
+            DEBUG_PRINT("message invalid or EOF");
             continue; // ignore invalid messages
         }
         execute_message(depotState, &msg);
     }
-    DEBUG_PRINTF("thread closing normally, depot: %s\n", conn->name);
+    DEBUG_PRINTF("thread closing normally, name: %s\n", conn->name);
     // destroy connection and remove from list of connections
     ARRAY_WRLOCK(depotState->connections);
     conn_destroy(conn);
@@ -317,67 +318,16 @@ bool start_passive_socket(int* fdOut, int* portOut) {
     return true;
 }
 
-sigset_t* blocked_sigset(void) {
-    static sigset_t ss;
-    sigemptyset(&ss);
-    sigaddset(&ss, SIGHUP);
-    sigaddset(&ss, SIGUSR1);
-    return &ss;
-}
-
-void* sighup_thread(void* depotStateArg) {
+void* server_thread(void* depotStateArg) {
     DepotState* depotState = depotStateArg;
-    DEBUG_PRINT("sighup listener started");
-    sigset_t* blocked = blocked_sigset();
-
-    while (1) {
-        int sig;
-        sigwait(blocked, &sig);
-        DEBUG_PRINTF("signal: %d %s\n", sig, strsignal(sig));
-
-        if (sig != SIGHUP) {
-            break;
-        }
-
-        ARRAY_RDLOCK(depotState->materials);
-        printf("Goods:\n");
-        for (int i = 0; i < depotState->materials->numItems; i++) {
-            Material* mat = ARRAY_ITEM(Material, depotState->materials, i);
-            printf("%s %d\n", mat->name, mat->quantity);
-        }
-        ARRAY_UNLOCK(depotState->materials);
-
-        ARRAY_RDLOCK(depotState->connections);
-        printf("Neighbours:\n");
-        for (int i = 0; i < depotState->connections->numItems; i++) {
-            Connection* conn = ARRAY_ITEM(Connection, 
-                    depotState->connections, i);
-            printf("%s\n", conn->name);
-        }
-        ARRAY_UNLOCK(depotState->connections);
-    }
-    // terminate the program
-    DEBUG_PRINT("terminating program due to signal!");
-    ds_destroy(depotState);
-    exit(0);
-}
-
-DepotExitCode exec_server(DepotState* depotState) {
-    DEBUG_PRINT("starting server listener");
-
-    // block SIGHUP from all threads. we will pick it up via sigwait
-    sigset_t* blocked = blocked_sigset();
-    pthread_sigmask(SIG_BLOCK, blocked, NULL);
-
-    // start sighup thread
-    pthread_t signalThread; // unused
-    pthread_create(&signalThread, NULL, sighup_thread, depotState);
+    DEBUG_PRINT("server thread started");
 
     int server;
     int port;
     // start server socket in listen mode
     if (!start_passive_socket(&server, &port)) {
-        return D_NORMAL; // no special exit code
+        DEBUG_PRINT("failed to start passive socket");
+        return NULL; // no special exit code
     }
     depotState->port = port;
 
@@ -388,6 +338,73 @@ DepotExitCode exec_server(DepotState* depotState) {
         start_depot_thread(depotState, fd);
     }
     assert(0);
+}
+
+void print_depot_info(DepotState* depotState) {
+    ARRAY_RDLOCK(depotState->materials);
+    printf("Goods:\n");
+    for (int i = 0; i < depotState->materials->numItems; i++) {
+        Material* mat = ARRAY_ITEM(Material, depotState->materials, i);
+        printf("%s %d\n", mat->name, mat->quantity);
+    }
+    ARRAY_UNLOCK(depotState->materials);
+
+    ARRAY_RDLOCK(depotState->connections);
+    printf("Neighbours:\n");
+    for (int i = 0; i < depotState->connections->numItems; i++) {
+        Connection* conn = ARRAY_ITEM(Connection, depotState->connections, i);
+        printf("%s\n", conn->name);
+    }
+    ARRAY_UNLOCK(depotState->connections);
+}
+
+sigset_t* blocked_sigset(void) {
+    static sigset_t ss;
+    sigemptyset(&ss);
+    sigaddset(&ss, SIGHUP);
+#ifdef DEBUG
+    sigaddset(&ss, SIGUSR1);
+#endif
+    return &ss;
+}
+
+DepotExitCode exec_server(DepotState* depotState) {
+    DEBUG_PRINT("starting server");
+
+    // block SIGHUP from all threads. we will pick it up via sigwait
+    sigset_t* blocked = blocked_sigset();
+    pthread_sigmask(SIG_BLOCK, blocked, NULL);
+
+    // start server listener thread
+    pthread_t serverThread; // unused
+    pthread_create(&serverThread, NULL, server_thread, depotState);
+
+    // this thread handles the signals
+    while (1) {
+        int sig;
+        sigwait(blocked, &sig);
+        DEBUG_PRINTF("signal: %d %s\n", sig, strsignal(sig));
+
+        if (sig != SIGHUP) {
+            break;
+        }
+
+        print_depot_info(depotState);
+    }
+    // terminate the program
+    DEBUG_PRINT("terminating program due to signal!");
+
+    ARRAY_WRLOCK(depotState->connections);
+    // terminate all threads. stop server first to prevent new connections
+    pthread_cancel(serverThread);
+    pthread_join(serverThread, NULL);
+    for (int i = 0; i < depotState->connections->numItems; i++) {
+        Connection* conn = ARRAY_ITEM(Connection, depotState->connections, i);
+        pthread_cancel(conn->thread);
+        pthread_join(conn->thread, NULL);
+    }
+    ARRAY_UNLOCK(depotState->connections);
+    return D_NORMAL;
 }
 
 /* Argument checks and initialises depot state. Bootstraps server listener. */

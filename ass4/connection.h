@@ -2,9 +2,11 @@
 #define CONNECTION_H
 
 #include <stdio.h>
+#include <pthread.h>
 
 typedef struct Connection {
     int port;
+    pthread_t thread;
     char* name; // malloc!
     FILE* readFile;
     FILE* writeFile;
