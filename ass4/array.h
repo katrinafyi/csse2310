@@ -1,3 +1,6 @@
+#ifndef ARRAY_H
+#define ARRAY_H
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <pthread.h>
@@ -71,6 +74,10 @@ void arraymap_init(Array* array, ArrayMapper mapper, ArraySorter sorter);
  */
 void array_destroy(Array* array);
 
+/* Destroy the array as above and free each contained item.
+ */
+void array_destroy_and_free(Array* array);
+
 /* Calls the given function once for every element in the array. The function
  * should take one item (as a void*) and return nothing.
  */
@@ -111,3 +118,9 @@ void array_remove_at(Array* array, int index);
  */
 void arraymap_sort(Array* array);
 
+/* Sort comparison function for lexicographic order. Thin wrapper around
+ * strcmp. Takes char*'s as void*'s. Apart from that, identical to strcmp.
+ */
+int strcmp_sorter(void* a, void* b);
+
+#endif

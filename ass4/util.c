@@ -30,10 +30,7 @@ int parse_int(char* str) {
 
 // see header
 char* int_to_string(int number) {
-    int len = snprintf(NULL, 0, "%d", number);
-    char* str = malloc((len + 1) * sizeof(char));
-    snprintf(str, len + 1, "%d", number);
-    return str;
+    return asprintf("%s", number);
 }
 
 // see header
@@ -47,6 +44,7 @@ char* asprintf(char* fmt, ...) {
 
     // allocate sufficient space for this string and \0
     char* str = malloc((len + 1) * sizeof(char));
+    assert(str != NULL);
 
     // write to the new string, with new va list
     va_start(ap, fmt);

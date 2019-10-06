@@ -1,7 +1,7 @@
 common_src = util.c array.c messages.c material.c depotState.c connection.c \
-	     exitCodes.c
+	     exitCodes.c arrayHelpers.c
 depot_src = main.c
-test_src = testUtil.c testMessages.c testArray.c
+test_src = testUtil.c testMessages.c testArray.c testDepotState.c
 all_src = $(common_src) $(depot_src) $(test_src)
 
 common_obj = $(common_src:.c=.o)
@@ -32,6 +32,9 @@ check_debug:
 	./checkDebug.sh $(all_src)
 
 test_util: $(common_obj) testUtil.o
+	gcc $(CCFLAGS) $^ -o $@
+
+test_depot: $(common_obj) testDepotState.o
 	gcc $(CCFLAGS) $^ -o $@
 
 test_messages: $(common_obj) testMessages.o

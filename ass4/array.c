@@ -31,7 +31,20 @@ void arraymap_init(Array* array, ArrayMapper mapper, ArraySorter sorter) {
 }
 
 // see header
+void array_destroy_and_free(Array* array) {
+    if (array == NULL) {
+        return;
+    }
+    array_free_items(array);
+    array_destroy(array);
+}
+
+// see header
 void array_destroy(Array* array) {
+    if (array == NULL) {
+        return;
+    }
+
     if (array->items != NULL) {
         // use array->items to indicate whether the lock is initialised.
         pthread_rwlock_destroy(&array->lock);
@@ -121,7 +134,9 @@ void array_remove(Array* array, void* item) {
 
 // see header
 void arraymap_sort(Array* array) {
-    // *grumble* C/POSIX compliance making me write a sorting algorithm
+    // *grumble* C/POSIX compliance making me write a sorting algorithm.
+    // we need to use mapper and sorter from the array struct to sort the
+    // array correctly.
 
     // this is insertion sort, efficient for almost sorted arrays but O(n^2)
     // in worst-case.
@@ -129,9 +144,8 @@ void arraymap_sort(Array* array) {
     // invariant: A[:i] is sorted (using python slice notation) so we start
     // at i = 1 because a 1-element list is trivially sorted.
     for (int i = 1; i < array->numItems; i++) {
-
         // starting at j=i, we compare A[j] with A[j-1] and swap them if
-        // A[j] should sort before A[j-1]. stop after j = 1 because j-1=0
+        // A[j] should sort before A[j-1]. stop after j = 1 because j-1=0.
         // invariant: A[j:i] is sorted. when j=0 and we quit this loop, j=0
         // so this enforces the outer invariant.
         for (int j = i; j > 0; j--) {
@@ -146,8 +160,17 @@ void arraymap_sort(Array* array) {
                 // if othKey > thisKey, othItem is out of order. swap
                 array->items[j] = othItem;
                 array->items[j - 1] = thisItem;
+            } else {
+                // if othKey <= thisKey, we know thisKey >= all prior keys
+                // as well. this gives O(n) on sorted arrays.
+                break;
             }
         }
     }
+}
+
+// see header
+int strcmp_sorter(void* a, void* b) {
+    return strcmp((char*)a, (char*)b);
 }
 

@@ -21,11 +21,17 @@ int main(int argc, char** argv) {
     Array* arr = &arrData;
 
     // initialise array map, sorted lexicographically.
-    arraymap_init(arr, identity, (ArraySorter) strcmp);
+    arraymap_init(arr, identity, strcmp_sorter);
 
     for (int i = 0; i < argc; i++) {
         array_add_copy(arr, argv[i], (strlen(argv[i]) + 1) * sizeof(char));
     }
+    ARRAY_WRLOCK(arr); // test removal by removing argv[0]
+    void* first = array_get_at(arr, 0);
+    array_remove(arr, first);
+    free(first);
+    ARRAY_UNLOCK(arr);
+
     printf("numItems: %d\n", arr->numItems);
     arraymap_sort(arr);
     array_foreach(arr, print_item);
