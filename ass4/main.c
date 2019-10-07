@@ -407,8 +407,10 @@ DepotExitCode exec_server(DepotState* depotState) {
     sigaddset(&ss, SIGUSR1); // use SIGUSR1 to exit cleanly
     pthread_sigmask(SIG_BLOCK, &ss, NULL);
 
+    ignore_sigpipe();
+
     // start server listener thread
-    pthread_t serverThread; // unused
+    pthread_t serverThread;
     pthread_create(&serverThread, NULL, server_thread, depotState);
 
     // this thread handles the signals

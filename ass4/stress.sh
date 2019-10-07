@@ -7,8 +7,13 @@ if [[ -z "$port" ]] || [[ -z "$pid" ]]; then
     exit 1
 fi
 
+arg=-N
+if [[ "$(hostname)" = 'moss.labs.eait.uq.edu.au' ]]; then
+    arg=--send-only
+fi
+
 for i in {1..100}; do
-    nc -N localhost $port <<EOF &
+    nc $arg localhost $port <<EOF &
 IM:1000:nc$i
 Deliver:1:mat
 Withdraw:2:mat
