@@ -7,6 +7,9 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/syscall.h>
+
 // if ptr is non-null, frees it and sets it to null. otherwise, do nothing.
 // useful in _destroy functions.
 #define TRY_FREE(ptr) (ptr != NULL ? (free(ptr), ptr = NULL) : NULL)
@@ -21,6 +24,8 @@
 #define TERM_RESET "\x1b[0m"
 #define TERM_REVERSE "\x1b[7m"
 
+#define GET_TID() ((int)syscall(__NR_gettid))
+
 #ifdef DEBUG
 
 // macros to print a message along with function and line number. these are
@@ -29,8 +34,8 @@
 // ass4: fixed these crashing style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr,\
-        "\x1b[38;5;%dm(%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
-        getpid() % 7 + 9, getpid(),\
+        "\x1b[38;5;%dm(%d %d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
+         GET_TID() % 7 + 9, getpid(), GET_TID() - getpid(),\
         __func__, __LINE__, __VA_ARGS__)
 // formats in the style of:
 // (pid) main:53 example message

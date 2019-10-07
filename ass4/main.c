@@ -28,7 +28,7 @@
 // normally, i avoid declaring functions in .c files but the control flow
 // here is particularly convoluted.
 // see implementations for comments.
-void start_depot_thread(DepotState* depotState, int fd);
+void start_connection_thread(DepotState* depotState, int fd);
 // see implementation.
 bool start_active_socket(int* fdOut, char* port);
 // see implementaiton
@@ -64,38 +64,51 @@ void execute_connect(DepotState* depotState, Message* message) {
     bool started = start_active_socket(&fd, port);
     free(port);
     if (started) {
-        start_depot_thread(depotState, fd);
+        start_connection_thread(depotState, fd);
     }
 }
 
 void execute_deliver_withdraw(DepotState* depotState, Message* message) {
-    ARRAY_WRLOCK(depotState->materials);
 
     int delta = message->data.material.quantity;
     if (message->type != MSG_DELIVER) {
         delta = -delta; // negative change to represent withdraw
     }
+    char* name = message->data.material.name;
+    if (!is_name_valid(name)) {
+        DEBUG_PRINT("ignoring invalid material name");
+        return;
+    }
 
-    ds_alter_mat(depotState, message->data.material.name, delta);
+    // need write lock because we have no individual locks per material
+    // and this could also add a new material
+    ARRAY_WRLOCK(depotState->materials);
+    ds_alter_mat(depotState, name, delta);
     ARRAY_UNLOCK(depotState->materials);
 }
 
 void execute_transfer(DepotState* depotState, Message* message) {
-    ARRAY_RDLOCK(depotState->connections);
+    Material mat = message->data.material;
+    if (!is_name_valid(mat.name)) {
+        DEBUG_PRINT("ignoring invalid material name");
+        return;
+    }
 
+    ARRAY_RDLOCK(depotState->connections);
     Connection* conn = arraymap_get(depotState->connections,
             message->data.depotName);
     if (conn == NULL) {
         DEBUG_PRINTF("depot not found: %s\n", message->data.depotName);
         ARRAY_UNLOCK(depotState->connections);
-        msg_destroy(message);
         return;
     }
-    DEBUG_PRINTF("withdrawing, then delivering to %d\n", conn->port);
-    Material mat = message->data.material;
-    ds_alter_mat(depotState, mat.name, -mat.quantity);
 
-    // ignore return value
+    DEBUG_PRINTF("withdrawing, then delivering to %s\n", conn->name);
+    ARRAY_WRLOCK(depotState->materials);
+    ds_alter_mat(depotState, mat.name, -mat.quantity);
+    ARRAY_UNLOCK(depotState->materials);
+
+    // ignore return value. msg_deliver doesn't need to be destroyed
     msg_send(conn->writeFile, msg_deliver(mat.quantity, mat.name));
 
     ARRAY_UNLOCK(depotState->connections);
@@ -118,7 +131,7 @@ void execute_defer(DepotState* depotState, Message* message) {
     
     ARRAY_WRLOCK(dg->messages);
     dg_add_message(dg, *message->data.deferMessage);
-    // message moved into new location in array. free and set to null
+    // message moved into new location in array. free original and set to null
     TRY_FREE(message->data.deferMessage);
     ARRAY_UNLOCK(dg->messages);
 
@@ -143,7 +156,7 @@ void execute_execute(DepotState* depotState, Message* message) {
     // don't need to lock on defer group because we have an exclusive write
     // lock on the entire array of defer groups
     for (int i = 0; i < dg->messages->numItems; i++) {
-        DEBUG_PRINTF("executing %d\n", i);
+        DEBUG_PRINTF("executing deferred message %d\n", i);
         Message* msg = ARRAY_ITEM(Message, dg->messages, i);
         msg_debug(msg);
         execute_message(depotState, msg);
@@ -184,40 +197,60 @@ void execute_message(DepotState* depotState, Message* message) {
         default:
             assert(0);
     }
-    // we're done with this message.
-    msg_destroy(message);
 }
 
-void* depot_thread(void* threadDataArg) {
-    ThreadData* threadData = threadDataArg;
-    DepotState* depotState = threadData->depotState;
-    int fdRead = threadData->fd;
-    int fdWrite = dup(fdRead);
-
-    free(threadDataArg); // data copied into local variables.
-    DEBUG_PRINT("depot thread started");
-    FILE* readFile = fdopen(fdRead, "r");
-    FILE* writeFile = fdopen(fdWrite, "w");
-
+Connection* init_connection(DepotState* depotState, FILE* readFile, 
+        FILE* writeFile) {
     Message msg = msg_im(depotState->port, depotState->name);
     if (msg_send(writeFile, msg) != MS_OK) {
-        DEBUG_PRINT("sending IM failed, terminating thread.");
+        DEBUG_PRINT("sending IM failed");
         return NULL;
     }
+    msg = (Message) {0}; // msg_im() must not be msg_destroy()'d
     if (msg_receive(readFile, &msg) != MS_OK || msg.type != MSG_IM ||
             !is_name_valid(msg.data.depotName)) {
-        DEBUG_PRINT("invalid IM, terminating thread.");
+        DEBUG_PRINT("invalid IM");
         msg_destroy(&msg);
         return NULL;
     }
+
     // add to list of connections
     ARRAY_WRLOCK(depotState->connections);
     Connection* conn = ds_add_connection(depotState, msg.data.depotPort,
             msg.data.depotName, readFile, writeFile);
     conn->thread = pthread_self(); // store current thread ID
-    msg_destroy(&msg);
+    msg_destroy(&msg); // destroy received message
     ARRAY_UNLOCK(depotState->connections);
 
+    DEBUG_PRINTF("acknowledged by %s on %d\n", conn->name, conn->port);
+
+    return conn;
+}
+
+void* connection_thread(void* threadDataArg) {
+    ThreadData* threadData = threadDataArg;
+    DepotState* depotState = threadData->depotState;
+    int fdRead = threadData->fd;
+    int fdWrite = dup(fdRead);
+    pthread_t thread = pthread_self();
+
+    free(threadDataArg); // data has been copied into local variables.
+    DEBUG_PRINT("connection thread started");
+    FILE* readFile = fdopen(fdRead, "r");
+    FILE* writeFile = fdopen(fdWrite, "w");
+    // initialise connection by sending and receiving IM
+    Connection* conn = init_connection(depotState, readFile, writeFile);
+    if (conn == NULL) {
+        DEBUG_PRINT("connection acknowledge failed, terminating thread.");
+        fclose(readFile);
+        fclose(writeFile);
+        // detach thread to cleanup its resources automatically
+        pthread_detach(thread);
+        return NULL;
+    }
+
+    // main loop of this connection
+    Message msg = {0};
     MessageStatus status = MS_OK;
     while (status != MS_EOF) { // break on EOF
         status = msg_receive(readFile, &msg);
@@ -226,24 +259,28 @@ void* depot_thread(void* threadDataArg) {
             continue; // ignore invalid messages
         }
         execute_message(depotState, &msg);
+        msg_destroy(&msg); // finished with this message
     }
+
     DEBUG_PRINTF("thread closing normally, name: %s\n", conn->name);
     // destroy connection and remove from list of connections
     ARRAY_WRLOCK(depotState->connections);
-    conn_destroy(conn);
-    array_remove(depotState->connections, conn);
-    free(conn); // because array stored a new copy of the connection
+    conn_destroy(conn); // closes files for us
+    array_remove(depotState->connections, conn); // remove from array
+    free(conn); // because array stored a copy of the connection
+    pthread_detach(thread); // detach thread to free resources on termination
     ARRAY_UNLOCK(depotState->connections);
+
     return NULL;
 }
 
-void start_depot_thread(DepotState* depotState, int fd) {
+void start_connection_thread(DepotState* depotState, int fd) {
     ThreadData* arg = malloc(sizeof(ThreadData));
     arg->fd = fd;
     arg->depotState = depotState;
 
     pthread_t thread;
-    pthread_create(&thread, NULL, depot_thread, arg);
+    pthread_create(&thread, NULL, connection_thread, arg);
 }
 
 bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
@@ -296,6 +333,7 @@ bool start_passive_socket(int* fdOut, int* portOut) {
         return false;
     }
     freeaddrinfo(ai);
+    ai = NULL;
 
     // find actual address we're bound to
     struct sockaddr_in ad;
@@ -330,12 +368,13 @@ void* server_thread(void* depotStateArg) {
         return NULL; // no special exit code
     }
     depotState->port = port;
+    printf("%d\n", port);
 
     while (1) {
         // listen for connections
         int fd = accept(server, 0, 0);
         DEBUG_PRINT("accepted connection");
-        start_depot_thread(depotState, fd);
+        start_connection_thread(depotState, fd);
     }
     assert(0);
 }
@@ -358,22 +397,15 @@ void print_depot_info(DepotState* depotState) {
     ARRAY_UNLOCK(depotState->connections);
 }
 
-sigset_t* blocked_sigset(void) {
-    static sigset_t ss;
-    sigemptyset(&ss);
-    sigaddset(&ss, SIGHUP);
-#ifdef DEBUG
-    sigaddset(&ss, SIGUSR1);
-#endif
-    return &ss;
-}
-
 DepotExitCode exec_server(DepotState* depotState) {
     DEBUG_PRINT("starting server");
 
     // block SIGHUP from all threads. we will pick it up via sigwait
-    sigset_t* blocked = blocked_sigset();
-    pthread_sigmask(SIG_BLOCK, blocked, NULL);
+    static sigset_t ss;
+    sigemptyset(&ss);
+    sigaddset(&ss, SIGHUP);
+    sigaddset(&ss, SIGUSR1); // use SIGUSR1 to exit cleanly
+    pthread_sigmask(SIG_BLOCK, &ss, NULL);
 
     // start server listener thread
     pthread_t serverThread; // unused
@@ -382,13 +414,12 @@ DepotExitCode exec_server(DepotState* depotState) {
     // this thread handles the signals
     while (1) {
         int sig;
-        sigwait(blocked, &sig);
-        DEBUG_PRINTF("signal: %d %s\n", sig, strsignal(sig));
+        sigwait(&ss, &sig);
+        DEBUG_PRINTF("signal %d: %s\n", sig, strsignal(sig));
 
         if (sig != SIGHUP) {
-            break;
+            break; // terminate if caught non SIGHUP signal
         }
-
         print_depot_info(depotState);
     }
     // terminate the program
@@ -403,6 +434,7 @@ DepotExitCode exec_server(DepotState* depotState) {
         pthread_cancel(conn->thread);
         pthread_join(conn->thread, NULL);
     }
+    // at this point, we are back to a single thread
     ARRAY_UNLOCK(depotState->connections);
     return D_NORMAL;
 }
