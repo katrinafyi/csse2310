@@ -142,6 +142,26 @@ void ignore_sigpipe(void) {
 }
 
 // see header
+unsigned int hash_djb2(unsigned long int number) {
+    // unsigned long int is probably 32 bits (4 bytes)
+    
+    // this is an implementation of the djb2 hash algorithm, by Dan Bernstein
+    // http://www.cse.yorku.ca/~oz/hash.html
+
+    unsigned int hash = 5381;
+    
+    // consider all 4 bytes in the number
+    hash = ((hash << 5) + hash) + (number & 0xff);
+    number >>= 8; // shift one byte down
+    hash = ((hash << 5) + hash) + (number & 0xff);
+    number >>= 8; // shift one byte down
+    hash = ((hash << 5) + hash) + (number & 0xff);
+    number >>= 8; // shift one byte down
+    hash = ((hash << 5) + hash) + (number & 0xff);
+    return hash;
+}
+
+// see header
 void noop_print(char* str) {
     (void)str; // avoid unused warnings
 }

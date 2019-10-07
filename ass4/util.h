@@ -24,19 +24,28 @@
 #define TERM_RED "\x1b[38;5;9m"
 #define TERM_RESET "\x1b[0m"
 #define TERM_REVERSE "\x1b[7m"
+// string with placeholder %d to represent a variable foreground colour
+#define TERM_FMT "\x1b[38;5;%dm"
+
+#define GET_COLOUR(n) (15 - (n) % 7)
 
 // 186 is system call instruction for SYS_gettid
 #define GET_TID() ((int)syscall(186))
 
+// obviously wrong, but syscall is non POSIX
+//#define GET_TID() getpid()
+
 #ifdef DEBUG
 
-// macros to print a message along with function and line number.
+// macros to print a message along with function and line number. fmt is a
+// format string as in printf and args correspond to % placeholders.
 // ass3: now with PID and colours
 // ass4: fixed these crashing style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr,\
-        "\x1b[38;5;%dm(%d %d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
-         GET_TID() % 7 + 9, getpid(), GET_TID() - getpid(),\
+        TERM_FMT "(%d " TERM_FMT "%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
+        GET_COLOUR(getpid()), getpid(),\
+        GET_COLOUR(GET_TID() - getpid()), GET_TID() - getpid(),\
         __func__, __LINE__, __VA_ARGS__)
 // formats in the style of:
 // (pid) main:53 example message
@@ -53,6 +62,8 @@
 #define DEBUG_PRINT(str) NULL
 #define DEBUG_PRINTF(fmt, ...) NULL
 #define DEBUG_PERROR(str) NULL
+
+#define GET_TID() 0
 
 #endif
 
@@ -110,6 +121,11 @@ struct sigaction new_sigaction(void);
 /* Ignores the SIGPIPE signal via sigaction configuration.
  */
 void ignore_sigpipe(void);
+
+/* Hash function using djb2 algorithm by Dan Bernstein. Takes an input integer
+ * and returns its hash.
+ */
+unsigned int hash_djb2(unsigned long int number);
 
 // The style.sh chokes on our DEBUG_PRINT macros up top, so we replace them
 // with these noop functions when building in 'release' mode.
