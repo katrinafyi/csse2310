@@ -66,6 +66,7 @@ bool consume_int(char** start, int* outInt) {
     // string.
     char* end = NULL;
 
+    // ensures no leading whitespace and number is non-negative
     if (!isdigit(**start)) {
         DEBUG_PRINT("does not start with digit");
         return false; // string does not start with digit
@@ -320,12 +321,15 @@ MessageStatus msg_parse(char* line, Message* outMessage) {
         DEBUG_PRINT("no matched code");
         return MS_INVALID;
     }
-    message.type = type; // type found
 
     if (!msg_payload_decode(type, payload, &message.data)) {
         DEBUG_PRINT("invalid payload");
+        // some incomplete data may be stored, free memory.
+        msg_destroy(&message);
         return MS_INVALID;
     }
+
+    message.type = type; // type found
     *outMessage = message; // store parsed message in out param
     return MS_OK;
 }
@@ -344,8 +348,6 @@ char* msg_encode(Message message) {
 
 // see header
 MessageStatus msg_receive(FILE* file, Message* outMessage) {
-    *outMessage = (Message) {0}; // zero out messageOut for safety
-
     char* line;
     if (feof(file) || !safe_read_line(file, &line)) {
         DEBUG_PRINT("read pipe is at EOF");

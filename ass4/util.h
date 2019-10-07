@@ -44,10 +44,15 @@
 // (pid) colour depends on the pid
 // shows function and line number of location, with message.
 
+// macro to print an error stored in errno to stderr along with the given
+// error source string.
+#define DEBUG_PERROR(src) (DEBUG_PRINTF("%s error: ", src), perror(NULL))
+
 #else
 
 #define DEBUG_PRINT(str) NULL
 #define DEBUG_PRINTF(fmt, ...) NULL
+#define DEBUG_PERROR(str) NULL
 
 #endif
 
@@ -65,8 +70,8 @@ int parse_int(char* str);
  */
 char* int_to_string(int number);
 
-/* Formats the given format string and arguments into a new MALLOC'd string,
- * returning the string.
+/* Formats the given format string and arguments according to printf, writing
+ * into a new MALLOC'd string and returning the string.
  */
 char* asprintf(char* fmt, ...);
 
@@ -86,16 +91,15 @@ bool safe_read_line(FILE* file, char** output);
  * tokens in the string. Stores the start of each token into the given tokens
  * array.
  *
- * Returns the number of tokens actually in the line. However, only up to
- * numTokens tokens will be stored into tokens.
+ * Only splits into max numTokens tokens. If the actual number of tokens is
+ * greater than numTokens, the last token in tokens will contain the rest of
+ * the string, unsplit.
+ *
+ * Returns the number of tokens which have been split successfully.
  *
  * Replaces split chars in the string with \0, so for i = 0, ..., numTokens-1,
  * tokens[i] points to the start of the i-th token which can be
  * treated as an individual \0 terminated string.
- *
- * Only splits into numTokens tokens. If the actual number of tokens is
- * greater than numTokens, the last token in tokens will contain the rest of
- * the string, unsplit.
  */
 int tokenise(char* line, char split, char** tokens, int numTokens);
 

@@ -15,7 +15,7 @@ TERM_RED := $(shell tput setaf 1)
 TERM_RESET := $(shell tput setaf 7)
 TERM_REVERSE := "\x1b[7m"
 
-CCFLAGS := -g -std=gnu99 -Wall -pedantic -pthread
+CCFLAGS := -g -std=gnu99 -Wall -pedantic -pthread -Wextra
 ifeq ($(DEBUG), 1)
     $(info $(TERM_RED)running in DEBUG mode$(TERM_RESET))
     CCFLAGS += -D DEBUG=1

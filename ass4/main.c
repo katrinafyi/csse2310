@@ -57,6 +57,18 @@ bool is_name_valid(char* name) {
     return len > 0; // ensure name non-empty
 }
 
+bool is_mat_valid(Material material) {
+    if (!is_name_valid(material.name)) {
+        DEBUG_PRINT("invalid mat name");
+        return false;
+    }
+    if (material.quantity <= 0) {
+        DEBUG_PRINT("invalid mat quantity");
+        return false;
+    }
+    return true;
+}
+
 
 void execute_connect(DepotState* depotState, Message* message) {
     char* port = asprintf("%d", message->data.depotPort);
@@ -73,16 +85,16 @@ void execute_connect(DepotState* depotState, Message* message) {
 }
 
 void execute_deliver_withdraw(DepotState* depotState, Message* message) {
+    if (!is_mat_valid(message->data.material)) {
+        DEBUG_PRINT("ignoring invalid material");
+        return;
+    }
 
     int delta = message->data.material.quantity;
     if (message->type != MSG_DELIVER) {
         delta = -delta; // negative change to represent withdraw
     }
     char* name = message->data.material.name;
-    if (!is_name_valid(name)) {
-        DEBUG_PRINT("ignoring invalid material name");
-        return;
-    }
 
     // need write lock because we have no individual locks per material
     // and this could also add a new material
@@ -93,8 +105,8 @@ void execute_deliver_withdraw(DepotState* depotState, Message* message) {
 
 void execute_transfer(DepotState* depotState, Message* message) {
     Material mat = message->data.material;
-    if (!is_name_valid(mat.name)) {
-        DEBUG_PRINT("ignoring invalid material name");
+    if (!is_mat_valid(mat)) {
+        DEBUG_PRINT("ignoring invalid material");
         return;
     }
 
@@ -127,7 +139,6 @@ void execute_defer(DepotState* depotState, Message* message) {
             break; // only these message types are valid for Defer
         default:
             DEBUG_PRINT("unsupported deferred message type");
-            msg_destroy(message);
             return; // silently ignore
     }
     ARRAY_RDLOCK(depotState->deferGroups);
@@ -156,7 +167,7 @@ void execute_execute(DepotState* depotState, Message* message) {
         ARRAY_UNLOCK(depotState->deferGroups);
         return;
     }
-
+    DEBUG_PRINTF("executing defer group, key: %d\n", message->data.deferKey);
     // don't need to lock on defer group because we have an exclusive write
     // lock on the entire array of defer groups
     for (int i = 0; i < dg->messages->numItems; i++) {
@@ -220,10 +231,12 @@ Connection* init_connection(DepotState* depotState, FILE* readFile,
 
     // add to list of connections
     ARRAY_WRLOCK(depotState->connections);
-    // if connection by same name already exists, ignore
+    // if connection by same name already exists, ignore. we need to maintain
+    // the integrity of the array map
     if (arraymap_get(depotState->connections, msg.data.depotName) != NULL) {
         DEBUG_PRINTF("connection to %s already exists, ignoring.\n", 
                 msg.data.depotName);
+        msg_destroy(&msg);
         ARRAY_UNLOCK(depotState->connections);
         return NULL;
     }
@@ -308,7 +321,7 @@ bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
     *aiOut = ai;
 
     if (error != 0) {
-        DEBUG_PRINTF("getaddrinfo: %s\n", gai_strerror(error));
+        DEBUG_PRINTF("error getaddrinfo: %s\n", gai_strerror(error));
         return false;
     }
     *fdOut = socket(AF_INET, SOCK_STREAM, 0); // 0 is default protocol
@@ -323,7 +336,7 @@ bool start_active_socket(int* fdOut, char* port) {
         return false;
     }
     if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
-        DEBUG_PRINT("connect failed");
+        DEBUG_PERROR("connect()");
         freeaddrinfo(ai);
         return false;
     }
@@ -341,7 +354,7 @@ bool start_passive_socket(int* fdOut, int* portOut) {
     }
     if (bind(server, ai->ai_addr, ai->ai_addrlen) != 0) {
         freeaddrinfo(ai);
-        DEBUG_PRINTF("bind failed: %s\n", strerror(errno));
+        DEBUG_PERROR("bind()");
         return false;
     }
     freeaddrinfo(ai);
@@ -352,14 +365,14 @@ bool start_passive_socket(int* fdOut, int* portOut) {
     socklen_t len = sizeof(struct sockaddr_in);
     memset(&ad, 0, len);
     if (getsockname(server, (struct sockaddr*)&ad, &len) != 0) {
-        DEBUG_PRINT("error getsockname");
+        DEBUG_PERROR("getsockname()");
         return false;
     }
     DEBUG_PRINTF("bound to address %s port %d\n", inet_ntoa(ad.sin_addr),
             ntohs(ad.sin_port));
 
     if (listen(server, CONNECTION_QUEUE) != 0) {
-        DEBUG_PRINTF("listen failed: %s\n", strerror(errno));
+        DEBUG_PERROR("listen()");
         return false;
     }
 

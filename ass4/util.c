@@ -60,9 +60,10 @@ bool safe_read_line(FILE* file, char** output) {
     if (file == NULL) {
         return false;
     }
-    int allocated = LINE_BUFFER; // initial buffer size only
+    // use size_t to compare correctly to strlen
+    size_t allocated = LINE_BUFFER; // initial buffer size only
     *output = malloc(sizeof(char) * allocated);
-    int position = 0;
+    size_t position = 0;
     int next;
     while (1) {
         errno = 0;
@@ -142,10 +143,10 @@ void ignore_sigpipe(void) {
 
 // see header
 void noop_print(char* str) {
-    ;
+    (void)str; // avoid unused warnings
 }
 
 // see header
 void noop_printf(char* fmt, ...) {
-    ;
+    (void)fmt; // avoid unused warnings
 }
