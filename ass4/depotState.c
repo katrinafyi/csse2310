@@ -69,24 +69,27 @@ Connection* ds_add_connection(DepotState* depotState, int port, char* name,
 }
 
 // see header
-void ds_ensure_mat(DepotState* depotState, char* matName) {
-    if (arraymap_get(depotState->materials, matName) == NULL) {
+Material* ds_ensure_mat(DepotState* depotState, char* matName) {
+    Material* oldMat = arraymap_get(depotState->materials, matName);
+    if (oldMat == NULL) {
         // material not in list
         Material mat = {0};
         mat_init(&mat, 0, matName);
         DEBUG_PRINTF("adding empty material: %s\n", matName);
-        array_add_copy(depotState->materials, &mat, sizeof(Material));
+        Material* newMat = array_add_copy(depotState->materials, &mat, 
+                sizeof(Material));
         arraymap_sort(depotState->materials);
+        return newMat;
+    } else {
+        return oldMat;
     }
 }
 
 // see header
 void ds_alter_mat(DepotState* depotState, char* matName, int delta) {
-    ds_ensure_mat(depotState, matName);
+    Material* mat = ds_ensure_mat(depotState, matName);
 
     DEBUG_PRINTF("changing material %s by %d\n", matName, delta);
-    Array* materials = depotState->materials;
-    Material* mat = arraymap_get(materials, matName);
     assert(mat != NULL);
     mat->quantity += delta;
 }

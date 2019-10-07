@@ -130,9 +130,9 @@ void execute_defer(DepotState* depotState, Message* message) {
     DeferGroup* dg = ds_ensure_defer_group(depotState, message->data.deferKey);
     
     ARRAY_WRLOCK(dg->messages);
-    dg_add_message(dg, *message->data.deferMessage);
-    // message moved into new location in array. free original and set to null
-    TRY_FREE(message->data.deferMessage);
+    dg_add_message(dg, message->data.deferMessage);
+    // deferMessage now owned by dg. delete our reference.
+    message->data.deferMessage = NULL;
     ARRAY_UNLOCK(dg->messages);
 
     ARRAY_UNLOCK(depotState->deferGroups);
@@ -481,5 +481,6 @@ int main(int argc, char** argv) {
     ds_destroy(&depotState);
 
     fprintf(stderr, "%s", depot_message(ret));
+    DEBUG_PRINTF("program exiting with code: %d\n", ret);
     return ret;
 }

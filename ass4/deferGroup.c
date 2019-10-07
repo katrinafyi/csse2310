@@ -25,8 +25,8 @@ void dg_destroy(DeferGroup* deferGroup) {
 }
 
 // see header
-void dg_add_message(DeferGroup* deferGroup, Message message) {
+void dg_add_message(DeferGroup* deferGroup, Message* message) {
     DEBUG_PRINTF("adding message to defer key: %d\n", deferGroup->key);
-    array_add_copy(deferGroup->messages, &message, sizeof(Message));
+    array_add(deferGroup->messages, message);
 }
 

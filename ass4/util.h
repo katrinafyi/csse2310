@@ -8,7 +8,8 @@
 #include <unistd.h>
 
 #include <sys/types.h>
-#include <sys/syscall.h>
+// syscall.h is not liked by style.sh
+//#include <sys/syscall.h>
 
 // if ptr is non-null, frees it and sets it to null. otherwise, do nothing.
 // useful in _destroy functions.
@@ -24,12 +25,12 @@
 #define TERM_RESET "\x1b[0m"
 #define TERM_REVERSE "\x1b[7m"
 
-#define GET_TID() ((int)syscall(__NR_gettid))
+// 186 is system call instruction for SYS_gettid
+#define GET_TID() ((int)syscall(186))
 
 #ifdef DEBUG
 
-// macros to print a message along with function and line number. these are
-// disabled by the sed_noop job in make.
+// macros to print a message along with function and line number.
 // ass3: now with PID and colours
 // ass4: fixed these crashing style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')

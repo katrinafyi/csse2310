@@ -17,8 +17,9 @@ void dg_init(DeferGroup* deferGroup, int key);
  */ 
 void dg_destroy(DeferGroup* deferGroup);
 
-/* Appends the given message to the messages of this group.
+/* Appends the given message pointer to the messages of this group.
+   Message should be a MALLOC'd pointer, this takes ownership of the pointer.
  */
-void dg_add_message(DeferGroup* deferGroup, Message message);
+void dg_add_message(DeferGroup* deferGroup, Message* message);
 
 #endif

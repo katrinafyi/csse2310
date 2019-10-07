@@ -37,9 +37,9 @@ Connection* ds_add_connection(DepotState* depotState, int port, char* name,
         FILE* readFile, FILE* writeFile);
 
 /* Ensures the given material name is present in our materials, adding it with
- * 0 stock if it does not exist.
+ * 0 stock if it does not exist. Returns a pointer to the material.
  */
-void ds_ensure_mat(DepotState* depotState, char* matName);
+Material* ds_ensure_mat(DepotState* depotState, char* matName);
 
 /* Changes the given material in the depot by the given delta, which can be
  * positive or negative.
