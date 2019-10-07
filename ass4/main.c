@@ -60,11 +60,15 @@ bool is_name_valid(char* name) {
 
 void execute_connect(DepotState* depotState, Message* message) {
     char* port = asprintf("%d", message->data.depotPort);
+    DEBUG_PRINTF("trying to connect to port %s\n", port);
     int fd;
     bool started = start_active_socket(&fd, port);
     free(port);
     if (started) {
+        DEBUG_PRINT("connected");
         start_connection_thread(depotState, fd);
+    } else {
+        DEBUG_PRINT("failed to connect");
     }
 }
 
@@ -209,13 +213,21 @@ Connection* init_connection(DepotState* depotState, FILE* readFile,
     msg = (Message) {0}; // msg_im() must not be msg_destroy()'d
     if (msg_receive(readFile, &msg) != MS_OK || msg.type != MSG_IM ||
             !is_name_valid(msg.data.depotName)) {
-        DEBUG_PRINT("invalid IM");
+        DEBUG_PRINT("invalid IM or bad depot name");
         msg_destroy(&msg);
         return NULL;
     }
 
     // add to list of connections
     ARRAY_WRLOCK(depotState->connections);
+    // if connection by same name already exists, ignore
+    if (arraymap_get(depotState->connections, msg.data.depotName) != NULL) {
+        DEBUG_PRINTF("connection to %s already exists, ignoring.\n", 
+                msg.data.depotName);
+        ARRAY_UNLOCK(depotState->connections);
+        return NULL;
+    }
+
     Connection* conn = ds_add_connection(depotState, msg.data.depotPort,
             msg.data.depotName, readFile, writeFile);
     conn->thread = pthread_self(); // store current thread ID
