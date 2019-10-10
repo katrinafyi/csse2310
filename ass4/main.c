@@ -317,7 +317,7 @@ bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
     hints.ai_flags = AI_PASSIVE; // server
 
     struct addrinfo* ai; // for address info returned by getaddrinfo
-    int error = getaddrinfo("localhost", port, &hints, &ai);
+    int error = getaddrinfo("127.0.0.1", port, &hints, &ai);
     *aiOut = ai;
 
     if (error != 0) {
