@@ -5,6 +5,8 @@
 #define INCREMENT_WRAP(n) (((n) + 1) % CHANNEL_SIZE)
 
 // code heavily based on week 11's practical code, with some modifications.
+// because we don't really need a fixed-length circular queue, we just build
+// it into the channel here.
 
 // see header
 void chan_init(Channel* channel) {

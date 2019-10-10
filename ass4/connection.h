@@ -6,20 +6,16 @@
 
 typedef struct Connection {
     int port;
-    pthread_t thread;
+    pthread_t readerThread;
+    pthread_t writerThread;
     char* name; // malloc!
-    FILE* readFile;
-    FILE* writeFile;
+    Channel* outgoing; // channel for outgoing messages, as Message*
 } Connection;
 
 /* Initialises a connection struct in the given location, with the given port
  * and name. A copy of name will be taken and stored in a MALLOC'd string.
  */
 void conn_init(Connection* connection, int port, char* name);
-
-/* Attaches the given read/write FILE*'s to this connection.
- */
-void conn_set_files(Connection* connection, FILE* readFile, FILE* writeFile);
 
 /* Destroys a connection and frees its memory.
  */

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "connection.h"
+#include "messages.h"
 #include "util.h"
 
 
@@ -9,14 +10,9 @@
 void conn_init(Connection* connection, int port, char* name) {
     connection->port = port;
     connection->name = strdup(name);
-    connection->readFile = NULL;
-    connection->writeFile = NULL;
-}
-
-// see header
-void conn_set_files(Connection* connection, FILE* readFile, FILE* writeFile) {
-    connection->readFile = readFile;
-    connection->writeFile = writeFile;
+    
+    connection->outgoing = calloc(1, sizeof(Channel));
+    chan_init(connection->outgoing);
 }
 
 // see header
@@ -26,13 +22,11 @@ void conn_destroy(Connection* connection) {
     }
     TRY_FREE(connection->name);
     
-    if (connection->readFile != NULL) {
-        fclose(connection->readFile);
-        connection->readFile = NULL;
+    if (connection->outgoing != NULL) {
+        chan_foreach(connection->outgoing, msg_destroy);
+        chan_foreach(connection->outgoing, free);
+        chan_destroy(connection->outgoing);
     }
-    if (connection->writeFile != NULL) {
-        fclose(connection->writeFile);
-        connection->writeFile = NULL;
-    }
+    TRY_FREE(connection->outgoing);
 }
 

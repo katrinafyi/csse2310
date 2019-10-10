@@ -6,6 +6,7 @@
 #include "deferGroup.h"
 #include "connection.h"
 #include "array.h"
+#include "channel.h"
 
 /* State struct for storing the internal state of one depot, managing its own
  * resources and connections to other depots.
@@ -13,6 +14,7 @@
 typedef struct DepotState {
     char* name; // name of this depot, NOT malloc
     int port;
+    Channel* incoming; // channel of incoming messages, as MessageFrom*
     Array* materials; // array map of materials we store, keyed by name
     Array* connections; // array map of open connections, keyed by name
     Array* deferGroups; // array map of defer groups, keyed by key
@@ -31,10 +33,9 @@ void ds_init(DepotState* depotState, char* name);
 void ds_destroy(DepotState* depotState);
 
 /* Adds a connection to a depot at the given port and with the given
- * name. Also requires the read and write FILE*'s for this connection.
+ * name. Returns the new connection.
  */
-Connection* ds_add_connection(DepotState* depotState, int port, char* name,
-        FILE* readFile, FILE* writeFile);
+Connection* ds_add_connection(DepotState* depotState, int port, char* name);
 
 /* Ensures the given material name is present in our materials, adding it with
  * 0 stock if it does not exist. Returns a pointer to the material.

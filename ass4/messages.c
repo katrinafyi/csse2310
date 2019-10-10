@@ -28,6 +28,20 @@ void msg_destroy(Message* message) {
 }
 
 // see header
+void msgfrom_init(MessageFrom* messageFrom, int port, char* name, 
+        Message message) {
+    messageFrom->port = port;
+    messageFrom->name = strdup(name);
+    messageFrom->message = message;
+}
+
+// see header
+void msgfrom_destroy(MessageFrom* messageFrom) {
+    TRY_FREE(messageFrom->name);
+    msg_destroy(&messageFrom->message);
+}
+
+// see header
 char* msg_code(MessageType type) {
     static char* msgCodes[NUM_MESSAGE_TYPES + 1]; // +1 for NULL code.
     msgCodes[MSG_CONNECT] = "Connect";

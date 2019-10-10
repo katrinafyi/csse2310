@@ -45,7 +45,14 @@ typedef struct Message {
     struct MessageData data; // data is undefined if type has no extra data!
 } Message;
 
-
+/* A message with attached information about its sender.
+ * Does NOT have any _init or _destroy because I'm lazy and this is basic.
+ */
+typedef struct MessageFrom {
+    int port; // sender's port
+    char* name; // sender's name, as a MALLOC'd string.
+    Message message; // attached message
+}
 
 /* Returns the string message code associated with the given message type.
  *
@@ -87,6 +94,18 @@ char* msg_encode(Message message);
  * pointers to NULL.
  */
 void msg_destroy(Message* message);
+
+
+/* Initialises a new MessageFrom with the given port, name and message.
+ * Copies name into a new MALLOC'd string and takes ownership of the given
+ * message.
+ */
+void msgfrom_init(MessageFrom* messageFrom, int port, char* name, 
+        Message message);
+
+/* Destroys the given MessageFrom, freeing its memory and message.
+ */
+void msgfrom_destroy(MessageFrom* messageFrom);
 
 /* Decodes the given payload string into the given data struct, assuming
  * the message is of the given type.

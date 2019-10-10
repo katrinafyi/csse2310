@@ -6,12 +6,16 @@
 #include "deferGroup.h"
 #include "material.h"
 #include "array.h"
+#include "channel.h"
 #include "util.h"
 #include "arrayHelpers.h"
 
 // see header
 void ds_init(DepotState* depotState, char* name) {
     depotState->name = name;
+
+    depotState->incoming = calloc(1, sizeof(Channel));
+    chan_init(depotState->incoming);
 
     // array of Material, keyed by material name
     depotState->materials = calloc(1, sizeof(Array));
@@ -44,6 +48,13 @@ void ds_destroy(DepotState* depotState) {
         return;
     }
 
+    if (depotState->incoming != NULL) {
+        chan_foreach(depotState->incoming, msgfrom_destroy);
+        chan_foreach(depotState->incoming, free);
+        chan_destroy(depotState->incoming);
+    }
+    TRY_FREE(depotState->incoming);
+
     destroy_helper(depotState->materials, ah_mat_destroy);
     TRY_FREE(depotState->materials); // frees array
     
@@ -55,11 +66,9 @@ void ds_destroy(DepotState* depotState) {
 }
 
 // see header
-Connection* ds_add_connection(DepotState* depotState, int port, char* name,
-            FILE* readFile, FILE* writeFile) {
+Connection* ds_add_connection(DepotState* depotState, int port, char* name) {
     Connection conn = {0};
     conn_init(&conn, port, name);
-    conn_set_files(&conn, readFile, writeFile);
 
     DEBUG_PRINTF("adding connection to %s on %d\n", name, port);
     Connection* newConn = array_add_copy(depotState->connections, &conn, 
