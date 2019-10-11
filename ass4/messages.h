@@ -9,6 +9,8 @@
 
 // number of valid message types
 #define NUM_MESSAGE_TYPES 7
+// number of all message types
+#define NUM_MESSAGE_TYPES_ALL 11
 
 /* Possible message types we can receive and other special flags for
  * indicating specific state transitions
@@ -29,7 +31,8 @@ typedef enum MessageType {
     // new connection established and verified. data contains a channel to 
     // write _to_ this connection.
     MSG_META_CONN_NEW, 
-    MSG_META_CONN_EOF // connection terminated
+    MSG_META_CONN_EOF, // connection terminated
+    MSG_META_SIGNAL // signal received. data contains signal number
 } MessageType;
 
 /* Status which could occur when reading or writing messages.
@@ -53,9 +56,11 @@ typedef struct MessageData {
     int deferKey; // key for defer/execute
     struct Message* deferMessage; // MALLOC! submessage for deferred messages
     
-    // MALLOC! channel for sending messages to this connection. used with
-    // MSG_META_CONN_NEW
+    // meta message things
+
+    // MALLOC! channel for sending messages to this connection.
     Channel* channel; 
+    int signal; // signal received
 } MessageData;
 
 /* A message which can be sent or received. Has the given type and data
@@ -65,14 +70,6 @@ typedef struct Message {
     MessageType type;
     struct MessageData data; // data is undefined if type has no extra data!
 } Message;
-
-/* A message with attached information about its sender.
- */
-typedef struct MessageFrom {
-    int port; // sender's port
-    char* name; // sender's name, BORROWED. user should not free this
-    Message message; // attached message
-} MessageFrom;
 
 /* Returns the string message code associated with the given message type.
  *
@@ -116,16 +113,16 @@ char* msg_encode(Message message);
 void msg_destroy(Message* message);
 
 
-/* Initialises a new MessageFrom with the given port, name and message.
- * Copies name into a new MALLOC'd string and takes ownership of the given
- * message.
- */
-void msgfrom_init(MessageFrom* messageFrom, int port, char* name, 
-        Message message);
-
-/* Destroys the given MessageFrom, freeing its memory and message.
- */
-void msgfrom_destroy(MessageFrom* messageFrom);
+///* Initialises a new MessageFrom with the given port, name and message.
+// * Copies name into a new MALLOC'd string and takes ownership of the given
+// * message.
+// */
+//void msgfrom_init(MessageFrom* messageFrom, int port, char* name, 
+//        Message message);
+//
+///* Destroys the given MessageFrom, freeing its memory and message.
+// */
+//void msgfrom_destroy(MessageFrom* messageFrom);
 
 /* Decodes the given payload string into the given data struct, assuming
  * the message is of the given type.
@@ -149,14 +146,10 @@ void msg_debug(Message* message);
 
 /* Creates a new IM message with the given port and depot name, returning the
  * message.
- * WARNING: the returned message is non-compliant and MUST NOT be passed to
- * msg_destroy.
  */
 Message msg_im(int port, char* name);
 
 /* Creates a new Deliver message for the given material, returning the message
- * WARNING: the returned message is non-compliant and MUST NOT be passed to
- * msg_destroy.
  */
 Message msg_deliver(int quantity, char* name);
 

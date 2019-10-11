@@ -25,6 +25,9 @@ void chan_init(Channel* channel) {
 
 // see header
 void chan_destroy(Channel* channel) {
+    if (channel == NULL) {
+        return;
+    }
     if (channel->initialised) {
         pthread_mutex_destroy(&channel->writeLock);
         sem_destroy(&channel->numItems);

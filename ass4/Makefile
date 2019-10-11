@@ -1,5 +1,5 @@
 common_src = util.c array.c messages.c material.c depotState.c connection.c \
-	     exitCodes.c arrayHelpers.c deferGroup.c
+	     exitCodes.c arrayHelpers.c deferGroup.c channel.c
 depot_src = main.c
 test_src = testUtil.c testMessages.c testArray.c testDepotState.c testDefer.c\
 all_src = $(common_src) $(depot_src) $(test_src)

@@ -22,7 +22,7 @@ void conn_destroy(Connection* connection) {
         return;
     }
     TRY_FREE(connection->name);
-    
+
     if (connection->outgoing != NULL) {
         chan_foreach(connection->outgoing, ah_msg_destroy);
         chan_foreach(connection->outgoing, free);

@@ -30,6 +30,7 @@ void msg_destroy(Message* message) {
     TRY_FREE(message->data.channel);
 }
 
+/*
 // see header
 void msgfrom_init(MessageFrom* messageFrom, int port, char* name, 
         Message message) {
@@ -43,10 +44,11 @@ void msgfrom_destroy(MessageFrom* messageFrom) {
     TRY_FREE(messageFrom->name);
     msg_destroy(&messageFrom->message);
 }
+*/
 
 // see header
 char* msg_code(MessageType type) {
-    static char* msgCodes[NUM_MESSAGE_TYPES + 1]; // +1 for NULL code.
+    static char* msgCodes[NUM_MESSAGE_TYPES_ALL]; // +1 for NULL code.
     msgCodes[MSG_CONNECT] = "Connect";
     msgCodes[MSG_IM] = "IM";
     msgCodes[MSG_DELIVER] = "Deliver";
@@ -55,8 +57,11 @@ char* msg_code(MessageType type) {
     msgCodes[MSG_DEFER] = "Defer";
     msgCodes[MSG_EXECUTE] = "Execute";
     msgCodes[MSG_NULL] = "(null msg type)";
+    msgCodes[MSG_META_CONN_NEW] = "(meta conn new)";
+    msgCodes[MSG_META_CONN_EOF] = "(meta conn eof)";
+    msgCodes[MSG_META_SIGNAL] = "(meta signal)";
 
-    assert(0 <= type && type < NUM_MESSAGE_TYPES + 1);
+    assert(0 <= type && type < NUM_MESSAGE_TYPES_ALL);
     return msgCodes[type];
 }
 
@@ -411,7 +416,7 @@ Message msg_im(int port, char* name) {
     Message msg = {0};
     msg.type = MSG_IM;
     msg.data.depotPort = port;
-    msg.data.depotName = name;
+    msg.data.depotName = strdup(name);
     return msg;
 }
 
@@ -420,6 +425,6 @@ Message msg_deliver(int quantity, char* name) {
     Message msg = {0};
     msg.type = MSG_DELIVER;
     msg.data.material.quantity = quantity;
-    msg.data.material.name = name;
+    msg.data.material.name = strdup(name);
     return msg;
 }

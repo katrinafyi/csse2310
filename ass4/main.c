@@ -25,20 +25,46 @@
 #define BANNED_NAME_CHARS " \n\r:"
 #define CONNECTION_QUEUE 32
 
-// normally, i avoid declaring functions in .c files but the control flow
-// here is particularly convoluted.
+typedef struct ServerData {
+    int fd; // file descriptor of the server
+    int ourPort; // this depot's port
+    char* ourName; // BORROWED this depot's name
+    Channel* incoming; // BORROWED incoming message channel
+} ServerData;
+
+typedef struct ConnectorData {
+    int ourPort; // this depot's port
+    char* ourName; // this depot's name. BORROWED
+
+    int fd; // file descriptor of the opened connection
+    Channel* incoming; // BORROWED reference to depot's incoming msg channel
+} ConnectorData;
+
+typedef struct WriterData {
+    FILE* writeFile; // BORROWED file object to write encoded messages to
+    Channel* outgoing; // BORROWED channel to get messages to write from
+} WriterData;
+
+typedef struct ReaderData {
+    int port; // port of this connection
+    char* name; // name of this connection's depot
+    FILE* readFile; // BORROWED file object to read and decode messages from
+    Channel* incoming; // BORROWED channel to write parsed messages to
+} ReaderData;
+
+// see impl. thread to establish connection
+void* connector_thread(void* connectorDataArg);
+// see impl. thread to write to socket
+void* writer_thread(void* writerDataArg);
+// see impl. thread to read from socket
+void* reader_thread(void* readerDataArg);
+
 // see implementations for comments.
-void start_connection_thread(DepotState* depotState, int fd);
+void start_connector_thread(int port, char* name, Channel* incoming, int fd);
 // see implementation.
 bool start_active_socket(int* fdOut, char* port);
 // see implementaiton
 void execute_message(DepotState* depotState, Message* message);
-
-
-typedef struct ThreadData {
-    int fd;
-    DepotState* depotState;
-} ThreadData;
 
 
 /* Returns whether the given string is a valid depot or material name,
@@ -57,6 +83,9 @@ bool is_name_valid(char* name) {
     return len > 0; // ensure name non-empty
 }
 
+/* Returns whether the givne material is a valid message argument. 
+ * That is, its name is valid and its quantity is strictly positive.
+ */
 bool is_mat_valid(Material material) {
     if (!is_name_valid(material.name)) {
         DEBUG_PRINT("invalid mat name");
@@ -78,7 +107,8 @@ void execute_connect(DepotState* depotState, Message* message) {
     free(port);
     if (started) {
         DEBUG_PRINT("connected");
-        start_connection_thread(depotState, fd);
+        start_connector_thread(depotState->port, depotState->name, 
+                depotState->incoming, fd);
     } else {
         DEBUG_PRINT("failed to connect");
     }
@@ -120,14 +150,12 @@ void execute_transfer(DepotState* depotState, Message* message) {
     }
 
     DEBUG_PRINTF("withdrawing, then delivering to %s\n", conn->name);
-    ARRAY_WRLOCK(depotState->materials);
+
     ds_alter_mat(depotState, mat.name, -mat.quantity);
-    ARRAY_UNLOCK(depotState->materials);
 
-    // ignore return value. msg_deliver doesn't need to be destroyed
-    msg_send(conn->writeFile, msg_deliver(mat.quantity, mat.name));
-
-    ARRAY_UNLOCK(depotState->connections);
+    Message* msg = malloc(sizeof(Message));
+    *msg = msg_deliver(mat.quantity, mat.name);
+    chan_post(conn->outgoing, msg);
 }
 
 void execute_defer(DepotState* depotState, Message* message) {
@@ -214,98 +242,183 @@ void execute_message(DepotState* depotState, Message* message) {
     }
 }
 
-Connection* init_connection(DepotState* depotState, FILE* readFile, 
-        FILE* writeFile) {
-    Message msg = msg_im(depotState->port, depotState->name);
+void execute_meta_message(Message* message) {
+
+}
+
+
+void* reader_thread(void* readerArg) {
+    ReaderData readerData = *(ReaderData*)readerArg;
+    free(readerArg);
+    DEBUG_PRINTF("reader thread started for %d:%s\n", readerData.port,
+            readerData.name);
+
+    MessageStatus status = MS_OK;
+    while (status != MS_EOF) {
+        Message msg = {0};
+        status = msg_receive(readerData.readFile, &msg);
+        if (status != MS_OK) {
+            DEBUG_PRINT("message invalid or eof");
+            continue;
+        }
+        // wrap received message in a heap-allocated struct
+        Message* msgNew = calloc(1, sizeof(Message));
+        *msgNew = msg;
+        DEBUG_PRINT("sending message to incoming channel");
+        // yield MessageFrom* to the incoming channel
+        chan_post(readerData.incoming, msgNew);
+    }
+    DEBUG_PRINTF("reader thread for %d:%s reached EOF\n", readerData.port,
+            readerData.name);
+    return NULL;
+}
+
+void* writer_thread(void* writerArg) {
+    WriterData writerData = *(WriterData*)writerArg;
+    free(writerArg);
+    DEBUG_PRINT("writer thread started");
+
+    while (1) {
+        Message* msg = chan_wait(writerData.outgoing);
+        DEBUG_PRINT("echoing message to socket");
+        msg_send(writerData.writeFile, *msg);
+        msg_destroy(msg);
+        free(msg);
+    }
+}
+
+/* Verifies the connection on the given read/write files by sending and
+ * expecting IM messages. Given port and name are for THIS depot.
+ * Returns true/false on success/failure. If successful, stores a new
+ * Connection into outConn.
+ */
+bool verify_connection(int port, char* name, FILE* readFile, 
+        FILE* writeFile, Connection* outConn) {
+    Message msg = msg_im(port, name);
     if (msg_send(writeFile, msg) != MS_OK) {
         DEBUG_PRINT("sending IM failed");
-        return NULL;
+        return false;
     }
-    msg = (Message) {0}; // msg_im() must not be msg_destroy()'d
+    msg_destroy(&msg); // destroy the msg_im()
     if (msg_receive(readFile, &msg) != MS_OK || msg.type != MSG_IM ||
             !is_name_valid(msg.data.depotName)) {
         DEBUG_PRINT("invalid IM or bad depot name");
         msg_destroy(&msg);
-        return NULL;
+        return false;
     }
 
-    // add to list of connections
-    ARRAY_WRLOCK(depotState->connections);
-    // if connection by same name already exists, ignore. we need to maintain
-    // the integrity of the array map
-    if (arraymap_get(depotState->connections, msg.data.depotName) != NULL) {
-        DEBUG_PRINTF("connection to %s already exists, ignoring.\n", 
-                msg.data.depotName);
-        msg_destroy(&msg);
-        ARRAY_UNLOCK(depotState->connections);
-        return NULL;
-    }
-
-    Connection* conn = ds_add_connection(depotState, msg.data.depotPort,
-            msg.data.depotName, readFile, writeFile);
-    conn->thread = pthread_self(); // store current thread ID
-    msg_destroy(&msg); // destroy received message
-    ARRAY_UNLOCK(depotState->connections);
-
-    DEBUG_PRINTF("acknowledged by %s on %d\n", conn->name, conn->port);
-
-    return conn;
+    Connection conn;
+    conn_init(&conn, msg.data.depotPort, msg.data.depotName);
+    *outConn = conn;
+    msg_destroy(&msg);
+    DEBUG_PRINTF("acknowledged by %s on %d\n", conn.name, conn.port);
+    return true;
 }
 
-void* connection_thread(void* threadDataArg) {
-    ThreadData* threadData = threadDataArg;
-    DepotState* depotState = threadData->depotState;
-    int fdRead = threadData->fd;
-    int fdWrite = dup(fdRead);
-    pthread_t thread = pthread_self();
+void run_read_write_threads(ConnectorData* connData, Connection* connection, 
+        FILE* readFile, FILE* writeFile) {
+    // take ownership of the outgoing channel into this thread
+    Channel* outgoing = connection->outgoing;
+    connection->outgoing = NULL;
+    // inform main thread of new connection by sending a meta message.
+    Message msg = {0};
+    msg.type = MSG_META_CONN_NEW;
+    msg.data.depotPort = connection->port;
+    msg.data.depotName = connection->name;
+    // yields outgoing channel to main thread. main thread now owns it
+    msg.data.channel = outgoing;
 
-    free(threadDataArg); // data has been copied into local variables.
-    DEBUG_PRINT("connection thread started");
+    Message* msgNew = malloc(sizeof(Message));
+    *msgNew = msg;
+    chan_post(connData->incoming, msgNew);
+
+    DEBUG_PRINTF("starting read/write threads for %d:%s\n", connection->port,
+            connection->name);
+
+    // starting reader thread to handle incoming messages
+    ReaderData* readerData = malloc(sizeof(ReaderData));
+    readerData->readFile = readFile;
+    readerData->incoming = connData->incoming;
+    readerData->port = connection->port;
+    readerData->name = connection->name;
+
+    pthread_t readerThread;
+    pthread_create(&readerThread, NULL, reader_thread, readerData);
+
+    // start writer thread to write outgoing messages to socket
+    WriterData* writerData = malloc(sizeof(WriterData));
+    writerData->writeFile = writeFile;
+    writerData->outgoing = outgoing;
+    outgoing = NULL; // remember, outgoing channel is owned by the main thread
+
+    pthread_t writerThread;
+    pthread_create(&writerThread, NULL, writer_thread, writerData);
+
+    // wait for reader to reach EOF, then terminate writer threads
+    pthread_join(readerThread, NULL);
+    pthread_cancel(writerThread);
+    pthread_join(writerThread, NULL);
+    DEBUG_PRINTF("writer thread terminated, closing thread for %d:%s\n",
+            connection->port, connection->name);
+
+    // send meta eof message to managing thread
+    msg.type = MSG_META_CONN_EOF; // re-using earlier MessageFrom
+    msgNew = malloc(sizeof(Message)); // but new pointer
+    *msgNew = msg;
+    chan_post(connData->incoming, msgNew);
+}
+
+void* connector_thread(void* connectorDataArg) {
+    // copy into local variable and free memory
+    ConnectorData connData = *(ConnectorData*)connectorDataArg;
+    free(connectorDataArg);
+    
+    int fdRead = connData.fd;
+    int fdWrite = dup(fdRead);
+
+    DEBUG_PRINT("connector thread started");
     FILE* readFile = fdopen(fdRead, "r");
     FILE* writeFile = fdopen(fdWrite, "w");
-    // initialise connection by sending and receiving IM
-    Connection* conn = init_connection(depotState, readFile, writeFile);
-    if (conn == NULL) {
+    // initialise connection by sending and receiving IM.
+    // blocks until verification passes or fails.
+    Connection conn;
+    if (!verify_connection(connData.ourPort, connData.ourName, readFile, 
+                writeFile, &conn)) {
         DEBUG_PRINT("connection acknowledge failed, terminating thread.");
         fclose(readFile);
         fclose(writeFile);
         // detach thread to cleanup its resources automatically
-        pthread_detach(thread);
+        pthread_detach(pthread_self());
         return NULL;
     }
 
-    // main loop of this connection
-    Message msg = {0};
-    MessageStatus status = MS_OK;
-    while (status != MS_EOF) { // break on EOF
-        status = msg_receive(readFile, &msg);
-        if (status != MS_OK) {
-            DEBUG_PRINT("message invalid or EOF");
-            continue; // ignore invalid messages
-        }
-        execute_message(depotState, &msg);
-        msg_destroy(&msg); // finished with this message
-    }
+    // runs reader/writer threads and waits for connection to close.
+    // that is,
+    // push CONN_NEW to incoming channel
+    // start reader thread
+    // start writer thread
+    // join reader thread
+    // cancel writer thread
+    // push CONN_EOF to incoming channel
+    run_read_write_threads(&connData, &conn, readFile, writeFile);
 
-    DEBUG_PRINTF("thread closing normally, name: %s\n", conn->name);
-    // destroy connection and remove from list of connections
-    ARRAY_WRLOCK(depotState->connections);
-    conn_destroy(conn); // closes files for us
-    array_remove(depotState->connections, conn); // remove from array
-    free(conn); // because array stored a copy of the connection
-    pthread_detach(thread); // detach thread to free resources on termination
-    ARRAY_UNLOCK(depotState->connections);
-
+    DEBUG_PRINT("closing socket files and terminating connector thread");
+    conn_destroy(&conn);
+    fclose(readFile);
+    fclose(writeFile);
+    pthread_detach(pthread_self());
     return NULL;
 }
 
-void start_connection_thread(DepotState* depotState, int fd) {
-    ThreadData* arg = malloc(sizeof(ThreadData));
-    arg->fd = fd;
-    arg->depotState = depotState;
+void start_connector_thread(int port, char* name, Channel* incoming, int fd) {
+    ConnectorData* connArg = calloc(1, sizeof(ConnectorData));
+    connArg->fd = fd;
+    connArg->incoming = incoming;
+    connArg->ourPort = port;
+    connArg->ourName = name;
 
     pthread_t thread;
-    pthread_create(&thread, NULL, connection_thread, arg);
+    pthread_create(&thread, NULL, connector_thread, connArg);
 }
 
 bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
@@ -381,25 +494,32 @@ bool start_passive_socket(int* fdOut, int* portOut) {
     return true;
 }
 
-void* server_thread(void* depotStateArg) {
+void* main_thread(void* depotStateArg) {
     DepotState* depotState = depotStateArg;
-    DEBUG_PRINT("server thread started");
 
-    int server;
-    int port;
-    // start server socket in listen mode
-    if (!start_passive_socket(&server, &port)) {
-        DEBUG_PRINT("failed to start passive socket");
-        return NULL; // no special exit code
+    while (1) {
+        Message* msg = chan_wait(depotState->incoming);
+        if (msg->type >= MSG_NULL) {
+            DEBUG_PRINT("received meta message");
+            msg_debug(msg);
+            continue;
+        }
+
+        DEBUG_PRINT("received normal message!");
     }
-    depotState->port = port;
-    printf("%d\n", port);
+    assert(0);
+}
+
+void* server_thread(void* serverArg) {
+    ServerData serverData = *(ServerData*)serverArg;
+    DEBUG_PRINT("server thread started");
 
     while (1) {
         // listen for connections
-        int fd = accept(server, 0, 0);
+        int fd = accept(serverData.fd, 0, 0);
         DEBUG_PRINT("accepted connection");
-        start_connection_thread(depotState, fd);
+        start_connector_thread(serverData.ourPort, serverData.ourName, 
+                serverData.incoming, fd);
     }
     assert(0);
 }
@@ -424,26 +544,41 @@ void print_depot_info(DepotState* depotState) {
 
 DepotExitCode exec_server(DepotState* depotState) {
     DEBUG_PRINT("starting server");
-
     // block SIGHUP from all threads. we will pick it up via sigwait
     static sigset_t ss;
     sigemptyset(&ss);
     sigaddset(&ss, SIGHUP);
     sigaddset(&ss, SIGUSR1); // use SIGUSR1 to exit cleanly
     pthread_sigmask(SIG_BLOCK, &ss, NULL);
+    ignore_sigpipe(); // also ignore SIGPIPE
 
-    ignore_sigpipe();
+    // start the server thing
+    int server;
+    int port;
+    if (!start_passive_socket(&server, &port)) {
+        DEBUG_PRINT("failed to start passive socket");
+        return D_NORMAL; // no special exit code
+    }
+    depotState->port = port;
+    printf("%d\n", port);
 
-    // start server listener thread
+    // start server listener thread. data argument is allocated on stack!
+    ServerData serverData;
+    serverData.fd = server;
+    serverData.ourName = depotState->name;
+    serverData.ourPort = depotState->port;
+    serverData.incoming = depotState->incoming;
+
     pthread_t serverThread;
-    pthread_create(&serverThread, NULL, server_thread, depotState);
+    pthread_create(&serverThread, NULL, server_thread, &serverData);
 
-    // this thread handles the signals
+    pthread_t mainThread;
+    pthread_create(&mainThread, NULL, main_thread, depotState);
+
     while (1) {
         int sig;
         sigwait(&ss, &sig);
         DEBUG_PRINTF("signal %d: %s\n", sig, strsignal(sig));
-
         if (sig != SIGHUP) {
             break; // terminate if caught non SIGHUP signal
         }
@@ -452,17 +587,6 @@ DepotExitCode exec_server(DepotState* depotState) {
     // terminate the program
     DEBUG_PRINT("terminating program due to signal!");
 
-    ARRAY_WRLOCK(depotState->connections);
-    // terminate all threads. stop server first to prevent new connections
-    pthread_cancel(serverThread);
-    pthread_join(serverThread, NULL);
-    for (int i = 0; i < depotState->connections->numItems; i++) {
-        Connection* conn = ARRAY_ITEM(Connection, depotState->connections, i);
-        pthread_cancel(conn->thread);
-        pthread_join(conn->thread, NULL);
-    }
-    // at this point, we are back to a single thread
-    ARRAY_UNLOCK(depotState->connections);
     return D_NORMAL;
 }
 
