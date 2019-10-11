@@ -52,4 +52,9 @@ void ds_alter_mat(DepotState* depotState, char* matName, int delta);
  * and adds it if not present. Returns a pointer to the defer group.
  */
 DeferGroup* ds_ensure_defer_group(DepotState* depotState, int key);
+
+/* Prints a goods and quantities, sorted by name and neighbours, sorted by
+ * name. Format complies with SIGHUP format from spec.
+ */
+void ds_print_info(DepotState* depotState);
 #endif

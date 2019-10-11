@@ -116,3 +116,18 @@ DeferGroup* ds_ensure_defer_group(DepotState* depotState, int key) {
     dg_init(&dgNew, key);
     return array_add_copy(depotState->deferGroups, &dgNew, sizeof(DeferGroup));
 }
+
+// see header
+void ds_print_info(DepotState* depotState) {
+    printf("Goods:\n");
+    for (int i = 0; i < depotState->materials->numItems; i++) {
+        Material* mat = ARRAY_ITEM(Material, depotState->materials, i);
+        printf("%s %d\n", mat->name, mat->quantity);
+    }
+
+    printf("Neighbours:\n");
+    for (int i = 0; i < depotState->connections->numItems; i++) {
+        Connection* conn = ARRAY_ITEM(Connection, depotState->connections, i);
+        printf("%s\n", conn->name);
+    }
+}

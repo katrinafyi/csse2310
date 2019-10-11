@@ -6,6 +6,7 @@
 
 #include "channel.h"
 #include "material.h"
+#include "connection.h"
 
 // number of valid message types
 #define NUM_MESSAGE_TYPES 7
@@ -58,8 +59,8 @@ typedef struct MessageData {
     
     // meta message things
 
-    // MALLOC! channel for sending messages to this connection.
-    Channel* channel; 
+    // MALLOC! connection associated with new connection meta msg.
+    Connection* connection;
     int signal; // signal received
 } MessageData;
 

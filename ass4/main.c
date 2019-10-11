@@ -128,9 +128,7 @@ void execute_deliver_withdraw(DepotState* depotState, Message* message) {
 
     // need write lock because we have no individual locks per material
     // and this could also add a new material
-    ARRAY_WRLOCK(depotState->materials);
     ds_alter_mat(depotState, name, delta);
-    ARRAY_UNLOCK(depotState->materials);
 }
 
 void execute_transfer(DepotState* depotState, Message* message) {
@@ -242,8 +240,35 @@ void execute_message(DepotState* depotState, Message* message) {
     }
 }
 
-void execute_meta_message(Message* message) {
-
+void execute_meta_message(DepotState* depotState, Message* message) {
+    Connection* conn = message->data.connection;
+    switch (message->type) {
+        case MSG_META_SIGNAL:
+            DEBUG_PRINTF("received signal %d: %s\n", message->data.signal,
+                    strsignal(message->data.signal));
+            ds_print_info(depotState);
+            break;
+        case MSG_META_CONN_NEW:
+            DEBUG_PRINTF("new connection %d:%s\n", conn->port,
+                    conn->name);
+            if (arraymap_get(depotState->connections, conn->name) != NULL) {
+                DEBUG_PRINT("connection already exists, cancelling.");
+                conn_cancel_threads(conn);
+                break;
+            }
+            DEBUG_PRINTF("adding to arraymap: %p\n", (void*)conn);
+            // move connection into array
+            array_add(depotState->connections, conn);
+            message->data.connection = NULL;
+            break;
+        case MSG_META_CONN_EOF:
+            DEBUG_PRINTF("removing conn %d:%s\n", conn->port, conn->name);
+            DEBUG_PRINTF("pointer: %p\n", (void*)conn);
+            array_remove(depotState->connections, conn);
+            break;
+        default:
+            assert(0);
+    }
 }
 
 
@@ -317,21 +342,6 @@ bool verify_connection(int port, char* name, FILE* readFile,
 
 void run_read_write_threads(ConnectorData* connData, Connection* connection, 
         FILE* readFile, FILE* writeFile) {
-    // take ownership of the outgoing channel into this thread
-    Channel* outgoing = connection->outgoing;
-    connection->outgoing = NULL;
-    // inform main thread of new connection by sending a meta message.
-    Message msg = {0};
-    msg.type = MSG_META_CONN_NEW;
-    msg.data.depotPort = connection->port;
-    msg.data.depotName = connection->name;
-    // yields outgoing channel to main thread. main thread now owns it
-    msg.data.channel = outgoing;
-
-    Message* msgNew = malloc(sizeof(Message));
-    *msgNew = msg;
-    chan_post(connData->incoming, msgNew);
-
     DEBUG_PRINTF("starting read/write threads for %d:%s\n", connection->port,
             connection->name);
 
@@ -348,11 +358,22 @@ void run_read_write_threads(ConnectorData* connData, Connection* connection,
     // start writer thread to write outgoing messages to socket
     WriterData* writerData = malloc(sizeof(WriterData));
     writerData->writeFile = writeFile;
-    writerData->outgoing = outgoing;
-    outgoing = NULL; // remember, outgoing channel is owned by the main thread
+    writerData->outgoing = connection->outgoing;
 
     pthread_t writerThread;
     pthread_create(&writerThread, NULL, writer_thread, writerData);
+
+    // inform main thread of new connection by sending a meta message.
+    conn_set_threads(connection, pthread_self(), readerThread, writerThread);
+    Message msg = {0};
+    msg.type = MSG_META_CONN_NEW;
+    // yields outgoing channel to main thread. main thread now owns it
+    msg.data.connection = calloc(1, sizeof(Connection));
+    *msg.data.connection = *connection;
+
+    Message* msgNew = malloc(sizeof(Message));
+    *msgNew = msg;
+    chan_post(connData->incoming, msgNew);
 
     // wait for reader to reach EOF, then terminate writer threads
     pthread_join(readerThread, NULL);
@@ -361,7 +382,7 @@ void run_read_write_threads(ConnectorData* connData, Connection* connection,
     DEBUG_PRINTF("writer thread terminated, closing thread for %d:%s\n",
             connection->port, connection->name);
 
-    // send meta eof message to managing thread
+    // send meta eof message to managing thread. connection set from earlier
     msg.type = MSG_META_CONN_EOF; // re-using earlier MessageFrom
     msgNew = malloc(sizeof(Message)); // but new pointer
     *msgNew = msg;
@@ -394,16 +415,16 @@ void* connector_thread(void* connectorDataArg) {
 
     // runs reader/writer threads and waits for connection to close.
     // that is,
-    // push CONN_NEW to incoming channel
     // start reader thread
     // start writer thread
+    // push CONN_NEW to incoming channel
     // join reader thread
     // cancel writer thread
     // push CONN_EOF to incoming channel
+    // IMPORTANT: &conn is YIELDED to the main thread
     run_read_write_threads(&connData, &conn, readFile, writeFile);
 
     DEBUG_PRINT("closing socket files and terminating connector thread");
-    conn_destroy(&conn);
     fclose(readFile);
     fclose(writeFile);
     pthread_detach(pthread_self());
@@ -499,13 +520,19 @@ void* main_thread(void* depotStateArg) {
 
     while (1) {
         Message* msg = chan_wait(depotState->incoming);
+        int numItems;
+        sem_getvalue(&depotState->incoming->numItems, &numItems);
+        DEBUG_PRINTF("%d messages remain\n", numItems);
         if (msg->type >= MSG_NULL) {
             DEBUG_PRINT("received meta message");
             msg_debug(msg);
-            continue;
+            execute_meta_message(depotState, msg);
+        } else {
+            DEBUG_PRINT("received normal message!");
+            execute_message(depotState, msg);
         }
-
-        DEBUG_PRINT("received normal message!");
+        msg_destroy(msg);
+        free(msg);
     }
     assert(0);
 }
@@ -522,24 +549,6 @@ void* server_thread(void* serverArg) {
                 serverData.incoming, fd);
     }
     assert(0);
-}
-
-void print_depot_info(DepotState* depotState) {
-    ARRAY_RDLOCK(depotState->materials);
-    printf("Goods:\n");
-    for (int i = 0; i < depotState->materials->numItems; i++) {
-        Material* mat = ARRAY_ITEM(Material, depotState->materials, i);
-        printf("%s %d\n", mat->name, mat->quantity);
-    }
-    ARRAY_UNLOCK(depotState->materials);
-
-    ARRAY_RDLOCK(depotState->connections);
-    printf("Neighbours:\n");
-    for (int i = 0; i < depotState->connections->numItems; i++) {
-        Connection* conn = ARRAY_ITEM(Connection, depotState->connections, i);
-        printf("%s\n", conn->name);
-    }
-    ARRAY_UNLOCK(depotState->connections);
 }
 
 DepotExitCode exec_server(DepotState* depotState) {
@@ -572,6 +581,7 @@ DepotExitCode exec_server(DepotState* depotState) {
     pthread_t serverThread;
     pthread_create(&serverThread, NULL, server_thread, &serverData);
 
+
     pthread_t mainThread;
     pthread_create(&mainThread, NULL, main_thread, depotState);
 
@@ -582,7 +592,11 @@ DepotExitCode exec_server(DepotState* depotState) {
         if (sig != SIGHUP) {
             break; // terminate if caught non SIGHUP signal
         }
-        print_depot_info(depotState);
+        Message* msg = calloc(1, sizeof(Message));
+        msg->type = MSG_META_SIGNAL;
+        msg->data.signal = sig;
+        chan_post(depotState->incoming, msg);
+        //print_depot_info(depotState);
     }
     // terminate the program
     DEBUG_PRINT("terminating program due to signal!");

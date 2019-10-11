@@ -26,8 +26,8 @@ void msg_destroy(Message* message) {
     // Material struct is stored wholly inside Message, so no malloc here
     mat_destroy(&message->data.material);
 
-    chan_destroy(message->data.channel);
-    TRY_FREE(message->data.channel);
+    conn_destroy(message->data.connection);
+    TRY_FREE(message->data.connection);
 }
 
 /*

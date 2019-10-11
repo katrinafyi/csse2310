@@ -31,3 +31,22 @@ void conn_destroy(Connection* connection) {
     TRY_FREE(connection->outgoing);
 }
 
+// see header
+void conn_set_threads(Connection* connection, pthread_t connectorThread,
+        pthread_t readThread, pthread_t writeThread) {
+    connection->connectorThread = connectorThread;
+    connection->readThread = readThread;
+    connection->writeThread = writeThread;
+}
+
+// see header
+void conn_cancel_threads(Connection* connection) {
+    pthread_cancel(connection->connectorThread);
+    pthread_join(connection->connectorThread, NULL);
+
+    pthread_cancel(connection->readThread);
+    pthread_join(connection->readThread, NULL);
+
+    pthread_cancel(connection->writeThread);
+    pthread_join(connection->writeThread, NULL);
+}

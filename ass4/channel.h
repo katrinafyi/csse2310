@@ -5,13 +5,13 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-#define CHANNEL_SIZE 32
+#define CHANNEL_SIZE 64
 
 /* A synchronised channel for communication between an arbitrary number of
  * writers and an arbitrary number of readers.
  */
 typedef struct Channel {
-    void* items[32]; // array of items currently in channel
+    void* items[CHANNEL_SIZE]; // array of items currently in channel
     int insertPos;
     int readPos;
 
