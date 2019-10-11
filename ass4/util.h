@@ -63,8 +63,6 @@
 #define DEBUG_PRINTF(fmt, ...) NULL
 #define DEBUG_PERROR(str) NULL
 
-#define GET_TID() 0
-
 #endif
 
 /* Parses the str into a non-negative integer, with the following

@@ -4,23 +4,40 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "channel.h"
 #include "material.h"
 
 // number of valid message types
 #define NUM_MESSAGE_TYPES 7
 
-/* Possible message types we can receive, and an extra MSG_NULL to indicate
- * an invalid message type.
+/* Possible message types we can receive and other special flags for
+ * indicating specific state transitions
  */
 typedef enum MessageType {
-    MSG_CONNECT, MSG_IM, MSG_DELIVER, MSG_WITHDRAW, MSG_TRANSFER,
-            MSG_DEFER, MSG_EXECUTE, MSG_NULL
+    // messages defined in spec
+    MSG_CONNECT, 
+    MSG_IM, 
+    MSG_DELIVER, 
+    MSG_WITHDRAW, 
+    MSG_TRANSFER, 
+    MSG_DEFER, 
+    MSG_EXECUTE, 
+    
+    // past this are various meta messages
+    
+    MSG_NULL, 
+    // new connection established and verified. data contains a channel to 
+    // write _to_ this connection.
+    MSG_META_CONN_NEW, 
+    MSG_META_CONN_EOF // connection terminated
 } MessageType;
 
 /* Status which could occur when reading or writing messages.
  */
 typedef enum MessageStatus {
-    MS_OK, MS_EOF, MS_INVALID
+    MS_OK, // message received and parsed successfully
+    MS_EOF, // eof was encountered before any bytes were received
+    MS_INVALID // message received was of an invalid format
 } MessageStatus;
 
 /* Possible extra data associated with a message, type depends on message type
@@ -35,6 +52,10 @@ typedef struct MessageData {
 
     int deferKey; // key for defer/execute
     struct Message* deferMessage; // MALLOC! submessage for deferred messages
+    
+    // MALLOC! channel for sending messages to this connection. used with
+    // MSG_META_CONN_NEW
+    Channel* channel; 
 } MessageData;
 
 /* A message which can be sent or received. Has the given type and data
@@ -46,13 +67,12 @@ typedef struct Message {
 } Message;
 
 /* A message with attached information about its sender.
- * Does NOT have any _init or _destroy because I'm lazy and this is basic.
  */
 typedef struct MessageFrom {
     int port; // sender's port
-    char* name; // sender's name, as a MALLOC'd string.
+    char* name; // sender's name, BORROWED. user should not free this
     Message message; // attached message
-}
+} MessageFrom;
 
 /* Returns the string message code associated with the given message type.
  *

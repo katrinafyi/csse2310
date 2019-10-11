@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#include "channel.h"
+
 typedef struct Connection {
     int port;
-    pthread_t readerThread;
-    pthread_t writerThread;
     char* name; // malloc!
     Channel* outgoing; // channel for outgoing messages, as Message*
 } Connection;

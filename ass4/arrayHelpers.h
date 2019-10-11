@@ -35,5 +35,7 @@ void ah_conn_destroy(void*);
 void ah_dg_destroy(void*);
 // destroys the given message, passed as Message* cast to void*
 void ah_msg_destroy(void*);
+// destroys the given message from, passed as MessageFrom* cast to void*
+void ah_msgfrom_destroy(void*);
 
 #endif

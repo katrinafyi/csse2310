@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "connection.h"
+#include "arrayHelpers.h"
 #include "messages.h"
 #include "util.h"
 
@@ -23,7 +24,7 @@ void conn_destroy(Connection* connection) {
     TRY_FREE(connection->name);
     
     if (connection->outgoing != NULL) {
-        chan_foreach(connection->outgoing, msg_destroy);
+        chan_foreach(connection->outgoing, ah_msg_destroy);
         chan_foreach(connection->outgoing, free);
         chan_destroy(connection->outgoing);
     }

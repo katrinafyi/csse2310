@@ -1,3 +1,6 @@
+#ifndef CHANNEL_H
+#define CHANNEL_H
+
 #include <stdbool.h>
 #include <semaphore.h>
 #include <pthread.h>
@@ -45,3 +48,5 @@ void chan_post(Channel* channel, void* item);
  * The caller is responsible for the returned pointer.
  */
 void* chan_wait(Channel* channel);
+
+#endif

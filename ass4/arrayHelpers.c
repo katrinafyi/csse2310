@@ -45,3 +45,7 @@ void ah_dg_destroy(void* deferGroup) {
 void ah_msg_destroy(void* message) {
     msg_destroy(message);
 }
+
+void ah_msgfrom_destroy(void* message) {
+    msgfrom_destroy(message);
+}

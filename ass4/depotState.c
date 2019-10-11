@@ -49,7 +49,7 @@ void ds_destroy(DepotState* depotState) {
     }
 
     if (depotState->incoming != NULL) {
-        chan_foreach(depotState->incoming, msgfrom_destroy);
+        chan_foreach(depotState->incoming, ah_msgfrom_destroy);
         chan_foreach(depotState->incoming, free);
         chan_destroy(depotState->incoming);
     }
