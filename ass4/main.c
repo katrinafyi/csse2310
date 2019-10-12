@@ -32,11 +32,17 @@ typedef struct ServerData {
     Channel* incoming; // BORROWED incoming message channel
 } ServerData;
 
-typedef struct ConnectorData {
-    int ourPort; // this depot's port
-    char* ourName; // this depot's name. BORROWED
+typedef struct VerifyData {
+    int ourPort;
+    char* ourName; // BORROW
+    Channel* incoming;
 
-    int fd; // file descriptor of the opened connection
+    FILE* readFile; // OWNED
+    FILE* writeFile; // OWNED
+} VerifyData;
+
+typedef struct ConnectorData {
+    Connection* connection; // BORROWED reference to this connection
     Channel* incoming; // BORROWED reference to depot's incoming msg channel
 } ConnectorData;
 
@@ -47,12 +53,14 @@ typedef struct WriterData {
 
 typedef struct ReaderData {
     int port; // port of this connection
-    char* name; // name of this connection's depot
+    char* name; // BORROW name of this connection's depot
     FILE* readFile; // BORROWED file object to read and decode messages from
     Channel* incoming; // BORROWED channel to write parsed messages to
 } ReaderData;
 
-// see impl. thread to establish connection
+// see impl. thread to verify connection with IM messages
+void* verify_thread(void* verifyArg);
+// see impl. thread to start and manage read/write threads
 void* connector_thread(void* connectorDataArg);
 // see impl. thread to write to socket
 void* writer_thread(void* writerDataArg);
@@ -60,7 +68,9 @@ void* writer_thread(void* writerDataArg);
 void* reader_thread(void* readerDataArg);
 
 // see implementations for comments.
-void start_connector_thread(int port, char* name, Channel* incoming, int fd);
+void start_connector_thread(Connection* connection, Channel* incoming);
+// see implementation
+void start_verify_thread(int port, char* name, Channel* incoming, int fd);
 // see implementation.
 bool start_active_socket(int* fdOut, char* port);
 // see implementaiton
@@ -106,8 +116,8 @@ void execute_connect(DepotState* depotState, Message* message) {
     bool started = start_active_socket(&fd, port);
     free(port);
     if (started) {
-        DEBUG_PRINT("connected");
-        start_connector_thread(depotState->port, depotState->name, 
+        DEBUG_PRINT("connection established, verifying");
+        start_verify_thread(depotState->port, depotState->name, 
                 depotState->incoming, fd);
     } else {
         DEBUG_PRINT("failed to connect");
@@ -236,6 +246,7 @@ void execute_message(DepotState* depotState, Message* message) {
             execute_execute(depotState, message);
             break;
         default:
+            DEBUG_PRINT("invalid normal message type");
             assert(0);
     }
 }
@@ -252,21 +263,37 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             DEBUG_PRINTF("new connection %d:%s\n", conn->port,
                     conn->name);
             if (arraymap_get(depotState->connections, conn->name) != NULL) {
-                DEBUG_PRINT("connection already exists, cancelling.");
-                conn_cancel_threads(conn);
+                DEBUG_PRINT("connection with name already exists, ignoring.");
+                break; // main thread will cleanup
+            }
+
+            bool portExists = false;
+            for (int i = 0; i < depotState->connections->numItems; i++) {
+                if (ARRAY_ITEM(Connection, depotState->connections, i)->port
+                        == conn->port) {
+                    portExists = true;
+                    break;
+                }
+            }
+            if (portExists) {
+                DEBUG_PRINT("connection to port already exists, ignoring.");
                 break;
             }
-            DEBUG_PRINTF("adding to arraymap: %p\n", (void*)conn);
-            // move connection into array
+
+            DEBUG_PRINT("adding to arraymap");
+            // YIELD connection to connections array
             array_add(depotState->connections, conn);
             message->data.connection = NULL;
+
+            start_connector_thread(conn, depotState->incoming); // start thread
             break;
         case MSG_META_CONN_EOF:
             DEBUG_PRINTF("removing conn %d:%s\n", conn->port, conn->name);
-            DEBUG_PRINTF("pointer: %p\n", (void*)conn);
             array_remove(depotState->connections, conn);
+            // connection will be cleaned up by msg_destroy later
             break;
         default:
+            DEBUG_PRINT("invalid meta message type");
             assert(0);
     }
 }
@@ -312,43 +339,20 @@ void* writer_thread(void* writerArg) {
     }
 }
 
-/* Verifies the connection on the given read/write files by sending and
- * expecting IM messages. Given port and name are for THIS depot.
- * Returns true/false on success/failure. If successful, stores a new
- * Connection into outConn.
- */
-bool verify_connection(int port, char* name, FILE* readFile, 
-        FILE* writeFile, Connection* outConn) {
-    Message msg = msg_im(port, name);
-    if (msg_send(writeFile, msg) != MS_OK) {
-        DEBUG_PRINT("sending IM failed");
-        return false;
-    }
-    msg_destroy(&msg); // destroy the msg_im()
-    if (msg_receive(readFile, &msg) != MS_OK || msg.type != MSG_IM ||
-            !is_name_valid(msg.data.depotName)) {
-        DEBUG_PRINT("invalid IM or bad depot name");
-        msg_destroy(&msg);
-        return false;
-    }
 
-    Connection conn;
-    conn_init(&conn, msg.data.depotPort, msg.data.depotName);
-    *outConn = conn;
-    msg_destroy(&msg);
-    DEBUG_PRINTF("acknowledged by %s on %d\n", conn.name, conn.port);
-    return true;
-}
-
-void run_read_write_threads(ConnectorData* connData, Connection* connection, 
-        FILE* readFile, FILE* writeFile) {
+void* connector_thread(void* connectorArg) {
+    // copy into local variable and free memory
+    ConnectorData connData = *(ConnectorData*)connectorArg;
+    Connection* connection = connData.connection;
+    free(connectorArg);
+    
     DEBUG_PRINTF("starting read/write threads for %d:%s\n", connection->port,
             connection->name);
 
     // starting reader thread to handle incoming messages
     ReaderData* readerData = malloc(sizeof(ReaderData));
-    readerData->readFile = readFile;
-    readerData->incoming = connData->incoming;
+    readerData->incoming = connData.incoming;
+    readerData->readFile = connection->readFile;
     readerData->port = connection->port;
     readerData->name = connection->name;
 
@@ -357,89 +361,105 @@ void run_read_write_threads(ConnectorData* connData, Connection* connection,
 
     // start writer thread to write outgoing messages to socket
     WriterData* writerData = malloc(sizeof(WriterData));
-    writerData->writeFile = writeFile;
+    writerData->writeFile = connection->writeFile;
     writerData->outgoing = connection->outgoing;
 
     pthread_t writerThread;
     pthread_create(&writerThread, NULL, writer_thread, writerData);
 
-    // inform main thread of new connection by sending a meta message.
-    conn_set_threads(connection, pthread_self(), readerThread, writerThread);
-    Message msg = {0};
-    msg.type = MSG_META_CONN_NEW;
-    // yields outgoing channel to main thread. main thread now owns it
-    msg.data.connection = calloc(1, sizeof(Connection));
-    *msg.data.connection = *connection;
-
-    Message* msgNew = malloc(sizeof(Message));
-    *msgNew = msg;
-    chan_post(connData->incoming, msgNew);
-
-    // wait for reader to reach EOF, then terminate writer threads
+    // wait for reader to reach EOF, then terminate writer thread
     pthread_join(readerThread, NULL);
-    pthread_cancel(writerThread);
-    pthread_join(writerThread, NULL);
-    DEBUG_PRINTF("writer thread terminated, closing thread for %d:%s\n",
+    DEBUG_PRINTF("reader thread terminated, cancelling writer for %d:%s\n",
             connection->port, connection->name);
 
+    pthread_cancel(writerThread);
+    pthread_join(writerThread, NULL);
+
     // send meta eof message to managing thread. connection set from earlier
-    msg.type = MSG_META_CONN_EOF; // re-using earlier MessageFrom
-    msgNew = malloc(sizeof(Message)); // but new pointer
+    Message msg = {0};
+    msg.type = MSG_META_CONN_EOF;
+    msg.data.connection = connection;
+    Message* msgNew = malloc(sizeof(Message));
     *msgNew = msg;
-    chan_post(connData->incoming, msgNew);
-}
-
-void* connector_thread(void* connectorDataArg) {
-    // copy into local variable and free memory
-    ConnectorData connData = *(ConnectorData*)connectorDataArg;
-    free(connectorDataArg);
-    
-    int fdRead = connData.fd;
-    int fdWrite = dup(fdRead);
-
-    DEBUG_PRINT("connector thread started");
-    FILE* readFile = fdopen(fdRead, "r");
-    FILE* writeFile = fdopen(fdWrite, "w");
-    // initialise connection by sending and receiving IM.
-    // blocks until verification passes or fails.
-    Connection conn;
-    if (!verify_connection(connData.ourPort, connData.ourName, readFile, 
-                writeFile, &conn)) {
-        DEBUG_PRINT("connection acknowledge failed, terminating thread.");
-        fclose(readFile);
-        fclose(writeFile);
-        // detach thread to cleanup its resources automatically
-        pthread_detach(pthread_self());
-        return NULL;
-    }
-
-    // runs reader/writer threads and waits for connection to close.
-    // that is,
-    // start reader thread
-    // start writer thread
-    // push CONN_NEW to incoming channel
-    // join reader thread
-    // cancel writer thread
-    // push CONN_EOF to incoming channel
-    // IMPORTANT: &conn is YIELDED to the main thread
-    run_read_write_threads(&connData, &conn, readFile, writeFile);
+    chan_post(connData.incoming, msgNew);
 
     DEBUG_PRINT("closing socket files and terminating connector thread");
-    fclose(readFile);
-    fclose(writeFile);
     pthread_detach(pthread_self());
     return NULL;
 }
 
-void start_connector_thread(int port, char* name, Channel* incoming, int fd) {
+void start_connector_thread(Connection* connection, Channel* incoming) {
+    DEBUG_PRINT("starting connector thread");
     ConnectorData* connArg = calloc(1, sizeof(ConnectorData));
-    connArg->fd = fd;
+    connArg->connection = connection;
     connArg->incoming = incoming;
-    connArg->ourPort = port;
-    connArg->ourName = name;
 
     pthread_t thread;
     pthread_create(&thread, NULL, connector_thread, connArg);
+}
+
+/* Verifies the connection on the given read/write files by sending and
+ * expecting IM messages.
+ * If successful, sends a CONN_NEW meta message to incoming channel. If not
+ * successful, thread closes. Return value unused.
+ */
+void* verify_thread(void* verifyArg) {
+    VerifyData verifyData = *(VerifyData*)verifyArg;
+    free(verifyArg);
+    DEBUG_PRINT("verifying connection");
+    // prevents becoming a thread zombie. success is indicated to main via
+    // channel. on failure, thread ends
+    pthread_detach(pthread_self());
+
+    Message msg = msg_im(verifyData.ourPort, verifyData.ourName);
+    if (msg_send(verifyData.writeFile, msg) != MS_OK) {
+        DEBUG_PRINT("sending IM failed. closing");
+        msg_destroy(&msg);
+        fclose(verifyData.readFile);
+        fclose(verifyData.writeFile);
+        return NULL;
+    }
+    msg_destroy(&msg); // destroy the msg_im()
+    if (msg_receive(verifyData.readFile, &msg) != MS_OK ||
+            msg.type != MSG_IM || !is_name_valid(msg.data.depotName)) {
+        DEBUG_PRINT("invalid IM or bad depot name. closing.");
+        msg_destroy(&msg);
+        fclose(verifyData.readFile);
+        fclose(verifyData.writeFile);
+        return NULL;
+    }
+
+    Connection conn;
+    conn_init(&conn, msg.data.depotPort, msg.data.depotName);
+    conn_set_files(&conn, verifyData.readFile, verifyData.writeFile);
+    DEBUG_PRINTF("acknowledged by %s on %d\n", conn.name, conn.port);
+    msg_destroy(&msg);
+
+    msg = (Message) {0};
+    msg.type = MSG_META_CONN_NEW;
+    // yields connection struct to main thread. main thread now owns it
+    msg.data.connection = calloc(1, sizeof(Connection));
+    *msg.data.connection = conn;
+    Message* msgNew = malloc(sizeof(Message));
+    *msgNew = msg;
+    chan_post(verifyData.incoming, msgNew);
+    
+    return NULL;
+}
+
+void start_verify_thread(int port, char* name, Channel* incoming, int fd) {
+    VerifyData* verifyData = malloc(sizeof(VerifyData));
+    verifyData->ourPort = port;
+    verifyData->ourName = name;
+    verifyData->incoming = incoming;
+
+    int fdRead = fd;
+    int fdWrite = dup(fd);
+    verifyData->readFile = fdopen(fdRead, "r");
+    verifyData->writeFile = fdopen(fdWrite, "w");
+
+    pthread_t verifyThread;
+    pthread_create(&verifyThread, NULL, verify_thread, verifyData);
 }
 
 bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
@@ -544,8 +564,8 @@ void* server_thread(void* serverArg) {
     while (1) {
         // listen for connections
         int fd = accept(serverData.fd, 0, 0);
-        DEBUG_PRINT("accepted connection");
-        start_connector_thread(serverData.ourPort, serverData.ourName, 
+        DEBUG_PRINT("accepted connection, verifying.");
+        start_verify_thread(serverData.ourPort, serverData.ourName,
                 serverData.incoming, fd);
     }
     assert(0);

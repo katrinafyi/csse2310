@@ -29,24 +29,20 @@ void conn_destroy(Connection* connection) {
         chan_destroy(connection->outgoing);
     }
     TRY_FREE(connection->outgoing);
+
+    if (connection->readFile != NULL) {
+        fclose(connection->readFile);
+        connection->readFile = NULL;
+    }
+
+    if (connection->writeFile != NULL) {
+        fclose(connection->writeFile);
+        connection->writeFile = NULL;
+    }
 }
 
 // see header
-void conn_set_threads(Connection* connection, pthread_t connectorThread,
-        pthread_t readThread, pthread_t writeThread) {
-    connection->connectorThread = connectorThread;
-    connection->readThread = readThread;
-    connection->writeThread = writeThread;
-}
-
-// see header
-void conn_cancel_threads(Connection* connection) {
-    pthread_cancel(connection->connectorThread);
-    pthread_join(connection->connectorThread, NULL);
-
-    pthread_cancel(connection->readThread);
-    pthread_join(connection->readThread, NULL);
-
-    pthread_cancel(connection->writeThread);
-    pthread_join(connection->writeThread, NULL);
+void conn_set_files(Connection* connection, FILE* readFile, FILE* writeFile) {
+    connection->readFile = readFile;
+    connection->writeFile = writeFile;
 }

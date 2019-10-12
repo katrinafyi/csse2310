@@ -9,10 +9,9 @@
 typedef struct Connection {
     int port;
     char* name; // malloc!
-    pthread_t connectorThread; // thread which manages this connection
-    pthread_t readThread; // thread which reads from this connection
-    pthread_t writeThread; // thread which writes to this connection
     Channel* outgoing; // channel for outgoing messages, as Message*
+    FILE* readFile;
+    FILE* writeFile;
 } Connection;
 
 /* Initialises a connection struct in the given location, with the given port
@@ -24,13 +23,9 @@ void conn_init(Connection* connection, int port, char* name);
  */
 void conn_destroy(Connection* connection);
 
-/* Attaches the given thread IDs to this connection.
+/* Attaches the given files to the connection. Given files are for reading
+ * or writing to the connection's socket, respectively.
  */
-void conn_set_threads(Connection* connection, pthread_t connectorThread,
-        pthread_t readThread, pthread_t writeThread);
+void conn_set_files(Connection* connection, FILE* readFile, FILE* writeFile);
 
-/* Cancels and joins the read and write threads of this connection.
- * Assumes readThread/writeThread are set correctly.
- */
-void conn_cancel_threads(Connection* connection);
 #endif
