@@ -48,7 +48,7 @@ void msgfrom_destroy(MessageFrom* messageFrom) {
 
 // see header
 char* msg_code(MessageType type) {
-    static char* msgCodes[NUM_MESSAGE_TYPES_ALL]; // +1 for NULL code.
+    char* msgCodes[NUM_MESSAGE_TYPES_ALL];
     msgCodes[MSG_CONNECT] = "Connect";
     msgCodes[MSG_IM] = "IM";
     msgCodes[MSG_DELIVER] = "Deliver";
@@ -56,12 +56,14 @@ char* msg_code(MessageType type) {
     msgCodes[MSG_TRANSFER] = "Transfer";
     msgCodes[MSG_DEFER] = "Defer";
     msgCodes[MSG_EXECUTE] = "Execute";
+
     msgCodes[MSG_NULL] = "(null msg type)";
     msgCodes[MSG_META_CONN_NEW] = "(meta conn new)";
     msgCodes[MSG_META_CONN_EOF] = "(meta conn eof)";
     msgCodes[MSG_META_SIGNAL] = "(meta signal)";
 
     assert(0 <= type && type < NUM_MESSAGE_TYPES_ALL);
+    // this is safe because string literals have static lifetime
     return msgCodes[type];
 }
 
@@ -142,7 +144,7 @@ bool consume_material(char** start, Material* outMaterial) {
 }
 
 // consumes an entire message. useful for recursive messages (Defer).
-bool consume_message(char** start, Message** outMessagePtr) {
+bool consume_message(char** start, Message** outMessage) {
     // allocate on stack until we validate the message.
     Message message;
     MessageStatus status = msg_parse(*start, &message);
@@ -154,7 +156,7 @@ bool consume_message(char** start, Message** outMessagePtr) {
     Message* newMsg = malloc(sizeof(Message));
     *newMsg = message;
     // update the out param with the new message location
-    *outMessagePtr = newMsg;
+    *outMessage = newMsg;
     *start = *start + strlen(*start); // entire string is consumed.
     return true;
 }

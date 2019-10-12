@@ -1,3 +1,6 @@
+// xvim: foldmethod=marker:foldlevelstart=0 foldenable
+
+/* includes {{{1 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,21 +12,17 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-
 #include "exitCodes.h"
 #include "connection.h"
 #include "material.h"
 #include "depotState.h"
 #include "messages.h"
+#include "network.h"
 #include "util.h"
 
 #define BANNED_NAME_CHARS " \n\r:"
-#define CONNECTION_QUEUE 32
+
+/* type declarations {{{1 */
 
 typedef struct ServerData {
     int fd; // file descriptor of the server
@@ -58,6 +57,8 @@ typedef struct ReaderData {
     Channel* incoming; // BORROWED channel to write parsed messages to
 } ReaderData;
 
+
+
 // see impl. thread to verify connection with IM messages
 void* verify_thread(void* verifyArg);
 // see impl. thread to start and manage read/write threads
@@ -67,15 +68,26 @@ void* writer_thread(void* writerDataArg);
 // see impl. thread to read from socket
 void* reader_thread(void* readerDataArg);
 
+
 // see implementations for comments.
 void start_connector_thread(Connection* connection, Channel* incoming);
 // see implementation
 void start_verify_thread(int port, char* name, Channel* incoming, int fd);
-// see implementation.
-bool start_active_socket(int* fdOut, char* port);
 // see implementaiton
 void execute_message(DepotState* depotState, Message* message);
 
+/* util methods {{{1 */
+
+/* Constructs and returns a set of signals which should be blocked and picked
+ * up via sigwait.
+ */
+sigset_t blocked_sigset(void) {
+    sigset_t ss;
+    sigemptyset(&ss);
+    sigaddset(&ss, SIGHUP);
+    sigaddset(&ss, SIGUSR1);
+    return ss;
+}
 
 /* Returns whether the given string is a valid depot or material name,
  * according to rules in spec.
@@ -108,6 +120,8 @@ bool is_mat_valid(Material material) {
     return true;
 }
 
+/* execute methods {{{1 */
+/* execute normal messages {{{2 */
 
 void execute_connect(DepotState* depotState, Message* message) {
     char* port = asprintf("%d", message->data.depotPort);
@@ -148,12 +162,10 @@ void execute_transfer(DepotState* depotState, Message* message) {
         return;
     }
 
-    ARRAY_RDLOCK(depotState->connections);
     Connection* conn = arraymap_get(depotState->connections,
             message->data.depotName);
     if (conn == NULL) {
         DEBUG_PRINTF("depot not found: %s\n", message->data.depotName);
-        ARRAY_UNLOCK(depotState->connections);
         return;
     }
 
@@ -177,16 +189,12 @@ void execute_defer(DepotState* depotState, Message* message) {
             DEBUG_PRINT("unsupported deferred message type");
             return; // silently ignore
     }
-    ARRAY_RDLOCK(depotState->deferGroups);
     DeferGroup* dg = ds_ensure_defer_group(depotState, message->data.deferKey);
     
-    ARRAY_WRLOCK(dg->messages);
     dg_add_message(dg, message->data.deferMessage);
     // deferMessage now owned by dg. delete our reference.
     message->data.deferMessage = NULL;
-    ARRAY_UNLOCK(dg->messages);
 
-    ARRAY_UNLOCK(depotState->deferGroups);
 
     // we can destroy message now because the sub-message has been copied
     // and its reference in *message is set to NULL.
@@ -195,12 +203,10 @@ void execute_defer(DepotState* depotState, Message* message) {
 void execute_execute(DepotState* depotState, Message* message) {
     // admittedly not the best naming
 
-    ARRAY_WRLOCK(depotState->deferGroups);
     DeferGroup* dg = arraymap_get(depotState->deferGroups, 
             &message->data.deferKey);
     if (dg == NULL) {
         DEBUG_PRINT("defer key not found");
-        ARRAY_UNLOCK(depotState->deferGroups);
         return;
     }
     DEBUG_PRINTF("executing defer group, key: %d\n", message->data.deferKey);
@@ -221,8 +227,9 @@ void execute_execute(DepotState* depotState, Message* message) {
     // and free memory
     free(dg);
 
-    ARRAY_UNLOCK(depotState->deferGroups);
 }
+
+/* }}}2 */
 
 void execute_message(DepotState* depotState, Message* message) {
     switch (message->type) {
@@ -298,6 +305,7 @@ void execute_meta_message(DepotState* depotState, Message* message) {
     }
 }
 
+/* reader/writer threads {{{1 */
 
 void* reader_thread(void* readerArg) {
     ReaderData readerData = *(ReaderData*)readerArg;
@@ -306,7 +314,7 @@ void* reader_thread(void* readerArg) {
             readerData.name);
 
     MessageStatus status = MS_OK;
-    while (status != MS_EOF) {
+    while (status != MS_EOF) { // loop until EOF
         Message msg = {0};
         status = msg_receive(readerData.readFile, &msg);
         if (status != MS_OK) {
@@ -317,7 +325,7 @@ void* reader_thread(void* readerArg) {
         Message* msgNew = calloc(1, sizeof(Message));
         *msgNew = msg;
         DEBUG_PRINT("sending message to incoming channel");
-        // yield MessageFrom* to the incoming channel
+        // YIELD received message to channel
         chan_post(readerData.incoming, msgNew);
     }
     DEBUG_PRINTF("reader thread for %d:%s reached EOF\n", readerData.port,
@@ -337,8 +345,10 @@ void* writer_thread(void* writerArg) {
         msg_destroy(msg);
         free(msg);
     }
+    assert(0);
 }
 
+/* connector thread {{{1 */
 
 void* connector_thread(void* connectorArg) {
     // copy into local variable and free memory
@@ -397,6 +407,8 @@ void start_connector_thread(Connection* connection, Channel* incoming) {
     pthread_t thread;
     pthread_create(&thread, NULL, connector_thread, connArg);
 }
+
+/* verifier thread {{{1 */
 
 /* Verifies the connection on the given read/write files by sending and
  * expecting IM messages.
@@ -462,82 +474,75 @@ void start_verify_thread(int port, char* name, Channel* incoming, int fd) {
     pthread_create(&verifyThread, NULL, verify_thread, verifyData);
 }
 
-bool new_socket(char* port, int* fdOut, struct addrinfo** aiOut) {
-    // copied with few modifications from Joel's net4.c
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET; // ipv4
-    hints.ai_socktype = SOCK_STREAM; // tcp
-    hints.ai_flags = AI_PASSIVE; // server
+/* server / signal threads {{{1 */
 
-    struct addrinfo* ai; // for address info returned by getaddrinfo
-    int error = getaddrinfo("127.0.0.1", port, &hints, &ai);
-    *aiOut = ai;
+void* server_thread(void* serverArg) {
+    ServerData serverData = *(ServerData*)serverArg;
+    DEBUG_PRINT("server thread started");
 
-    if (error != 0) {
-        DEBUG_PRINTF("error getaddrinfo: %s\n", gai_strerror(error));
-        return false;
+    while (1) {
+        // listen for connections
+        int fd = accept(serverData.fd, 0, 0);
+        DEBUG_PRINT("accepted connection, verifying.");
+        start_verify_thread(serverData.ourPort, serverData.ourName,
+                serverData.incoming, fd);
     }
-    *fdOut = socket(AF_INET, SOCK_STREAM, 0); // 0 is default protocol
-    return true;
+    assert(0);
 }
 
-bool start_active_socket(int* fdOut, char* port) {
-    struct addrinfo* ai;
-    int sock;
-    // init new socket()
-    if (!new_socket(port, &sock, &ai)) {
-        return false;
-    }
-    if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
-        DEBUG_PERROR("connect()");
-        freeaddrinfo(ai);
-        return false;
-    }
-    freeaddrinfo(ai);
-    *fdOut = sock;
-    return true;
+pthread_t start_server_thread(DepotState* depotState, int fdServer) {
+    // start server listener thread. data argument is allocated on stack!
+    ServerData* serverData = malloc(sizeof(ServerData));
+    serverData->fd = fdServer;
+    serverData->ourName = depotState->name;
+    serverData->ourPort = depotState->port;
+    serverData->incoming = depotState->incoming;
+
+    pthread_t serverThread;
+    pthread_create(&serverThread, NULL, server_thread, serverData);
+    return serverThread;
 }
 
-bool start_passive_socket(int* fdOut, int* portOut) {
-    struct addrinfo* ai;
+void* signal_thread(void* signalArg) {
+    Channel* incoming = signalArg;
+    sigset_t ss = blocked_sigset();
+
+    while (1) {
+        int sig;
+        sigwait(&ss, &sig);
+        DEBUG_PRINTF("signal %d: %s\n", sig, strsignal(sig));
+        Message* msg = calloc(1, sizeof(Message));
+        msg->type = MSG_META_SIGNAL;
+        msg->data.signal = sig;
+        // post to incoming messages channel
+        chan_post(incoming, msg);
+    }
+}
+
+/* main functions {{{1*/
+
+DepotExitCode exec_depot_loop(DepotState* depotState) {
+    DEBUG_PRINT("starting depot");
+    // block SIGHUP from all threads. we will pick it up via sigwait
+    sigset_t ss = blocked_sigset();
+    pthread_sigmask(SIG_BLOCK, &ss, NULL);
+    ignore_sigpipe(); // also ignore SIGPIPE
+
+    // start the server thing
     int server;
-    // init new socket()
-    if (!new_socket(NULL, &server, &ai)) {
-        return false;
+    int port;
+    if (!start_passive_socket(&server, &port)) {
+        DEBUG_PRINT("failed to start passive socket");
+        return D_NORMAL; // no special exit code
     }
-    if (bind(server, ai->ai_addr, ai->ai_addrlen) != 0) {
-        freeaddrinfo(ai);
-        DEBUG_PERROR("bind()");
-        return false;
-    }
-    freeaddrinfo(ai);
-    ai = NULL;
+    depotState->port = port;
+    printf("%d\n", port);
+    // start server to listen for incoming connections
+    pthread_t serverThread = start_server_thread(depotState, server);
 
-    // find actual address we're bound to
-    struct sockaddr_in ad;
-    socklen_t len = sizeof(struct sockaddr_in);
-    memset(&ad, 0, len);
-    if (getsockname(server, (struct sockaddr*)&ad, &len) != 0) {
-        DEBUG_PERROR("getsockname()");
-        return false;
-    }
-    DEBUG_PRINTF("bound to address %s port %d\n", inet_ntoa(ad.sin_addr),
-            ntohs(ad.sin_port));
-
-    if (listen(server, CONNECTION_QUEUE) != 0) {
-        DEBUG_PERROR("listen()");
-        return false;
-    }
-
-    *fdOut = server;
-    *portOut = ntohs(ad.sin_port);
-    return true;
-}
-
-void* main_thread(void* depotStateArg) {
-    DepotState* depotState = depotStateArg;
-
+    pthread_t signalThread;
+    pthread_create(&signalThread, NULL, signal_thread, depotState->incoming);
+    // main loop of the depot. processes incoming messages
     while (1) {
         Message* msg = chan_wait(depotState->incoming);
         int numItems;
@@ -554,73 +559,7 @@ void* main_thread(void* depotStateArg) {
         msg_destroy(msg);
         free(msg);
     }
-    assert(0);
-}
-
-void* server_thread(void* serverArg) {
-    ServerData serverData = *(ServerData*)serverArg;
-    DEBUG_PRINT("server thread started");
-
-    while (1) {
-        // listen for connections
-        int fd = accept(serverData.fd, 0, 0);
-        DEBUG_PRINT("accepted connection, verifying.");
-        start_verify_thread(serverData.ourPort, serverData.ourName,
-                serverData.incoming, fd);
-    }
-    assert(0);
-}
-
-DepotExitCode exec_server(DepotState* depotState) {
-    DEBUG_PRINT("starting server");
-    // block SIGHUP from all threads. we will pick it up via sigwait
-    static sigset_t ss;
-    sigemptyset(&ss);
-    sigaddset(&ss, SIGHUP);
-    sigaddset(&ss, SIGUSR1); // use SIGUSR1 to exit cleanly
-    pthread_sigmask(SIG_BLOCK, &ss, NULL);
-    ignore_sigpipe(); // also ignore SIGPIPE
-
-    // start the server thing
-    int server;
-    int port;
-    if (!start_passive_socket(&server, &port)) {
-        DEBUG_PRINT("failed to start passive socket");
-        return D_NORMAL; // no special exit code
-    }
-    depotState->port = port;
-    printf("%d\n", port);
-
-    // start server listener thread. data argument is allocated on stack!
-    ServerData serverData;
-    serverData.fd = server;
-    serverData.ourName = depotState->name;
-    serverData.ourPort = depotState->port;
-    serverData.incoming = depotState->incoming;
-
-    pthread_t serverThread;
-    pthread_create(&serverThread, NULL, server_thread, &serverData);
-
-
-    pthread_t mainThread;
-    pthread_create(&mainThread, NULL, main_thread, depotState);
-
-    while (1) {
-        int sig;
-        sigwait(&ss, &sig);
-        DEBUG_PRINTF("signal %d: %s\n", sig, strsignal(sig));
-        if (sig != SIGHUP) {
-            break; // terminate if caught non SIGHUP signal
-        }
-        Message* msg = calloc(1, sizeof(Message));
-        msg->type = MSG_META_SIGNAL;
-        msg->data.signal = sig;
-        chan_post(depotState->incoming, msg);
-        //print_depot_info(depotState);
-    }
-    // terminate the program
-    DEBUG_PRINT("terminating program due to signal!");
-
+    assert(0); // should never get here
     return D_NORMAL;
 }
 
@@ -652,7 +591,7 @@ DepotExitCode exec_main(int argc, char** argv, DepotState* depotState) {
         ds_alter_mat(depotState, matName, quantity);
     }
 
-    return exec_server(depotState);
+    return exec_depot_loop(depotState);
 }
 
 // starts the program and owns state struct

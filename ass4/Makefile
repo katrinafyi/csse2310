@@ -1,8 +1,10 @@
 common_src = util.c array.c messages.c material.c depotState.c connection.c \
-	     exitCodes.c arrayHelpers.c deferGroup.c channel.c
+	     exitCodes.c arrayHelpers.c deferGroup.c channel.c network.c
 depot_src = main.c
 test_src = testUtil.c testMessages.c testArray.c testDepotState.c testDefer.c\
 all_src = $(common_src) $(depot_src) $(test_src)
+
+common_h = $(common_src:.c=.h)
 
 common_obj = $(common_src:.c=.o)
 depot_obj = $(depot_src:.c=.o)
@@ -49,7 +51,7 @@ test_defer: $(common_obj) testDefer.o
 %.o: %.c
 	gcc $(CCFLAGS) $< -c -o $@
 
-2310depot: $(common_obj) $(depot_obj)
+2310depot: $(common_h) $(common_obj) $(depot_obj)
 	gcc $(CCFLAGS) $^ -o $@
 
 clean:

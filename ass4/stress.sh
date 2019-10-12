@@ -12,9 +12,10 @@ if [[ "$(hostname)" = 'moss.labs.eait.uq.edu.au' ]]; then
     arg=--send-only
 fi
 
-for i in {1..10}; do
+for i in {1..100}; do
+    p=$((i + 1000))
     nc $arg localhost $port <<EOF &
-IM:1000:nc$i
+IM:$p:nc$i
 Deliver:1:mat
 Withdraw:2:mat
 Defer:10:Deliver:1:mat
@@ -25,5 +26,4 @@ Transfer:1:mat$i:nc$i
 Deliver:1:0mat$i
 EOF
     kill -hup $pid
-    sleep 0.2
 done

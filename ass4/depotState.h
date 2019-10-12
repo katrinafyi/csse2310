@@ -14,6 +14,7 @@
 typedef struct DepotState {
     char* name; // name of this depot, NOT malloc
     int port;
+
     Channel* incoming; // channel of incoming messages, as MessageFrom*
     Array* materials; // array map of materials we store, keyed by name
     Array* connections; // array map of open connections, keyed by name
