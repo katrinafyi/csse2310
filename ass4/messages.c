@@ -128,7 +128,8 @@ bool consume_str(char** start, char** outStr) {
     // allocate space for a copy of the consumed string.
     char* copy = calloc(len + 1, sizeof(char));
     // copy exactly len bytes into the new string, and \0.
-    strncpy(copy, *start, len + 1);
+    strncpy(copy, *start, len);
+    copy[len] = '\0'; // null terminate new string
 
     *outStr = copy;
     *start = *start + len; // move past this string.

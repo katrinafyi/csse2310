@@ -118,6 +118,20 @@ bool is_mat_valid(Material material) {
     return true;
 }
 
+/* Returns true if a connection to the given port exists, false otherwise.
+ */
+bool is_port_connected(DepotState* depotState, int port) {
+    bool portExists = false;
+    for (int i = 0; i < depotState->connections->numItems; i++) {
+        if (ARRAY_ITEM(Connection, depotState->connections, i)->port
+                == port) {
+            portExists = true;
+            break;
+        }
+    }
+    return portExists;
+}
+
 /* execute methods {{{1 */
 /* execute normal messages {{{2 */
 
@@ -131,7 +145,12 @@ bool is_mat_valid(Material material) {
 
 // executes a Connect:port message
 void execute_connect(DepotState* depotState, Message* message) {
-    char* port = asprintf("%d", message->data.depotPort);
+    int portNum = message->data.depotPort;
+    if (is_port_connected(depotState, portNum)) {
+        DEBUG_PRINTF("preempting duplicate connection to %d\n", portNum);
+        return;
+    }
+    char* port = asprintf("%d", portNum);
     DEBUG_PRINTF("trying to connect to port %s\n", port);
     int fd;
     bool started = start_active_socket(&fd, port);
@@ -266,20 +285,6 @@ void execute_message(DepotState* depotState, Message* message) {
     }
 }
 
-/* Returns true if a connection to the given port exists, false otherwise.
- */
-bool is_port_connected(DepotState* depotState, int port) {
-    bool portExists = false;
-    for (int i = 0; i < depotState->connections->numItems; i++) {
-        if (ARRAY_ITEM(Connection, depotState->connections, i)->port
-                == port) {
-            portExists = true;
-            break;
-        }
-    }
-    return portExists;
-}
-
 // executes a single METE message. these messages affect the state of
 // connections / signals of the depot, not the actual materials
 void execute_meta_message(DepotState* depotState, Message* message) {
@@ -294,14 +299,13 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             }
             break;
         case MSG_META_CONN_NEW:
-            DEBUG_PRINTF("new connection %d:%s\n", conn->port,
-                    conn->name);
+            DEBUG_PRINTF("new connection to %d:%s, %p\n", conn->port,
+                    conn->name, (void*)conn);
             if (arraymap_get(depotState->connections, conn->name) != NULL ||
                     is_port_connected(depotState, conn->port)) {
                 DEBUG_PRINT("connection to name or port exists, ignoring.");
                 break; // main thread will cleanup
             }
-
             DEBUG_PRINT("accepting new connection");
             // YIELD connection to connections array
             array_add(depotState->connections, conn);
@@ -310,7 +314,8 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             start_reader_thread(conn, depotState->incoming);
             break;
         case MSG_META_CONN_EOF:
-            DEBUG_PRINTF("removing conn %d:%s\n", conn->port, conn->name);
+            DEBUG_PRINTF("removing conn %d:%s, %p\n", conn->port, conn->name,
+                    (void*)conn);
             array_remove(depotState->connections, conn);
             // connection will be cleaned up by msg_destroy later
             break;
@@ -336,16 +341,16 @@ void* reader_thread(void* readerArg) {
         Message msg = {0};
         status = msg_receive(conn->readFile, &msg);
         if (status != MS_OK) {
-            DEBUG_PRINT("message invalid or eof");
+            DEBUG_PRINT("message invalid or eof, not posting");
             continue;
         }
         // wrap received message in a heap-allocated struct
         Message* msgNew = calloc(1, sizeof(Message));
         *msgNew = msg;
-        DEBUG_PRINT("sending message to incoming channel");
+        DEBUG_PRINTF("posting to incoming channel: %p\n", (void*)msgNew);
         // YIELD received message to channel
         chan_post(readerData.incoming, msgNew);
-        DEBUG_PRINT("message posted");
+        DEBUG_PRINTF("message posted: %p\n", (void*)msgNew);
     }
     DEBUG_PRINTF("reader reached EOF for %d:%s\n", conn->port, conn->name);
 
@@ -528,7 +533,7 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     depotState->port = port; // set port in depotState
     printf("%d\n", port);
     // start server to listen for incoming connections
-    pthread_t serverThread = start_server_thread(depotState, server);
+    start_server_thread(depotState, server);
     // start thread to listen for signals
     pthread_t signalThread;
     pthread_create(&signalThread, NULL, signal_thread, depotState->incoming);
@@ -537,8 +542,8 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         Message* msg = chan_wait(depotState->incoming);
         int numItems;
         sem_getvalue(&depotState->incoming->numItems, &numItems);
-        DEBUG_PRINTF("received message, %d messages remain\n", numItems);
-        msg_debug(msg);
+        DEBUG_PRINTF("received %s message, %d messages remain\n", 
+                msg_code(msg->type), numItems);
         if (msg->type >= MSG_NULL) { // meta messages are after MSG_NULL
             execute_meta_message(depotState, msg);
         } else {

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <sys/types.h>
+#include <pthread.h>
 // syscall.h is not liked by style.sh
 //#include <sys/syscall.h>
 
@@ -29,11 +30,11 @@
 
 #define GET_COLOUR(n) (15 - (n) % 7)
 
-// 186 is system call instruction for SYS_gettid
-#define GET_TID() ((int)syscall(186))
+// syscall instruction to get thread ID
+//#define GET_TID() ((int)syscall(SYS_gettid))
 
-// obviously wrong, but syscall is non POSIX
-//#define GET_TID() getpid()
+// very hacky, but syscall is non POSIX so we can't use it :,(
+#define GET_TID() (int)((((int)pthread_self()) >> 13) & 0xffff)
 
 #ifdef DEBUG
 
@@ -43,9 +44,11 @@
 // ass4: fixed these crashing style.sh
 #define DEBUG_PRINT(str) DEBUG_PRINTF(str"%c", '\n')
 #define DEBUG_PRINTF(fmt, ...) fprintf(stderr,\
-        TERM_FMT "(%d " TERM_FMT "%d) " TERM_GREY "%s:%d" TERM_RESET " " fmt,\
+        TERM_FMT "(%d " TERM_FMT "%02x" TERM_FMT "%02x) "\
+        TERM_GREY "%s:%d" TERM_RESET " " fmt,\
         GET_COLOUR(getpid()), getpid(),\
-        GET_COLOUR(GET_TID() - getpid()), GET_TID() - getpid(),\
+        GET_COLOUR((GET_TID() & 0xff00) >> 8), (GET_TID() & 0xff00) >> 8,\
+        GET_COLOUR(GET_TID() & 0xff), GET_TID() & 0xff,\
         __func__, __LINE__, __VA_ARGS__)
 // formats in the style of:
 // (pid) main:53 example message

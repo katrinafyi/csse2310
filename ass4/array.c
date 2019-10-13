@@ -8,9 +8,6 @@
 
 // see header
 void array_init(Array* array) {
-    // initialise rw lock
-    assert(pthread_rwlock_init(&array->lock, NULL) == 0);
-
     // initialise items to null pointers (0)
     array->items = calloc(ARRAY_INITIAL_SIZE, sizeof(void*));
     assert(array->items != NULL);
@@ -45,10 +42,6 @@ void array_destroy(Array* array) {
         return;
     }
 
-    if (array->items != NULL) {
-        // use array->items to indicate whether the lock is initialised.
-        pthread_rwlock_destroy(&array->lock);
-    }
     // don't automatically free() individual items
     TRY_FREE(array->items);
 }

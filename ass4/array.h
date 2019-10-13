@@ -13,13 +13,6 @@
 #define ARRAY_ITEM(type, array, index) ((type*) (array_get_at(array, index)))
 // excessive parens are for simpatico
 
-// locks the array for writing
-#define ARRAY_WRLOCK(array) pthread_rwlock_wrlock(&array->lock)
-// locks the array for reading
-#define ARRAY_RDLOCK(array) pthread_rwlock_rdlock(&array->lock)
-// unlocks the array
-#define ARRAY_UNLOCK(array) pthread_rwlock_unlock(&array->lock)
-
 /* pointer item stored within the array. */
 typedef void* ArrayItem;
 /* pointer to an arbitrary key value of some item in the array. */
@@ -41,15 +34,11 @@ typedef ArrayKey (*ArrayMapper)(ArrayItem);
 typedef int (*ArraySorter)(ArrayKey, ArrayKey);
 
 
-
 /* Basic array structure which automatically grows. To handle arbitrary types,
  * this stores void*'s.
  *
- * Using mapper and sorter, this doubles as a horrible map/dictionary
+ * Using mapper and sorter, this doubles as a inefficient map/dictionary
  * implementation.
- *
- * This stores a lock which we can use but these functions DO NOT lock by
- * themself.
  */
 typedef struct Array {
     ArrayItem* items; // items in array, actually just a list of void*'s
@@ -57,7 +46,6 @@ typedef struct Array {
     int numAllocated; // space allocated. should be >= numItems
     ArrayMapper mapper; // maps items to some key.
     ArraySorter sorter; // comparison function on the keys.
-    pthread_rwlock_t lock; // rwlock for synchronising reads/writes.
 } Array;
 
 /* Initialises an array with the default initial size.
