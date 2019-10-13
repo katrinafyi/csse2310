@@ -209,18 +209,18 @@ void execute_transfer(DepotState* depotState, Message* message) {
 // be deferred
 void execute_defer(DepotState* depotState, Message* message) {
     Message* deferMessage = message->data.deferMessage;
-    switch (deferMessage->type) {
-        case MSG_DELIVER:
-        case MSG_WITHDRAW:
-        case MSG_TRANSFER:
-            break; // only these message types are valid for Defer
-        default:
-            DEBUG_PRINT("unsupported deferred message type");
-            return; // silently ignore
+
+    // restrict types of messages which can be deferred
+    MessageType deferType = deferMessage->type;
+    if (!(deferType == MSG_DELIVER || deferType == MSG_WITHDRAW ||
+            deferType == MSG_TRANSFER)) {
+        DEBUG_PRINT("unsupported deferred message type");
+        return; // silently ignore
     }
+
     DeferGroup* dg = ds_ensure_defer_group(depotState, message->data.deferKey);
     dg_add_message(dg, message->data.deferMessage);
-    // deferMessage now owned by dg. delete our reference.
+    // deferMessage now owned by defer group. delete our reference.
     message->data.deferMessage = NULL;
     // we can destroy message now because the sub-message has been copied
     // and its reference in *message is set to NULL.
