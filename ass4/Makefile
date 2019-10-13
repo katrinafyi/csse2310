@@ -26,7 +26,6 @@ else
 endif
 
 .PHONY: sed_debug sed_noop all debug clean check_debug
-release: CCFLAGS += -O4
 release: all
 
 all: 2310depot

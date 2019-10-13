@@ -530,11 +530,13 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     }
     depotState->port = port; // set port in depotState
     printf("%d\n", port);
+
     // start server to listen for incoming connections
     start_server_thread(depotState, server);
     // start thread to listen for signals
     pthread_t signalThread;
     pthread_create(&signalThread, NULL, signal_thread, depotState->incoming);
+
     // main loop of the depot. processes incoming messages
     while (1) {
         Message* msg = chan_wait(depotState->incoming);
