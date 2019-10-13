@@ -256,41 +256,44 @@ void execute_message(DepotState* depotState, Message* message) {
     }
 }
 
+bool is_port_connected(DepotState* depotState, int port) {
+    bool portExists = false;
+    for (int i = 0; i < depotState->connections->numItems; i++) {
+        if (ARRAY_ITEM(Connection, depotState->connections, i)->port
+                == conn->port) {
+            portExists = true;
+            break;
+        }
+    }
+    return portExists;
+}
+
 void execute_meta_message(DepotState* depotState, Message* message) {
     Connection* conn = message->data.connection;
+    int signal = message->data.signal;
     switch (message->type) {
         case MSG_META_SIGNAL:
-            DEBUG_PRINTF("received signal %d: %s\n", message->data.signal,
-                    strsignal(message->data.signal));
-            ds_print_info(depotState);
+            DEBUG_PRINTF("received signal %d: %s\n", signal,
+                    strsignal(signal));
+            if (signal == SIGHUP) {
+                ds_print_info(depotState);
+            }
             break;
         case MSG_META_CONN_NEW:
             DEBUG_PRINTF("new connection %d:%s\n", conn->port,
                     conn->name);
-            if (arraymap_get(depotState->connections, conn->name) != NULL) {
-                DEBUG_PRINT("connection with name already exists, ignoring.");
+            if (arraymap_get(depotState->connections, conn->name) != NULL ||
+                    is_port_connected(depotState, conn->port)) {
+                DEBUG_PRINT("connection to name or port exists, ignoring.");
                 break; // main thread will cleanup
             }
 
-            bool portExists = false;
-            for (int i = 0; i < depotState->connections->numItems; i++) {
-                if (ARRAY_ITEM(Connection, depotState->connections, i)->port
-                        == conn->port) {
-                    portExists = true;
-                    break;
-                }
-            }
-            if (portExists) {
-                DEBUG_PRINT("connection to port already exists, ignoring.");
-                break;
-            }
-
-            DEBUG_PRINT("adding to arraymap");
+            DEBUG_PRINT("accepting new connection");
             // YIELD connection to connections array
             array_add(depotState->connections, conn);
-            message->data.connection = NULL;
-
-            start_reader_thread(conn, depotState->incoming); // start thread
+            message->data.connection = NULL; // don't destroy conn
+            // start reader thread to get incoming messages
+            start_reader_thread(conn, depotState->incoming);
             break;
         case MSG_META_CONN_EOF:
             DEBUG_PRINTF("removing conn %d:%s\n", conn->port, conn->name);
@@ -490,7 +493,7 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     printf("%d\n", port);
     // start server to listen for incoming connections
     pthread_t serverThread = start_server_thread(depotState, server);
-
+    // start thread to listen for signals
     pthread_t signalThread;
     pthread_create(&signalThread, NULL, signal_thread, depotState->incoming);
     // main loop of the depot. processes incoming messages
@@ -498,13 +501,11 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         Message* msg = chan_wait(depotState->incoming);
         int numItems;
         sem_getvalue(&depotState->incoming->numItems, &numItems);
-        DEBUG_PRINTF("%d messages remain\n", numItems);
+        DEBUG_PRINTF("received message, %d messages remain\n", numItems);
+        msg_debug(msg);
         if (msg->type >= MSG_NULL) {
-            DEBUG_PRINT("received meta message");
-            msg_debug(msg);
             execute_meta_message(depotState, msg);
         } else {
-            DEBUG_PRINT("received normal message!");
             execute_message(depotState, msg);
         }
         msg_destroy(msg);

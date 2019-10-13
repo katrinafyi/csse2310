@@ -123,6 +123,7 @@ void ds_print_info(DepotState* depotState) {
     for (int i = 0; i < depotState->materials->numItems; i++) {
         Material* mat = ARRAY_ITEM(Material, depotState->materials, i);
         if (mat->quantity == 0) {
+            DEBUG_PRINTF("%s %d\n", mat->name, mat->quantity);
             continue;
         }
         printf("%s %d\n", mat->name, mat->quantity);

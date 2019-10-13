@@ -9,7 +9,6 @@
 typedef struct Connection {
     int port;
     char* name; // malloc!
-    Channel* outgoing; // channel for outgoing messages, as Message*
     FILE* readFile;
     FILE* writeFile;
 } Connection;
