@@ -394,10 +394,14 @@ MessageStatus msg_send(FILE* file, Message message) {
 
     errno = 0;
     int ret = fprintf(file, "%s\n", encoded);
-    fflush(file);
+    free(encoded);
+
+    if (fflush(file) != 0) {
+        DEBUG_PRINT("error flushing file");
+        return MS_EOF;
+    }
 
     // DEBUG_PRINTF("errno: %d\n", errno);
-    free(encoded);
     // only (reasonable) error is EOF caused by broken pipe
     return (ret >= 0) ? MS_OK : MS_EOF;
 }
