@@ -15,14 +15,11 @@ typedef struct DepotState {
     char* name; // name of this depot, NOT malloc
     int port;
 
-    Channel* incoming; // channel of incoming messages, as MessageFrom*
+    Channel* incoming; // channel of incoming messages, as Message*
     Array* materials; // array map of materials we store, keyed by name
     Array* connections; // array map of open connections, keyed by name
     Array* deferGroups; // array map of defer groups, keyed by key
 } DepotState;
-// IMPORTANT: to avoid deadlocks, always lock in this order:
-//     materials, connections, deferGroups
-// as necessary.
 
 /* Initialises the depot state struct, instantiating contained arrays.
  * Given name is the name of this depot.

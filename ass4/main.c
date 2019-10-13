@@ -34,9 +34,12 @@
  * When a connection is connected, a verify_thread is started to send and 
  * receive IM messages. If successful, this sends a MSG_META_CONN_NEW down the
  * incoming channel and the main thread will start a reader_thread, which
- * starts the read/write threads.
+ * starts the read threads. Writing to sockets is done exclusively by the main
+ * thread.
+ *
+ * In general, functions which take a DepotState parameter should ONLY be
+ * called by the main thread.
  */
-
 
 // struct for passing information into server_thread
 typedef struct ServerData {
@@ -58,17 +61,11 @@ typedef struct VerifyData {
     Channel* incoming; // BORROW
 } VerifyData;
 
-// struct for passing data into connector_data
+// struct for passing data into reader_thread.
 typedef struct ReaderData {
     Connection* connection; // BORROWED reference to this connection
     Channel* incoming; // BORROWED reference to depot's incoming msg channel
 } ReaderData;
-
-// see impl. thread to verify connection with IM messages
-void* verify_thread(void* verifyArg);
-// see impl. thread to read from socket
-void* reader_thread(void* readerDataArg);
-
 
 // see implementations for comments.
 void start_reader_thread(Connection* connection, Channel* incoming);
@@ -124,6 +121,15 @@ bool is_mat_valid(Material material) {
 /* execute methods {{{1 */
 /* execute normal messages {{{2 */
 
+/* The execute family of functions will each execute a particular message type,
+ * given the depot state and message instance. Particular execute_ functions
+ * should only by called with the correct tyle. execute_message and
+ * execute_meta_message can be called with any message of normal / meta type
+ * respectively. Because invalid messages are silently ignored, these functions
+ * do not return anything.
+ */
+
+// executes a Connect:port message
 void execute_connect(DepotState* depotState, Message* message) {
     char* port = asprintf("%d", message->data.depotPort);
     DEBUG_PRINTF("trying to connect to port %s\n", port);
@@ -131,7 +137,7 @@ void execute_connect(DepotState* depotState, Message* message) {
     bool started = start_active_socket(&fd, port);
     free(port);
     if (started) {
-        DEBUG_PRINT("connection established, verifying");
+        DEBUG_PRINT("connection established, verifying...");
         start_verify_thread(depotState->port, depotState->name, 
                 depotState->incoming, fd);
     } else {
@@ -139,6 +145,7 @@ void execute_connect(DepotState* depotState, Message* message) {
     }
 }
 
+// executes a Deliver or Withdraw message
 void execute_deliver_withdraw(DepotState* depotState, Message* message) {
     if (!is_mat_valid(message->data.material)) {
         DEBUG_PRINT("ignoring invalid material");
@@ -156,6 +163,7 @@ void execute_deliver_withdraw(DepotState* depotState, Message* message) {
     ds_alter_mat(depotState, name, delta);
 }
 
+// executes a Transfer message. writes to a socket file!
 void execute_transfer(DepotState* depotState, Message* message) {
     Material mat = message->data.material;
     if (!is_mat_valid(mat)) {
@@ -171,14 +179,15 @@ void execute_transfer(DepotState* depotState, Message* message) {
     }
 
     DEBUG_PRINTF("withdrawing, then delivering to %s\n", conn->name);
-
     ds_alter_mat(depotState, mat.name, -mat.quantity);
 
     Message msg = msg_deliver(mat.quantity, mat.name);
-    msg_send(conn->writeFile, msg);
+    msg_send(conn->writeFile, msg); // send Deliver to given depot
     msg_destroy(&msg);
 }
 
+// executes a Defer message. only deliver, withdraw and transfer messages can
+// be deferred
 void execute_defer(DepotState* depotState, Message* message) {
     Message* deferMessage = message->data.deferMessage;
     switch (deferMessage->type) {
@@ -191,7 +200,6 @@ void execute_defer(DepotState* depotState, Message* message) {
             return; // silently ignore
     }
     DeferGroup* dg = ds_ensure_defer_group(depotState, message->data.deferKey);
-    
     dg_add_message(dg, message->data.deferMessage);
     // deferMessage now owned by dg. delete our reference.
     message->data.deferMessage = NULL;
@@ -199,6 +207,7 @@ void execute_defer(DepotState* depotState, Message* message) {
     // and its reference in *message is set to NULL.
 }
 
+// executes an Execute message
 void execute_execute(DepotState* depotState, Message* message) {
     // admittedly not the best naming
 
@@ -215,7 +224,7 @@ void execute_execute(DepotState* depotState, Message* message) {
         DEBUG_PRINTF("executing deferred message %d\n", i);
         Message* msg = ARRAY_ITEM(Message, dg->messages, i);
         msg_debug(msg);
-        execute_message(depotState, msg);
+        execute_message(depotState, msg); // recursion!
     }
 
     // frees messages and destroys messages array
@@ -229,6 +238,7 @@ void execute_execute(DepotState* depotState, Message* message) {
 
 /* }}}2 */
 
+// executes an arbitrary normal message (those defined in spec)
 void execute_message(DepotState* depotState, Message* message) {
     switch (message->type) {
         case MSG_CONNECT:
@@ -256,11 +266,13 @@ void execute_message(DepotState* depotState, Message* message) {
     }
 }
 
+/* Returns true if a connection to the given port exists, false otherwise.
+ */
 bool is_port_connected(DepotState* depotState, int port) {
     bool portExists = false;
     for (int i = 0; i < depotState->connections->numItems; i++) {
         if (ARRAY_ITEM(Connection, depotState->connections, i)->port
-                == conn->port) {
+                == port) {
             portExists = true;
             break;
         }
@@ -268,6 +280,8 @@ bool is_port_connected(DepotState* depotState, int port) {
     return portExists;
 }
 
+// executes a single METE message. these messages affect the state of
+// connections / signals of the depot, not the actual materials
 void execute_meta_message(DepotState* depotState, Message* message) {
     Connection* conn = message->data.connection;
     int signal = message->data.signal;
@@ -308,6 +322,9 @@ void execute_meta_message(DepotState* depotState, Message* message) {
 
 /* reader/writer threads {{{1 */
 
+/* Reads data from the given socket (as a FILE*) and writes the parsed messages
+ * into the given incoming Channel. Returns on EOF, return value unspecified.
+ */
 void* reader_thread(void* readerArg) {
     ReaderData readerData = *(ReaderData*)readerArg;
     Connection* conn = readerData.connection;
@@ -332,12 +349,7 @@ void* reader_thread(void* readerArg) {
     }
     DEBUG_PRINTF("reader reached EOF for %d:%s\n", conn->port, conn->name);
 
-    // send meta eof message to managing thread. if we send this before closing
-    // the writer thread, we hope to avoid a potential deadlock. a deadlock
-    // would happen if the main thread is sending messages to this outgoing
-    // channel after the writer thread is finished. since chan_post finishes,
-    // there are less than CHANNEL_SIZE messages in the incoming queue so
-    // the outgoing channel will never be filled (hopefully)
+    // send meta eof message to managing thread.
     Message msg = {0};
     msg.type = MSG_META_CONN_EOF;
     msg.data.connection = conn;
@@ -345,12 +357,15 @@ void* reader_thread(void* readerArg) {
     *msgNew = msg;
     chan_post(readerData.incoming, msgNew);
 
-    pthread_detach(pthread_self());
+    pthread_detach(pthread_self()); // automatically cleanup thread stack
     return NULL;
 }
 
 /* connector thread {{{1 */
 
+/* Starts a reader thread for the given connection, writing messages to the
+ * given channel.
+ */
 void start_reader_thread(Connection* connection, Channel* incoming) {
     DEBUG_PRINT("starting connector thread");
     ReaderData* readerArg = calloc(1, sizeof(ReaderData));
@@ -366,7 +381,7 @@ void start_reader_thread(Connection* connection, Channel* incoming) {
 /* Verifies the connection on the given read/write files by sending and
  * expecting IM messages.
  * If successful, sends a CONN_NEW meta message to incoming channel. If not
- * successful, thread closes. Return value unused.
+ * successful, thread closes silently. Return value unused.
  */
 void* verify_thread(void* verifyArg) {
     VerifyData verifyData = *(VerifyData*)verifyArg;
@@ -402,17 +417,20 @@ void* verify_thread(void* verifyArg) {
 
     msg = (Message) {0};
     msg.type = MSG_META_CONN_NEW;
-    // yields connection struct to main thread. main thread now owns it
+    // YIELDS connection struct and contained files to main thread.
     msg.data.connection = calloc(1, sizeof(Connection));
     *msg.data.connection = conn;
     Message* msgNew = malloc(sizeof(Message));
     *msgNew = msg;
     chan_post(verifyData.incoming, msgNew);
-    
-    pthread_detach(pthread_self());
+
     return NULL;
 }
 
+/* Starts a verify thread which verifies the connection on the given fd.
+ * Also takes port and name of THIS depot to send in IM message, and channel
+ * to send MSG_META_CONN_NEW to.
+ */
 void start_verify_thread(int port, char* name, Channel* incoming, int fd) {
     VerifyData* verifyData = malloc(sizeof(VerifyData));
     verifyData->ourPort = port;
@@ -430,6 +448,10 @@ void start_verify_thread(int port, char* name, Channel* incoming, int fd) {
 
 /* server / signal threads {{{1 */
 
+/* Thread which listens passively for incoming connections, starting a verify
+ * thread for each new connection. Argument contains fd of listening socket,
+ * port and name of this depot and incoming channel. Return value unused.
+ */
 void* server_thread(void* serverArg) {
     ServerData serverData = *(ServerData*)serverArg;
     DEBUG_PRINT("server thread started");
@@ -437,13 +459,16 @@ void* server_thread(void* serverArg) {
     while (1) {
         // listen for connections
         int fd = accept(serverData.fd, 0, 0);
-        DEBUG_PRINT("accepted connection, verifying.");
+        DEBUG_PRINT("server got new connection, verifying...");
         start_verify_thread(serverData.ourPort, serverData.ourName,
                 serverData.incoming, fd);
     }
     assert(0);
 }
 
+/* Starts a new server_thread with the given depot state and listening on the
+ * given fd. Returns TID of server thread.
+ */
 pthread_t start_server_thread(DepotState* depotState, int fdServer) {
     // start server listener thread. data argument is allocated on stack!
     ServerData* serverData = malloc(sizeof(ServerData));
@@ -457,6 +482,10 @@ pthread_t start_server_thread(DepotState* depotState, int fdServer) {
     return serverThread;
 }
 
+/* Signal thread to wait for signals specified in blocked_sigset(). For each
+ * signal received, sends a MSG_META_SIGNAL to the given incoming Channel*,
+ * passed as the sole argument. Return value unused.
+ */
 void* signal_thread(void* signalArg) {
     Channel* incoming = signalArg;
     sigset_t ss = blocked_sigset();
@@ -475,6 +504,13 @@ void* signal_thread(void* signalArg) {
 
 /* main functions {{{1*/
 
+/* Starts and runs the main loop of the depot. Starts server and signal threads
+ * and processes all messages arriving on the depot state's incoming messages
+ * channel. 
+ *
+ * This thread has exclusive ownership of the DepotState. Should never return
+ * in normal execution but always returns D_NORMAL.
+ */
 DepotExitCode exec_depot_loop(DepotState* depotState) {
     DEBUG_PRINT("starting depot");
     // block SIGHUP from all threads. we will pick it up via sigwait
@@ -489,7 +525,7 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         DEBUG_PRINT("failed to start passive socket");
         return D_NORMAL; // no special exit code
     }
-    depotState->port = port;
+    depotState->port = port; // set port in depotState
     printf("%d\n", port);
     // start server to listen for incoming connections
     pthread_t serverThread = start_server_thread(depotState, server);
@@ -503,7 +539,7 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         sem_getvalue(&depotState->incoming->numItems, &numItems);
         DEBUG_PRINTF("received message, %d messages remain\n", numItems);
         msg_debug(msg);
-        if (msg->type >= MSG_NULL) {
+        if (msg->type >= MSG_NULL) { // meta messages are after MSG_NULL
             execute_meta_message(depotState, msg);
         } else {
             execute_message(depotState, msg);
@@ -526,7 +562,7 @@ DepotExitCode exec_main(int argc, char** argv, DepotState* depotState) {
         return D_INVALID_NAME;
     }
     ds_init(depotState, argv[1]);
-
+    // first 2 args are program name and depot name. iterate in steps of 2
     for (int i = 2; i < argc; i += 2) {
         assert(i + 1 < argc);
         char* matName = argv[i];
@@ -539,8 +575,9 @@ DepotExitCode exec_main(int argc, char** argv, DepotState* depotState) {
             DEBUG_PRINT("invalid quantity");
             return D_INVALID_QUANTITY;
         }
-
-        ds_alter_mat(depotState, matName, quantity);
+        // has side effect of summing quantities of arguments with the same
+        // material name
+        ds_alter_mat(depotState, matName, +quantity);
     }
 
     return exec_depot_loop(depotState);

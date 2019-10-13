@@ -404,9 +404,11 @@ void msg_debug(Message* message) {
     MessageData data = message->data;
 
     DEBUG_PRINTF("msg type: %s\n", msg_code(message->type));
-    DEBUG_PRINTF("   port=%d, depot=%s, mat={%d, %s}, key=%d, conn=%p\n", 
+    DEBUG_PRINTF("    data: port=%d, depot=%s, mat={%d, %s}, key=%d, "
+            "conn=%p, sig=%d\n", 
             data.depotPort, data.depotName, data.material.quantity, 
-            data.material.name, data.deferKey, (void*)data.connection);
+            data.material.name, data.deferKey, (void*)data.connection,
+            data.signal);
     if (data.deferMessage != NULL) {
         DEBUG_PRINT("deferred message:");
         msg_debug(data.deferMessage);
