@@ -12,7 +12,7 @@ if [[ "$(hostname)" = 'moss.labs.eait.uq.edu.au' ]]; then
     arg=--send-only
 fi
 
-for i in {1..100}; do
+for i in {1..10}; do
     p=$((i + 1000))
     nc $arg localhost $port <<EOF &
 IM:$p:nc$i

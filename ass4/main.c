@@ -24,53 +24,54 @@
 
 /* type declarations {{{1 */
 
+/* Main function performs basic checks and manages the DepotState.
+ * Modifications on the DepotState are performed ONLY by the main thread,
+ * messages are received via a single incoming message channel which is used
+ * for regular depot messages, connection state changes and signals.
+ *
+ * Threads are initialised for receiving signals and starting new connections.
+ *
+ * When a connection is connected, a verify_thread is started to send and 
+ * receive IM messages. If successful, this sends a MSG_META_CONN_NEW down the
+ * incoming channel and the main thread will start a reader_thread, which
+ * starts the read/write threads.
+ */
+
+
+// struct for passing information into server_thread
 typedef struct ServerData {
-    int fd; // file descriptor of the server
     int ourPort; // this depot's port
     char* ourName; // BORROWED this depot's name
+    int fd; // file descriptor of the server
     Channel* incoming; // BORROWED incoming message channel
 } ServerData;
 
+// struct for passing data into verify_thread. this owns the FILE*'s but if
+// verification is successful, YIELDS files back to main thread through a
+// Connection struct.
 typedef struct VerifyData {
     int ourPort;
     char* ourName; // BORROW
-    Channel* incoming;
 
     FILE* readFile; // OWNED
     FILE* writeFile; // OWNED
+    Channel* incoming; // BORROW
 } VerifyData;
 
-typedef struct ConnectorData {
+// struct for passing data into connector_data
+typedef struct ReaderData {
     Connection* connection; // BORROWED reference to this connection
     Channel* incoming; // BORROWED reference to depot's incoming msg channel
-} ConnectorData;
-
-typedef struct WriterData {
-    FILE* writeFile; // BORROWED file object to write encoded messages to
-    Channel* outgoing; // BORROWED channel to get messages to write from
-} WriterData;
-
-typedef struct ReaderData {
-    int port; // port of this connection
-    char* name; // BORROW name of this connection's depot
-    FILE* readFile; // BORROWED file object to read and decode messages from
-    Channel* incoming; // BORROWED channel to write parsed messages to
 } ReaderData;
-
-
 
 // see impl. thread to verify connection with IM messages
 void* verify_thread(void* verifyArg);
-// see impl. thread to start and manage read/write threads
-void* connector_thread(void* connectorDataArg);
-// see impl. thread to write to socket
-void* writer_thread(void* writerDataArg);
 // see impl. thread to read from socket
 void* reader_thread(void* readerDataArg);
 
 
 // see implementations for comments.
-void start_connector_thread(Connection* connection, Channel* incoming);
+void start_reader_thread(Connection* connection, Channel* incoming);
 // see implementation
 void start_verify_thread(int port, char* name, Channel* incoming, int fd);
 // see implementaiton
@@ -85,7 +86,7 @@ sigset_t blocked_sigset(void) {
     sigset_t ss;
     sigemptyset(&ss);
     sigaddset(&ss, SIGHUP);
-    sigaddset(&ss, SIGUSR1);
+    //sigaddset(&ss, SIGUSR1);
     return ss;
 }
 
@@ -173,9 +174,9 @@ void execute_transfer(DepotState* depotState, Message* message) {
 
     ds_alter_mat(depotState, mat.name, -mat.quantity);
 
-    Message* msg = malloc(sizeof(Message));
-    *msg = msg_deliver(mat.quantity, mat.name);
-    chan_post(conn->outgoing, msg);
+    Message msg = msg_deliver(mat.quantity, mat.name);
+    msg_send(conn->writeFile, msg);
+    msg_destroy(&msg);
 }
 
 void execute_defer(DepotState* depotState, Message* message) {
@@ -194,8 +195,6 @@ void execute_defer(DepotState* depotState, Message* message) {
     dg_add_message(dg, message->data.deferMessage);
     // deferMessage now owned by dg. delete our reference.
     message->data.deferMessage = NULL;
-
-
     // we can destroy message now because the sub-message has been copied
     // and its reference in *message is set to NULL.
 }
@@ -226,7 +225,6 @@ void execute_execute(DepotState* depotState, Message* message) {
     array_remove(depotState->deferGroups, dg);
     // and free memory
     free(dg);
-
 }
 
 /* }}}2 */
@@ -292,7 +290,7 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             array_add(depotState->connections, conn);
             message->data.connection = NULL;
 
-            start_connector_thread(conn, depotState->incoming); // start thread
+            start_reader_thread(conn, depotState->incoming); // start thread
             break;
         case MSG_META_CONN_EOF:
             DEBUG_PRINTF("removing conn %d:%s\n", conn->port, conn->name);
@@ -309,14 +307,14 @@ void execute_meta_message(DepotState* depotState, Message* message) {
 
 void* reader_thread(void* readerArg) {
     ReaderData readerData = *(ReaderData*)readerArg;
+    Connection* conn = readerData.connection;
     free(readerArg);
-    DEBUG_PRINTF("reader thread started for %d:%s\n", readerData.port,
-            readerData.name);
+    DEBUG_PRINTF("reader thread started for %d:%s\n", conn->port, conn->name);
 
     MessageStatus status = MS_OK;
     while (status != MS_EOF) { // loop until EOF
         Message msg = {0};
-        status = msg_receive(readerData.readFile, &msg);
+        status = msg_receive(conn->readFile, &msg);
         if (status != MS_OK) {
             DEBUG_PRINT("message invalid or eof");
             continue;
@@ -327,85 +325,37 @@ void* reader_thread(void* readerArg) {
         DEBUG_PRINT("sending message to incoming channel");
         // YIELD received message to channel
         chan_post(readerData.incoming, msgNew);
+        DEBUG_PRINT("message posted");
     }
-    DEBUG_PRINTF("reader thread for %d:%s reached EOF\n", readerData.port,
-            readerData.name);
-    return NULL;
-}
+    DEBUG_PRINTF("reader reached EOF for %d:%s\n", conn->port, conn->name);
 
-void* writer_thread(void* writerArg) {
-    WriterData writerData = *(WriterData*)writerArg;
-    free(writerArg);
-    DEBUG_PRINT("writer thread started");
-
-    while (1) {
-        Message* msg = chan_wait(writerData.outgoing);
-        DEBUG_PRINT("echoing message to socket");
-        msg_send(writerData.writeFile, *msg);
-        msg_destroy(msg);
-        free(msg);
-    }
-    assert(0);
-}
-
-/* connector thread {{{1 */
-
-void* connector_thread(void* connectorArg) {
-    // copy into local variable and free memory
-    ConnectorData connData = *(ConnectorData*)connectorArg;
-    Connection* connection = connData.connection;
-    free(connectorArg);
-    
-    DEBUG_PRINTF("starting read/write threads for %d:%s\n", connection->port,
-            connection->name);
-
-    // starting reader thread to handle incoming messages
-    ReaderData* readerData = malloc(sizeof(ReaderData));
-    readerData->incoming = connData.incoming;
-    readerData->readFile = connection->readFile;
-    readerData->port = connection->port;
-    readerData->name = connection->name;
-
-    pthread_t readerThread;
-    pthread_create(&readerThread, NULL, reader_thread, readerData);
-
-    // start writer thread to write outgoing messages to socket
-    WriterData* writerData = malloc(sizeof(WriterData));
-    writerData->writeFile = connection->writeFile;
-    writerData->outgoing = connection->outgoing;
-
-    pthread_t writerThread;
-    pthread_create(&writerThread, NULL, writer_thread, writerData);
-
-    // wait for reader to reach EOF, then terminate writer thread
-    pthread_join(readerThread, NULL);
-    DEBUG_PRINTF("reader thread terminated, cancelling writer for %d:%s\n",
-            connection->port, connection->name);
-
-    pthread_cancel(writerThread);
-    pthread_join(writerThread, NULL);
-
-    // send meta eof message to managing thread. connection set from earlier
+    // send meta eof message to managing thread. if we send this before closing
+    // the writer thread, we hope to avoid a potential deadlock. a deadlock
+    // would happen if the main thread is sending messages to this outgoing
+    // channel after the writer thread is finished. since chan_post finishes,
+    // there are less than CHANNEL_SIZE messages in the incoming queue so
+    // the outgoing channel will never be filled (hopefully)
     Message msg = {0};
     msg.type = MSG_META_CONN_EOF;
-    msg.data.connection = connection;
+    msg.data.connection = conn;
     Message* msgNew = malloc(sizeof(Message));
     *msgNew = msg;
-    chan_post(connData.incoming, msgNew);
+    chan_post(readerData.incoming, msgNew);
 
-    DEBUG_PRINT("closing socket files and terminating connector thread");
     pthread_detach(pthread_self());
     return NULL;
 }
 
-void start_connector_thread(Connection* connection, Channel* incoming) {
+/* connector thread {{{1 */
+
+void start_reader_thread(Connection* connection, Channel* incoming) {
     DEBUG_PRINT("starting connector thread");
-    ConnectorData* connArg = calloc(1, sizeof(ConnectorData));
-    connArg->connection = connection;
-    connArg->incoming = incoming;
+    ReaderData* readerArg = calloc(1, sizeof(ReaderData));
+    readerArg->connection = connection;
+    readerArg->incoming = incoming;
 
     pthread_t thread;
-    pthread_create(&thread, NULL, connector_thread, connArg);
+    pthread_create(&thread, NULL, reader_thread, readerArg);
 }
 
 /* verifier thread {{{1 */
@@ -456,6 +406,7 @@ void* verify_thread(void* verifyArg) {
     *msgNew = msg;
     chan_post(verifyData.incoming, msgNew);
     
+    pthread_detach(pthread_self());
     return NULL;
 }
 
