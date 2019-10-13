@@ -309,6 +309,7 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             DEBUG_PRINT("accepting new connection");
             // YIELD connection to connections array
             array_add(depotState->connections, conn);
+            arraymap_sort(depotState->connections);
             message->data.connection = NULL; // don't destroy conn
             // start reader thread to get incoming messages
             start_reader_thread(conn, depotState->incoming);
