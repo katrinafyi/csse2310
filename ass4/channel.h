@@ -7,7 +7,7 @@
 
 #define CHANNEL_SIZE 64
 
-/* A synchronised channel for communication between an arbitrary number of
+/* A synchronised FIFO channel for communication between an arbitrary number of
  * writers and an arbitrary number of readers.
  */
 typedef struct Channel {
@@ -16,7 +16,7 @@ typedef struct Channel {
     int readPos;
 
     bool initialised; // flag indicating if semaphores are initialised
-    pthread_mutex_t writeLock; // write lock for items
+    pthread_mutex_t lock; // lock for interacting with queued items
     sem_t numItems; // semaphore for items in queued channel
     sem_t numFree; // semaphore for amount of free space
 } Channel;

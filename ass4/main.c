@@ -177,8 +177,6 @@ void execute_deliver_withdraw(DepotState* depotState, Message* message) {
     }
     char* name = message->data.material.name;
 
-    // need write lock because we have no individual locks per material
-    // and this could also add a new material
     ds_alter_mat(depotState, name, delta);
 }
 
@@ -237,8 +235,7 @@ void execute_execute(DepotState* depotState, Message* message) {
         return;
     }
     DEBUG_PRINTF("executing defer group, key: %d\n", message->data.deferKey);
-    // don't need to lock on defer group because we have an exclusive write
-    // lock on the entire array of defer groups
+
     for (int i = 0; i < dg->messages->numItems; i++) {
         DEBUG_PRINTF("executing deferred message %d\n", i);
         Message* msg = ARRAY_ITEM(Message, dg->messages, i);

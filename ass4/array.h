@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <pthread.h>
 
 #define ARRAY_INITIAL_SIZE 32
 
@@ -26,7 +25,7 @@ typedef void* ArrayKey;
 typedef ArrayKey (*ArrayMapper)(ArrayItem);
 
 /* Sort function for the array map. Takes two item keys and returns negative if
- * a < b, 0 if a == b and positive if a > b. Essentially, a - b if a and b
+ * a < b, 0 if a == b, and positive if a > b. Essentially, a - b if a and b
  * are numeric.
  * Used for sorting and comparison purposes. Item keys passed to this function
  * are values returned by mapper function.
@@ -94,7 +93,8 @@ void* array_get_at(Array* array, int index);
  */
 void* arraymap_get(Array* arrayMap, void* key);
 
-/* Remove the given item from array, asserting item is in array.
+/* Remove the given item from array, asserting item is in array. Maintains
+ * relative order of other items.
  */
 void array_remove(Array* array, void* item);
 
@@ -102,7 +102,8 @@ void array_remove(Array* array, void* item);
  */
 void array_remove_at(Array* array, int index);
 
-/* Sorts the array map in-place, in the total ordering defined by sortKey.
+/* Sorts the array map in-place, in the total ordering defined by sortKey and
+ * by mapping each item through sorter.
  */
 void arraymap_sort(Array* array);
 
