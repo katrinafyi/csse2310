@@ -67,10 +67,9 @@ char* msg_code(MessageType type) {
     return msgCodes[type];
 }
 
-// The consume_ family of functions take arguments of the current payload
-// being parsed. Each function will modify the value of *start to point to
-// the part _after_ the parsed content. 
-
+// The consume_ family of functions take arguments of a pointer to a pointer
+// to the start of the current payload. Each function will modify the value of 
+// *start to point _after_ the part it consumes.
 // They return a bool of true in success or false on failure.
 
 
@@ -107,7 +106,9 @@ bool consume_int(char** start, int* outInt) {
     return true;
 }
 
-// consumes a string until the next colon or end of the string
+// consumes a string until the next colon or end of the string. method is
+// sufficiently general to use parameter name outStr.
+// MALLOC's the string stored in outStr
 bool consume_str(char** start, char** outStr) {
     int len; // length of the string to consume
     
@@ -126,8 +127,8 @@ bool consume_str(char** start, char** outStr) {
 
     // allocate space for a copy of the consumed string.
     char* copy = calloc(len + 1, sizeof(char));
-    strncpy(copy, *start, len); // copy exactly len bytes into the new string
-    copy[len] = '\0'; // null-terminate string
+    // copy exactly len bytes into the new string, and \0.
+    strncpy(copy, *start, len + 1);
 
     *outStr = copy;
     *start = *start + len; // move past this string.
@@ -144,6 +145,7 @@ bool consume_material(char** start, Material* outMaterial) {
 }
 
 // consumes an entire message. useful for recursive messages (Defer).
+// MALLOC's a message to store into *outMessage.
 bool consume_message(char** start, Message** outMessage) {
     // allocate on stack until we validate the message.
     Message message;
