@@ -150,11 +150,13 @@ void execute_connect(DepotState* depotState, Message* message) {
         DEBUG_PRINTF("preempting duplicate connection to %d\n", portNum);
         return;
     }
+
     char* port = asprintf("%d", portNum);
     DEBUG_PRINTF("trying to connect to port %s\n", port);
     int fd;
     bool started = start_active_socket(&fd, port);
     free(port);
+
     if (started) {
         DEBUG_PRINT("connection established, verifying...");
         start_verify_thread(depotState->port, depotState->name, 
@@ -530,6 +532,7 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     }
     depotState->port = port; // set port in depotState
     printf("%d\n", port);
+    fflush(stdout);
 
     // start server to listen for incoming connections
     start_server_thread(depotState, server);
