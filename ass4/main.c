@@ -317,6 +317,7 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             DEBUG_PRINTF("removing conn %d:%s, %p\n", conn->port, conn->name,
                     (void*)conn);
             array_remove(depotState->connections, conn);
+            //message->data.connection = NULL;
             // connection will be cleaned up by msg_destroy later
             break;
         default:
@@ -531,14 +532,16 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         return D_NORMAL; // no special exit code
     }
     depotState->port = port; // set port in depotState
-    printf("%d\n", port);
-    fflush(stdout);
 
-    // start server to listen for incoming connections
-    start_server_thread(depotState, server);
     // start thread to listen for signals
     pthread_t signalThread;
     pthread_create(&signalThread, NULL, signal_thread, depotState->incoming);
+    // start server to listen for incoming connections
+    start_server_thread(depotState, server);
+
+    // IMPORTANT: print port number after listen and signal threads started
+    printf("%d\n", port);
+    fflush(stdout);
 
     // main loop of the depot. processes incoming messages
     while (1) {

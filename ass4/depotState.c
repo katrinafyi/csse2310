@@ -135,4 +135,5 @@ void ds_print_info(DepotState* depotState) {
         Connection* conn = ARRAY_ITEM(Connection, depotState->connections, i);
         printf("%s\n", conn->name);
     }
+    fflush(stdout);
 }
