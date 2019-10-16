@@ -77,14 +77,14 @@ void execute_message(DepotState* depotState, Message* message);
 /* util methods {{{1 */
 
 /* Constructs and returns a set of signals which should be blocked and picked
- * up via sigwait.
+ * up via sigwait. Contains at least SIGHUP.
  */
 sigset_t blocked_sigset(void) {
-    sigset_t ss;
-    sigemptyset(&ss);
-    sigaddset(&ss, SIGHUP);
+    sigset_t sigset;
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGHUP);
     //sigaddset(&ss, SIGUSR1);
-    return ss;
+    return sigset;
 }
 
 /* Returns whether the given string is a valid depot or material name,
@@ -119,8 +119,12 @@ bool is_mat_valid(Material material) {
 }
 
 /* Returns true if a connection to the given port exists, false otherwise.
+ * If the given port is this depot's port, returns true.
  */
 bool is_port_connected(DepotState* depotState, int port) {
+    if (port == depotState->port) {
+        return true;
+    }
     bool portExists = false;
     for (int i = 0; i < depotState->connections->numItems; i++) {
         if (ARRAY_ITEM(Connection, depotState->connections, i)->port
@@ -147,7 +151,7 @@ bool is_port_connected(DepotState* depotState, int port) {
 void execute_connect(DepotState* depotState, Message* message) {
     int portNum = message->data.depotPort;
     if (is_port_connected(depotState, portNum)) {
-        DEBUG_PRINTF("preempting duplicate connection to %d\n", portNum);
+        DEBUG_PRINTF("preventing duplicate connection to %d\n", portNum);
         return;
     }
 
@@ -305,6 +309,7 @@ void execute_meta_message(DepotState* depotState, Message* message) {
                 DEBUG_PRINT("connection to name or port exists, ignoring.");
                 break; // main thread will cleanup
             }
+
             DEBUG_PRINT("accepting new connection");
             // YIELD connection to connections array
             array_add(depotState->connections, conn);
@@ -314,11 +319,12 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             start_reader_thread(conn, depotState->incoming);
             break;
         case MSG_META_CONN_EOF:
-            DEBUG_PRINTF("removing conn %d:%s, %p\n", conn->port, conn->name,
-                    (void*)conn);
-            array_remove(depotState->connections, conn);
-            //message->data.connection = NULL;
-            // connection will be cleaned up by msg_destroy later
+            DEBUG_PRINTF("conn %d:%s, %p LOST connection!\n", conn->port,
+                    conn->name, (void*)conn);
+            //array_remove(depotState->connections, conn);
+            // edit: as of 4.2, do not remove closed connections. keep FILES's
+            // open, will fail on writing.
+            message->data.connection = NULL; // don't destroy conn
             break;
         default:
             DEBUG_PRINT("invalid meta message type");
@@ -394,7 +400,7 @@ void* verify_thread(void* verifyArg) {
     free(verifyArg);
     DEBUG_PRINT("verifying connection");
     // prevents becoming a thread zombie. success is indicated to main via
-    // channel. on failure, thread ends
+    // channel. on failure, thread ends silently.
     pthread_detach(pthread_self());
 
     Message msg = msg_im(verifyData.ourPort, verifyData.ourName);
@@ -424,7 +430,7 @@ void* verify_thread(void* verifyArg) {
     msg = (Message) {0};
     msg.type = MSG_META_CONN_NEW;
     // YIELDS connection struct and contained files to main thread.
-    msg.data.connection = calloc(1, sizeof(Connection));
+    msg.data.connection = malloc(sizeof(Connection));
     *msg.data.connection = conn;
     Message* msgNew = malloc(sizeof(Message));
     *msgNew = msg;
@@ -460,6 +466,7 @@ void start_verify_thread(int port, char* name, Channel* incoming, int fd) {
  */
 void* server_thread(void* serverArg) {
     ServerData serverData = *(ServerData*)serverArg;
+    free(serverArg);
     DEBUG_PRINT("server thread started");
 
     while (1) {
@@ -494,11 +501,11 @@ pthread_t start_server_thread(DepotState* depotState, int fdServer) {
  */
 void* signal_thread(void* signalArg) {
     Channel* incoming = signalArg;
-    sigset_t ss = blocked_sigset();
+    sigset_t sigset = blocked_sigset();
 
     while (1) {
-        int sig;
-        sigwait(&ss, &sig);
+        int sig; // 'signal' is the name of a function
+        sigwait(&sigset, &sig);
         DEBUG_PRINTF("signal %d: %s\n", sig, strsignal(sig));
         Message* msg = calloc(1, sizeof(Message));
         msg->type = MSG_META_SIGNAL;
@@ -522,16 +529,16 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     // block SIGHUP from all threads. we will pick it up via sigwait
     sigset_t ss = blocked_sigset();
     pthread_sigmask(SIG_BLOCK, &ss, NULL);
-    ignore_sigpipe(); // also ignore SIGPIPE
+    ignore_sigpipe(); // also, ignore SIGPIPE completely
 
-    // start the server thing
+    // start this server thing
     int server;
     int port;
     if (!start_passive_socket(&server, &port)) {
         DEBUG_PRINT("failed to start passive socket");
         return D_NORMAL; // no special exit code
     }
-    depotState->port = port; // set port in depotState
+    depotState->port = port; // store our port number
 
     // start thread to listen for signals
     pthread_t signalThread;
@@ -543,7 +550,7 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     printf("%d\n", port);
     fflush(stdout);
 
-    // main loop of the depot. processes incoming messages
+    // main loop of the depot. acts on incoming messages
     while (1) {
         Message* msg = chan_wait(depotState->incoming);
         int numItems;
@@ -562,7 +569,9 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     return D_NORMAL;
 }
 
-/* Argument checks and initialises depot state. Bootstraps server listener. */
+/* Does argument checks and initialises depot state. Executes server 
+ * listener.
+ */
 DepotExitCode exec_main(int argc, char** argv, DepotState* depotState) {
     if (argc % 2 != 0) {
         DEBUG_PRINTF("number of arguments not even: %d\n", argc);
@@ -572,7 +581,7 @@ DepotExitCode exec_main(int argc, char** argv, DepotState* depotState) {
     if (!is_name_valid(argv[1])) {
         return D_INVALID_NAME;
     }
-    ds_init(depotState, argv[1]);
+    ds_init(depotState, argv[1]); // depotState BORROWS argv[1]
     // first 2 args are program name and depot name. iterate in steps of 2
     for (int i = 2; i < argc; i += 2) {
         assert(i + 1 < argc);
@@ -586,8 +595,7 @@ DepotExitCode exec_main(int argc, char** argv, DepotState* depotState) {
             DEBUG_PRINT("invalid quantity");
             return D_INVALID_QUANTITY;
         }
-        // has side effect of summing quantities of arguments with the same
-        // material name
+        // has side effect of summing repeated materials
         ds_alter_mat(depotState, matName, +quantity);
     }
 

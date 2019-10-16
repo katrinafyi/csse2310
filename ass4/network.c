@@ -54,7 +54,6 @@ bool start_passive_socket(int* fdOut, int* portOut) {
         return false;
     }
     freeaddrinfo(ai);
-    ai = NULL;
 
     // find actual address we're bound to
     struct sockaddr_in ad;

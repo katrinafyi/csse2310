@@ -102,8 +102,8 @@ void array_remove(Array* array, void* item);
  */
 void array_remove_at(Array* array, int index);
 
-/* Sorts the array map in-place, in the total ordering defined by sortKey and
- * by mapping each item through sorter.
+/* Sorts the array map in-place, in the total ordering defined by sorter and
+ * by mapping each item through the mapper function.
  */
 void arraymap_sort(Array* array);
 

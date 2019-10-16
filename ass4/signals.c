@@ -19,16 +19,16 @@ int main(int argc, char** argv) {
     sigaction(SIGHUP, &sa, NULL);
 
     // a signal set containing only SIGHUP
-    sigset_t ss;
-    sigemptyset(&ss);
-    sigaddset(&ss, SIGHUP);
+    sigset_t sigset;
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGHUP);
     // block SIGHUP from being processed by a signal handler
-    sigprocmask(SIG_BLOCK, &ss, NULL);
+    sigprocmask(SIG_BLOCK, &sigset, NULL);
 
     while (1) {
         int sig;
         // block and wait for SIGHUP
-        sigwait(&ss, &sig);
+        sigwait(&sigset, &sig);
         printf("sigwait got signal: %d %s\n", sig, strsignal(sig));
     }
 }

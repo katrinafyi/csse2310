@@ -1,5 +1,7 @@
 # Assignment 4 Implementation Spec
 
+> This is very out of date.
+
 ## Locking
 - To avoid deadlocks, if a function requires multiple locks, it MUST lock in
   this order:

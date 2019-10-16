@@ -30,22 +30,6 @@ void msg_destroy(Message* message) {
     TRY_FREE(message->data.connection);
 }
 
-/*
-// see header
-void msgfrom_init(MessageFrom* messageFrom, int port, char* name, 
-        Message message) {
-    messageFrom->port = port;
-    messageFrom->name = strdup(name);
-    messageFrom->message = message;
-}
-
-// see header
-void msgfrom_destroy(MessageFrom* messageFrom) {
-    TRY_FREE(messageFrom->name);
-    msg_destroy(&messageFrom->message);
-}
-*/
-
 // see header
 char* msg_code(MessageType type) {
     char* msgCodes[NUM_MESSAGE_TYPES_ALL];
@@ -397,7 +381,7 @@ MessageStatus msg_send(FILE* file, Message message) {
     free(encoded);
 
     if (fflush(file) != 0) {
-        DEBUG_PRINT("error flushing file");
+        DEBUG_PERROR("fflush()");
         return MS_EOF;
     }
 
