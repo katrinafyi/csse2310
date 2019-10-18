@@ -31,7 +31,7 @@
  *
  * Threads are initialised for receiving signals and starting new connections.
  *
- * When a connection is connected, a verify_thread is started to send and 
+ * When a connection is connected, a reader_thread is started to send and 
  * receive IM messages. If successful, this sends a MSG_META_CONN_NEW down the
  * incoming channel and the main thread will start a reader_thread, which
  * starts the read threads. Writing to sockets is done exclusively by the main
@@ -49,28 +49,20 @@ typedef struct ServerData {
     Channel* incoming; // BORROWED incoming message channel
 } ServerData;
 
-// struct for passing data into verify_thread. this owns the FILE*'s but if
+// struct for passing data into reader_thread. this owns the FILE*'s but if
 // verification is successful, YIELDS files back to main thread through a
 // Connection struct.
-typedef struct VerifyData {
+typedef struct ReaderData {
     int ourPort;
     char* ourName; // BORROW
 
     FILE* readFile; // OWNED
     FILE* writeFile; // OWNED
     Channel* incoming; // BORROW
-} VerifyData;
-
-// struct for passing data into reader_thread.
-typedef struct ReaderData {
-    Connection* connection; // BORROWED reference to this connection
-    Channel* incoming; // BORROWED reference to depot's incoming msg channel
 } ReaderData;
 
-// see implementations for comments.
-void start_reader_thread(Connection* connection, Channel* incoming);
 // see implementation
-void start_verify_thread(int port, char* name, Channel* incoming, int fd);
+void start_reader_thread(int port, char* name, Channel* incoming, int fd);
 // see implementaiton
 void execute_message(DepotState* depotState, Message* message);
 
@@ -163,7 +155,7 @@ void execute_connect(DepotState* depotState, Message* message) {
 
     if (started) {
         DEBUG_PRINT("connection established, verifying...");
-        start_verify_thread(depotState->port, depotState->name, 
+        start_reader_thread(depotState->port, depotState->name, 
                 depotState->incoming, fd);
     } else {
         DEBUG_PRINT("failed to connect");
@@ -316,7 +308,7 @@ void execute_meta_message(DepotState* depotState, Message* message) {
             arraymap_sort(depotState->connections);
             message->data.connection = NULL; // don't destroy conn
             // start reader thread to get incoming messages
-            start_reader_thread(conn, depotState->incoming);
+            //start_reader_thread(conn, depotState->incoming);
             break;
         case MSG_META_CONN_EOF:
             DEBUG_PRINTF("conn %d:%s, %p LOST connection!\n", conn->port,
@@ -334,21 +326,19 @@ void execute_meta_message(DepotState* depotState, Message* message) {
 
 /* reader/writer threads {{{1 */
 
-/* Reads data from the given socket (as a FILE*) and writes the parsed messages
- * into the given incoming Channel. Returns on EOF, return value unspecified.
+/* Parses messages from the given conn (as a Connection*) and writes the
+ * messages into the given incoming Channel. Returns on EOF of read file.
  */
-void* reader_thread(void* readerArg) {
-    ReaderData readerData = *(ReaderData*)readerArg;
-    Connection* conn = readerData.connection;
-    free(readerArg);
-    DEBUG_PRINTF("reader thread started for %d:%s\n", conn->port, conn->name);
+void reader_thread_loop(Connection* connection, Channel* incoming) {
+    Connection* conn = connection;
+    DEBUG_PRINTF("reader loop started for %d:%s\n", conn->port, conn->name);
 
     MessageStatus status = MS_OK;
     while (status != MS_EOF) { // loop until EOF
         Message msg = {0};
         status = msg_receive(conn->readFile, &msg);
         if (status != MS_OK) {
-            DEBUG_PRINT("message invalid or eof, not posting");
+            DEBUG_PRINT("message invalid or eof, continuing");
             continue;
         }
         // wrap received message in a heap-allocated struct
@@ -356,106 +346,98 @@ void* reader_thread(void* readerArg) {
         *msgNew = msg;
         DEBUG_PRINTF("posting to incoming channel: %p\n", (void*)msgNew);
         // YIELD received message to channel
-        chan_post(readerData.incoming, msgNew);
+        chan_post(incoming, msgNew);
         DEBUG_PRINTF("message posted: %p\n", (void*)msgNew);
     }
     DEBUG_PRINTF("reader reached EOF for %d:%s\n", conn->port, conn->name);
-
-    // send meta eof message to managing thread.
-    Message msg = {0};
-    msg.type = MSG_META_CONN_EOF;
-    msg.data.connection = conn;
-    Message* msgNew = malloc(sizeof(Message));
-    *msgNew = msg;
-    chan_post(readerData.incoming, msgNew);
-
-    pthread_detach(pthread_self()); // automatically cleanup thread stack
-    return NULL;
 }
 
-/* connector thread {{{1 */
-
-/* Starts a reader thread for the given connection, writing messages to the
- * given channel.
+/* Verifies the connection by sending and receiving IM messages, using files
+ * inside readerData. If successful, returns true and stores the received IM
+ * into *outMessage, otherwise returns false.
  */
-void start_reader_thread(Connection* connection, Channel* incoming) {
-    DEBUG_PRINT("starting connector thread");
-    ReaderData* readerArg = calloc(1, sizeof(ReaderData));
-    readerArg->connection = connection;
-    readerArg->incoming = incoming;
-
-    pthread_t thread;
-    pthread_create(&thread, NULL, reader_thread, readerArg);
+bool verify_connection(ReaderData* readerData, Message* outMessage) {
+    Message msg = msg_im(readerData->ourPort, readerData->ourName);
+    if (msg_send(readerData->writeFile, msg) != MS_OK) {
+        DEBUG_PRINT("sending IM failed. closing");
+        msg_destroy(&msg);
+        return false;
+    }
+    msg_destroy(&msg); // destroy the msg_im()
+    if (msg_receive(readerData->readFile, &msg) != MS_OK ||
+            msg.type != MSG_IM || !is_name_valid(msg.data.depotName)) {
+        DEBUG_PRINT("invalid IM or bad depot name. closing.");
+        msg_destroy(&msg);
+        return false;
+    }
+    *outMessage = msg;
+    return true;
 }
 
-/* verifier thread {{{1 */
-
-/* Verifies the connection on the given read/write files by sending and
- * expecting IM messages.
- * If successful, sends a CONN_NEW meta message to incoming channel. If not
- * successful, thread closes silently. Return value unused.
+/* Worker thread for establishing and maintaining communication with one
+ * socket. Accepts argument of ReaderData* cast to void*, return value unused.
+ * Verifies connection with IM, then sends MSG_META_CONN_NEW, then reads
+ * incoming messages, then sends MSG_META_CONN_EOF. Returns when the connection
+ * is closed.
  */
-void* verify_thread(void* verifyArg) {
-    VerifyData verifyData = *(VerifyData*)verifyArg;
-    free(verifyArg);
+void* reader_thread(void* readerArg) {
+    ReaderData readerData = *(ReaderData*)readerArg;
+    free(readerArg);
     DEBUG_PRINT("verifying connection");
     // prevents becoming a thread zombie. success is indicated to main via
     // channel. on failure, thread ends silently.
     pthread_detach(pthread_self());
 
-    Message msg = msg_im(verifyData.ourPort, verifyData.ourName);
-    if (msg_send(verifyData.writeFile, msg) != MS_OK) {
-        DEBUG_PRINT("sending IM failed. closing");
-        msg_destroy(&msg);
-        fclose(verifyData.readFile);
-        fclose(verifyData.writeFile);
+    Message msg;
+    if (!verify_connection(&readerData, &msg)) {
+        DEBUG_PRINT("acknowledge failed");
+        fclose(readerData.readFile);
+        fclose(readerData.writeFile);
         return NULL;
     }
-    msg_destroy(&msg); // destroy the msg_im()
-    if (msg_receive(verifyData.readFile, &msg) != MS_OK ||
-            msg.type != MSG_IM || !is_name_valid(msg.data.depotName)) {
-        DEBUG_PRINT("invalid IM or bad depot name. closing.");
-        msg_destroy(&msg);
-        fclose(verifyData.readFile);
-        fclose(verifyData.writeFile);
-        return NULL;
-    }
+    Connection* conn = calloc(1, sizeof(Connection));
+    conn_init(conn, msg.data.depotPort, msg.data.depotName);
+    conn_set_files(conn, readerData.readFile, readerData.writeFile);
+    DEBUG_PRINTF("acknowledged by %s on %d\n", conn->name, conn->port);
+    msg_destroy(&msg); // copied into conneciton
 
-    Connection conn;
-    conn_init(&conn, msg.data.depotPort, msg.data.depotName);
-    conn_set_files(&conn, verifyData.readFile, verifyData.writeFile);
-    DEBUG_PRINTF("acknowledged by %s on %d\n", conn.name, conn.port);
-    msg_destroy(&msg);
-
+    // inform main of the new connection
     msg = (Message) {0};
     msg.type = MSG_META_CONN_NEW;
     // YIELDS connection struct and contained files to main thread.
-    msg.data.connection = malloc(sizeof(Connection));
-    *msg.data.connection = conn;
+    msg.data.connection = conn;
     Message* msgNew = malloc(sizeof(Message));
     *msgNew = msg;
-    chan_post(verifyData.incoming, msgNew);
+    chan_post(readerData.incoming, msgNew);
 
+    // loop and post incoming messages down channel
+    reader_thread_loop(conn, readerData.incoming);
+
+    // send meta eof message to managing thread.
+    msg.type = MSG_META_CONN_EOF; // keep msg.data.connection from previous msg
+    msgNew = malloc(sizeof(Message));
+    *msgNew = msg;
+    chan_post(readerData.incoming, msgNew);
     return NULL;
 }
 
-/* Starts a verify thread which verifies the connection on the given fd.
+/* Starts a reader thread which communicates with the given fd.
  * Also takes port and name of THIS depot to send in IM message, and channel
  * to send MSG_META_CONN_NEW to.
  */
-void start_verify_thread(int port, char* name, Channel* incoming, int fd) {
-    VerifyData* verifyData = malloc(sizeof(VerifyData));
-    verifyData->ourPort = port;
-    verifyData->ourName = name;
-    verifyData->incoming = incoming;
+void start_reader_thread(int port, char* name, Channel* incoming, int fd) {
+    ReaderData* readerData = malloc(sizeof(ReaderData));
+    readerData->ourPort = port;
+    readerData->ourName = name;
+    readerData->incoming = incoming;
 
     int fdRead = fd;
     int fdWrite = dup(fd);
-    verifyData->readFile = fdopen(fdRead, "r");
-    verifyData->writeFile = fdopen(fdWrite, "w");
+    readerData->readFile = fdopen(fdRead, "r");
+    readerData->writeFile = fdopen(fdWrite, "w");
 
-    pthread_t verifyThread;
-    pthread_create(&verifyThread, NULL, verify_thread, verifyData);
+    pthread_t readerThread;
+    pthread_create(&readerThread, NULL, reader_thread, readerData);
 }
 
 /* server / signal threads {{{1 */
@@ -473,7 +455,7 @@ void* server_thread(void* serverArg) {
         // listen for connections
         int fd = accept(serverData.fd, 0, 0);
         DEBUG_PRINT("server got new connection, verifying...");
-        start_verify_thread(serverData.ourPort, serverData.ourName,
+        start_reader_thread(serverData.ourPort, serverData.ourName,
                 serverData.incoming, fd);
     }
     assert(0);
