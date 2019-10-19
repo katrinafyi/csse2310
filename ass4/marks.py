@@ -20,6 +20,7 @@ from pipes import quote
 import argparse
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 delay = 1
 
 
@@ -34,11 +35,13 @@ class Colour:
     UNDERLINE = '\033[4m'
     REVERSE = '\033[7m'
     GREY = '\033[38;5;8m'
+    CYAN = '\033[38;5;14m'
+    MAGENTA = '\033[38;5;13m'
 
 class TestProcess(object):
     def __init__(self, i, args, stdin):
-        logger.debug('starting process {} with args {} and stdin {}'
-                .format(i, args, stdin))
+        logger.debug('starting process {} with cmd {} and stdin {}'
+                .format(i, args, repr(stdin)))
         if stdin:
             stdin = open(stdin, 'r')
         else:
@@ -49,18 +52,22 @@ class TestProcess(object):
                 stdin=stdin, stderr=subprocess.PIPE)
 
     def send(self, msg):
+        logger.debug('writing to stdin of process {}: {}'.format(self.i, repr(msg)))
         self.process.stdin.write(msg)
         self.process.stdin.flush()
 
     def finish_input(self):
+        logger.debug('closing stdin of process {}'.format(self.i))
         self.process.stdin.close()
 
     def readline_stdout(self):
         line = self.process.stdout.readline().rstrip()
+        logger.debug('got line {} from process {}'.format(repr(line), self.i))
         #print('read', line)
         return line
 
     def send_signal(self, sig):
+        logger.debug('sending signal {} to process {}'.format(sig, self.i))
         self.process.send_signal(sig)
 
     def diff_fd(self, fd, comparison):
@@ -68,23 +75,30 @@ class TestProcess(object):
             f = self.process.stdout
         elif fd == 2:
             f = self.process.stderr
+        fname = ['stdin', 'stdout', 'stderr'][fd]
         out = f.read().splitlines(1)
         with open(comparison, 'r') as compare:
             #d = difflib.Differ()
             #diff = list(d.compare(compare.read().splitlines(1), out))
             expected = compare.read().splitlines(1)
-            diff = difflib.unified_diff(expected, out, comparison, 'actual')
+            diff = difflib.unified_diff(expected, out, comparison, '(actual)')
             diff = list(diff)
             if diff:
-                fname = ['stdin', 'stdout', 'stderr'][fd]
-                warn('{} mismatch on process {} {}\n{}'.format(fname, self.i,
-                    self.args, ''.join(diff).rstrip()))
+                logger.error('{} mismatch on process {} {}'.format(fname, self.i,
+                    self.args))
+                logger.warning('\n'+''.join(diff).rstrip())
+            else:
+                logger.info('{} matched on process {} to file {}'
+                        .format(fname, self.i, repr(comparison)))
 
     def expect_exit(self, code):
         ret = self.process.wait()
         if ret != code:
-            warn('process {} expected exit code {} but got {}'
+            logger.error('process {} expected exit code {} but got {}'
                     .format(self.i, code, ret))
+        else:
+            logger.info('process {} exited correctly with code {}'
+                    .format(self.i, code))
 
     def assert_signalled(self, sig):
         ret = self.process.wait()
@@ -93,8 +107,12 @@ class TestProcess(object):
             sif = sig if sig > 0 else -sig
             warn('process {} expected signal {} but got {} {}'
                     .format(self.i, sig, ret_type, ret))
+        else:
+            logger.info('process {} exited correctly with signal {}'
+                    .format(self.i, sig))
 
     def kill(self):
+        logger.debug('killing process {}'.format(self.i))
         self.process.kill()
 
 
@@ -108,6 +126,7 @@ class TestCase(object):
         return TestProcess(self._i, args, stdin)
     
     def delay(self, t):
+        logger.debug('sleeping for {} seconds'.format(t))
         time.sleep(t*delay)
 
     def assert_stdout_matches_file(self, proc, f):
@@ -155,7 +174,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Test runner for CSSE2310. '
             +'Shim marks.py by Kenton Lam.')
     parser.add_argument('-v', '--verbose', action='count', default=0,
-            help='verbosity. specify once to print failure details, twice to print success details.')
+            help='verbosity, can be repeated up to 3 times. once prints diffs, twice prints successes, thrice prints all actions.')
     parser.add_argument('-d', '--delay', action='store', type=float, default=1,
             help='delay time multiplier.')
     parser.add_argument('test', type=str, nargs='*', default=('*',),
@@ -176,7 +195,13 @@ def main():
     
     args = (parse_args(sys.argv[1:]))
     delay = args.delay
-    verbose = args.verbose >= 1
+    verbose = min(args.verbose, 3)
+
+    display_level = [logging.ERROR, logging.WARNING, logging.INFO,
+            logging.DEBUG][verbose]
+    failure_level = logging.ERROR
+    diff_level = logging.WARNING
+    success_level = logging.INFO
 
     handler = CaptureHandler()
     logger.setLevel(logging.DEBUG)
@@ -190,33 +215,34 @@ def main():
     print(matched)
     print()
 
-    max_len = max(len(x) for x in matched)
+    max_len = max(len(x) for x in matched) if matched else 0
 
     passed = 0
     failed = 0
     start = time.time()
     for name in matched:
         print(' '*40, end='')
-        print(Colour.OKBLUE+'\r[{:>2}/{}]'.format(1+passed+failed, len(matched)),
-                Colour.ENDC+name.ljust(max_len), '...', end=' ')
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter('always') # needed to catch all warnings
-            cls, fn = tests[name]
-            c = cls()
-            fn(c)
-        if caught:
+        print(Colour.MAGENTA+'\r[{:>2}/{}]'.format(1+passed+failed, len(matched))+Colour.ENDC,
+                name.ljust(max_len), '...', end=' ')
+        del handler.records[:]
+        cls, fn = tests[name]
+        c = cls()
+        fn(c)
+        if any(r for r in handler.records if r.levelno >= failure_level):
             failed += 1
             print(Colour.FAIL+'FAIL'+Colour.ENDC)
-            if verbose:
-                for i, w in enumerate(caught):
-                    d = dict(w.__dict__)
-                    del d['_category_name']
-                    num = '(failure {}/{})'.format(i+1, len(caught))
-                    print(Colour.WARNING+num+Colour.ENDC,
-                            d['message'])
         else:
             passed += 1
             print(Colour.OKGREEN+'OK'+Colour.ENDC)
-        print(handler.records)
+        for i, r in enumerate(handler.records):
+            if r.levelno < display_level: continue
+            if r.levelno == failure_level:
+                print(Colour.WARNING+'failure:'+Colour.ENDC, r.msg)
+            elif r.levelno == success_level:
+                print(Colour.OKBLUE+'success:'+Colour.ENDC, r.msg)
+            else:
+                name = r.levelname.lower()
+                if r.levelno == diff_level: name = 'diff'
+                print(name+':', r.msg)
     print('\nran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
             'passed:', str(passed)+',', 'failed:', str(failed)+'.')
