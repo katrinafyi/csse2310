@@ -33,6 +33,9 @@ all: 2310depot
 check_debug:
 	./checkDebug.sh $(all_src)
 
+buffer: $(common_obj) buffer.o
+	gcc $(CCFLAGS) $^ -o $@
+
 test_util: $(common_obj) testUtil.o
 	gcc $(CCFLAGS) $^ -o $@
 

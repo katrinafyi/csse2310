@@ -33,9 +33,8 @@
  *
  * When a connection is connected, a reader_thread is started to send and 
  * receive IM messages. If successful, this sends a MSG_META_CONN_NEW down the
- * incoming channel and the main thread will start a reader_thread, which
- * starts the read threads. Writing to sockets is done exclusively by the main
- * thread.
+ * incoming channel and it starts processing messages from that socket.
+ * Writing to sockets is done exclusively by the main thread.
  *
  * In general, functions which take a DepotState parameter should ONLY be
  * called by the main thread.
@@ -115,12 +114,21 @@ bool is_mat_valid(Material material) {
  */
 bool is_port_connected(DepotState* depotState, int port) {
     if (port == depotState->port) {
+        DEBUG_PRINT("rejecting connection to our own port");
         return true;
     }
     bool portExists = false;
     for (int i = 0; i < depotState->connections->numItems; i++) {
         if (ARRAY_ITEM(Connection, depotState->connections, i)->port
                 == port) {
+            DEBUG_PRINT("active connection already exists");
+            portExists = true;
+            break;
+        }
+    }
+    for (int i = 0; i < depotState->pending->numItems; i++) {
+        if (*(int*)array_get_at(depotState->pending, i) == port) {
+            DEBUG_PRINT("unverified connection already exists");
             portExists = true;
             break;
         }
@@ -143,7 +151,7 @@ bool is_port_connected(DepotState* depotState, int port) {
 void execute_connect(DepotState* depotState, Message* message) {
     int portNum = message->data.depotPort;
     if (is_port_connected(depotState, portNum)) {
-        DEBUG_PRINTF("preventing duplicate connection to %d\n", portNum);
+        DEBUG_PRINTF("connection exists to port %d\n", portNum);
         return;
     }
 

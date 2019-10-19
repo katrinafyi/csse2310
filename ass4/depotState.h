@@ -18,6 +18,7 @@ typedef struct DepotState {
     Channel* incoming; // channel of incoming messages, as Message*
     Array* materials; // array map of materials we store, keyed by name, sorted
     Array* connections; // array map of open connections, keyed by name, sorted
+    Array* pending; // array map of unverified connections, keyed by port
     Array* deferGroups; // array map of defer groups, keyed by key
 } DepotState;
 

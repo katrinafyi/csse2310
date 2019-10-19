@@ -17,6 +17,8 @@ int ah_intcmp(void*, void*);
 
 // these functions implement ArrayMapper from array.h
 
+// returns the given pointer itself.
+void* ah_noop_mapper(void* object);
 // returns the name of the material, as a char* cast to void*
 void* ah_mat_mapper(void*);
 // returns the name of the connection, as char* cast to void*

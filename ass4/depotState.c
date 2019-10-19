@@ -25,6 +25,11 @@ void ds_init(DepotState* depotState, char* name) {
     depotState->connections = calloc(1, sizeof(Array));
     arraymap_init(depotState->connections, ah_conn_mapper, ah_strcmp);
 
+    // array of int*'s, each pointing to a port we have an unverified connect
+    // to.
+    depotState->pending = calloc(1, sizeof(Array));
+    ararymap_init(depotState->pending, ah_noop_mapper, ah_intcmp);
+
     // array of DeferGroup, keyed by defer key (as integer)
     depotState->deferGroups = calloc(1, sizeof(Array));
     arraymap_init(depotState->deferGroups, ah_dg_mapper, ah_intcmp);
@@ -54,6 +59,9 @@ void ds_destroy(DepotState* depotState) {
         chan_destroy(depotState->incoming);
     }
     TRY_FREE(depotState->incoming);
+
+    array_destroy_and_free(depotState->pending);
+    TRY_FREE(depotState->pending);
 
     destroy_helper(depotState->materials, ah_mat_destroy);
     TRY_FREE(depotState->materials); // frees array

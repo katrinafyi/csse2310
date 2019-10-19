@@ -34,15 +34,17 @@ class TestProcess(object):
         cmd = [quote(x) if not x.startswith('$') else x for x in args]
         if stdin:
             cmd += ['<', quote(stdin)]
-        mktemp = lambda f, fd: print(f+'=$TEMP_DIR/'+f+'; :>$'+f)#+'; exec '+self.w(fd)+'<>$'+f)
+        def mktemp(f, fd):
+            print(f+'=$TEMP_DIR/'+f+'; '+f+'_out=$TEMP_DIR/'+f+'_out; mkfifo $'+f+'; mkfifo $'+f+'_out')#+'; exec '+self.w(fd)+'<>$'+f)
+            print('./buffer <$'+f+' >$'+f+'_out 2>${'+f+'}_log &')
         mktemp(self.stdin_file, self.stdin_fd)
         mktemp(self.stdout_file, self.stdout_fd)
         mktemp(self.stderr_file, self.stderr_fd)
         if not stdin:
             pass
         else:
-            print('cat', quote(stdin), '>$'+self.stdin_file)
-        cmd += ['<$'+self.stdin_file, '1>$'+self.stdout_file, '2>$'+self.stderr_file, '&']
+            print('cat', quote(stdin), '>$'+self.stdin_file, '&')
+        cmd += ['<$'+self.stdin_file+'_out', '1>$'+self.stdout_file, '2>$'+self.stderr_file, '&']
         print(*cmd)
         print(self.pid_var + '=$!')
 
@@ -50,10 +52,12 @@ class TestProcess(object):
         print('printf', '"%s"', quote(msg), '>$'+self.stdin_file)
 
     def finish_input(self):
+        print(': >$'+self.stdin_file)
         print('wait', '$'+self.pid_var)
 
     def readline_stdout(self):
-        print('read -r '+self.line_var+' <$' + self.stdout_file)
+        print(': >$'+self.stdin_file)
+        print('read -r '+self.line_var+' <$'+self.stdout_file+'_out')
         print('echo READ:', '$'+self.line_var)
         return '$'+self.line_var
 
@@ -67,13 +71,15 @@ class TestProcess(object):
             f = self.stderr_file
         fd = str(self.i) + str(fd)
         #redir = '<$'+self.stderr_file
-        print('cat', '<$'+f)
-        print('colordiff', quote(comparison), '-', '<$'+f,
-                '|| { echo diff mismatch on fd '+str(fd)+' >&2; exit 1; }')
+        print('colordiff', quote(comparison), '-', '<$'+f+'_out')
+        #        '|| { echo diff mismatch on fd '+str(fd)+' >&2; exit 1; }', '} &')
+        #print('exec', fd+'>&-')
 
     def expect_exit(self, code):
-        self.finish_input()
-        print('[[ $? != '+str(code)+' ]]', '&&', '{ exit 2; }')
+        print('wait', '$'+self.pid_var)
+        print('ret=$?')
+        print('[[ $ret != '+str(code)+' ]]', '&&', 
+                '{ echo expected '+str(code)+' but got $ret; exit 2; }')
 
     def assert_signalled(self, sig):
         self.expect_exit(sig + 128)

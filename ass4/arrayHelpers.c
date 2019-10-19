@@ -19,6 +19,11 @@ int ah_intcmp(void* a, void* b) {
 }
 
 // see header
+void* ah_noop_mapper(void* object) {
+    return object;
+}
+
+// see header
 void* ah_mat_mapper(void* material) {
     return ((Material*) material)->name;
 }
