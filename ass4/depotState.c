@@ -28,7 +28,7 @@ void ds_init(DepotState* depotState, char* name) {
     // array of int*'s, each pointing to a port we have an unverified connect
     // to.
     depotState->pending = calloc(1, sizeof(Array));
-    ararymap_init(depotState->pending, ah_noop_mapper, ah_intcmp);
+    arraymap_init(depotState->pending, ah_noop_mapper, ah_intcmp);
 
     // array of DeferGroup, keyed by defer key (as integer)
     depotState->deferGroups = calloc(1, sizeof(Array));

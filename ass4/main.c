@@ -163,6 +163,7 @@ void execute_connect(DepotState* depotState, Message* message) {
 
     if (started) {
         DEBUG_PRINT("connection established, verifying...");
+        array_add_copy(depotState->pending, &portNum, sizeof(int));
         start_reader_thread(depotState->port, depotState->name, 
                 depotState->incoming, fd);
     } else {
@@ -304,6 +305,12 @@ void execute_meta_message(DepotState* depotState, Message* message) {
         case MSG_META_CONN_NEW:
             DEBUG_PRINTF("new connection to %d:%s, %p\n", conn->port,
                     conn->name, (void*)conn);
+            int* pendingPort = arraymap_get(depotState->pending, &conn->port);
+            if (pendingPort != NULL) {
+                DEBUG_PRINTF("connection verified on port %d\n", conn->port);
+                array_remove(depotState->pending, pendingPort);
+                free(pendingPort);
+            }
             if (arraymap_get(depotState->connections, conn->name) != NULL ||
                     is_port_connected(depotState, conn->port)) {
                 DEBUG_PRINT("connection to name or port exists, ignoring.");
