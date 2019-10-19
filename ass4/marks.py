@@ -7,92 +7,99 @@ import fnmatch
 import random
 import os
 import sys
+import time
+import logging
 
+from pprint import pprint
+import warnings
+from warnings import warn
+import subprocess
+import difflib
 from collections import defaultdict
 from pipes import quote
+import argparse
+
+logger = logging.getLogger(__name__)
+delay = 1
+
+
+class Colour:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    REVERSE = '\033[7m'
+    GREY = '\033[38;5;8m'
 
 class TestProcess(object):
     def __init__(self, i, args, stdin):
-        self.w = lambda x: x+''
-        self.lines_read = 0
+        logger.debug('starting process {} with args {} and stdin {}'
+                .format(i, args, stdin))
+        if stdin:
+            stdin = open(stdin, 'r')
+        else:
+            stdin = subprocess.PIPE
         self.i = i
         self.args = args
-        self.stdin = stdin
-        self.pid_var = 'pid' + str(i)
-
-        self.stdin_file = 'stdin' + str(i)
-        self.stdin_fd = str(i) + '0'
-
-        self.stdout_file = 'stdout' + str(i)
-        self.stdout_fd = str(i) + '1'
-
-        self.stderr_file = 'stderr' + str(i)
-        self.stderr_fd = str(i) + '2'
-
-        self.line_var = 'line' + str(i)
-
-        cmd = [quote(x) if not x.startswith('$') else x for x in args]
-        if stdin:
-            cmd += ['<', quote(stdin)]
-        def mktemp(f, fd):
-            print(f+'=$TEMP_DIR/'+f+'; '+f+'_out=$TEMP_DIR/'+f+'_out; mkfifo $'+f+'; mkfifo $'+f+'_out')#+'; exec '+self.w(fd)+'<>$'+f)
-            print('./buffer <$'+f+' >$'+f+'_out 2>${'+f+'}_log &')
-        mktemp(self.stdin_file, self.stdin_fd)
-        mktemp(self.stdout_file, self.stdout_fd)
-        mktemp(self.stderr_file, self.stderr_fd)
-        if not stdin:
-            pass
-        else:
-            print('cat', quote(stdin), '>$'+self.stdin_file, '&')
-        cmd += ['<$'+self.stdin_file+'_out', '1>$'+self.stdout_file, '2>$'+self.stderr_file, '&']
-        print(*cmd)
-        print(self.pid_var + '=$!')
+        self.process = subprocess.Popen(args, stdout=subprocess.PIPE,
+                stdin=stdin, stderr=subprocess.PIPE)
 
     def send(self, msg):
-        print('printf', '"%s"', quote(msg), '>$'+self.stdin_file)
+        self.process.stdin.write(msg)
+        self.process.stdin.flush()
 
     def finish_input(self):
-        print(': >$'+self.stdin_file)
-        print('wait', '$'+self.pid_var)
+        self.process.stdin.close()
 
     def readline_stdout(self):
-        print(': >$'+self.stdin_file)
-        print('read -r '+self.line_var+' <$'+self.stdout_file+'_out')
-        print('echo READ:', '$'+self.line_var)
-        return '$'+self.line_var
+        line = self.process.stdout.readline().rstrip()
+        #print('read', line)
+        return line
 
     def send_signal(self, sig):
-        print('kill -'+ str(sig), '$'+self.pid_var)
+        self.process.send_signal(sig)
 
     def diff_fd(self, fd, comparison):
         if fd == 1:
-            f = self.stdout_file
+            f = self.process.stdout
         elif fd == 2:
-            f = self.stderr_file
-        fd = str(self.i) + str(fd)
-        #redir = '<$'+self.stderr_file
-        print('colordiff', quote(comparison), '-', '<$'+f+'_out')
-        #        '|| { echo diff mismatch on fd '+str(fd)+' >&2; exit 1; }', '} &')
-        #print('exec', fd+'>&-')
+            f = self.process.stderr
+        out = f.read().splitlines(1)
+        with open(comparison, 'r') as compare:
+            #d = difflib.Differ()
+            #diff = list(d.compare(compare.read().splitlines(1), out))
+            expected = compare.read().splitlines(1)
+            diff = difflib.unified_diff(expected, out, comparison, 'actual')
+            diff = list(diff)
+            if diff:
+                fname = ['stdin', 'stdout', 'stderr'][fd]
+                warn('{} mismatch on process {} {}\n{}'.format(fname, self.i,
+                    self.args, ''.join(diff).rstrip()))
 
     def expect_exit(self, code):
-        print('wait', '$'+self.pid_var)
-        print('ret=$?')
-        print('[[ $ret != '+str(code)+' ]]', '&&', 
-                '{ echo expected '+str(code)+' but got $ret; exit 2; }')
+        ret = self.process.wait()
+        if ret != code:
+            warn('process {} expected exit code {} but got {}'
+                    .format(self.i, code, ret))
 
     def assert_signalled(self, sig):
-        self.expect_exit(sig + 128)
+        ret = self.process.wait()
+        if ret != -sig:
+            ret_type = 'regular exit code' if ret > 0 else 'signal'
+            sif = sig if sig > 0 else -sig
+            warn('process {} expected signal {} but got {} {}'
+                    .format(self.i, sig, ret_type, ret))
 
     def kill(self):
-        print('kill', '-9', '$'+self.pid_var)
+        self.process.kill()
 
 
 class TestCase(object):
     def __init__(self):
-        print('#!/bin/bash')
-        print('set', '-v')
-        print('TEMP_DIR=$(mktemp -d --tmpdir=. tmp_test.XXXX)')
         self._i = 0
         self.prog = './2310depot' # TODO: generalise
 
@@ -101,7 +108,7 @@ class TestCase(object):
         return TestProcess(self._i, args, stdin)
     
     def delay(self, t):
-        print('sleep', (t))
+        time.sleep(t*delay)
 
     def assert_stdout_matches_file(self, proc, f):
         proc.diff_fd(1, f)
@@ -124,38 +131,92 @@ def eprint(*args, **kwargs):
     kwargs['file'] = sys.stderr
     print(*args, **kwargs)
 
+def _catch_warnings(display):
+    caught = []
+    original = warnings.showwarning
+
+    def showwarning(*args, **kwargs):
+        caught.append(args[0])
+        if display:
+            return original(*args, **kwargs)
+    warnings.showwarning = showwarning
+    return caught
+
+class CaptureHandler(logging.NullHandler):
+    def __init__(self):
+        super(logging.NullHandler, self).__init__()
+        self.setFormatter(logging.Formatter('%(levelname)s %(funcName)s %(message)s'))
+        self.records = []
+
+    def handle(self, record):
+        self.records.append(record)
+
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Test runner for CSSE2310. '
+            +'Shim marks.py by Kenton Lam.')
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+            help='verbosity. specify once to print failure details, twice to print success details.')
+    parser.add_argument('-d', '--delay', action='store', type=float, default=1,
+            help='delay time multiplier.')
+    parser.add_argument('test', type=str, nargs='*', default=('*',),
+            help='tests to run. can contain Bash-style wildcards. default: all.')
+    return parser.parse_args(args)
+
 def main():
-    eprint('starting shim marks main')
+    global delay
     tests = {}
+    test_names = []
     for cls in TestCase.__subclasses__():
-        eprint('test case:', cls.__name__)
         for fn in dir(cls):
             fn = getattr(cls, fn)
             if not hasattr(fn, 'marks'): continue
             name = cls.__name__+'.'+fn.__name__
             tests[name] = (cls, fn)
-            eprint('  '+name)
+            test_names.append(name)
     
-    cls, fn = None, None
-    while True:
-        eprint('select test case: ', end='')
-        line = raw_input()
-        matched = fnmatch.filter(tests, '*'+line+'*')
-        eprint('  ', end='')
-        eprint(*matched, sep='\n  ')
-        if len(matched) == 1:
-            cls, fn = tests[matched[0]]
-            break
-    eprint(cls, fn)
+    args = (parse_args(sys.argv[1:]))
+    delay = args.delay
+    verbose = args.verbose >= 1
 
-    if len(sys.argv) < 2:
-        SH_FILE = 'test.sh'
-        sys.stdout = open(SH_FILE, 'w')
-        os.chmod(SH_FILE, 0755)
-    
-    cls.__marks_options__ = defaultdict(lambda: '.')
-    # causes problems
-    #cls.setup_class()
-    c = cls()
-    getattr(c, fn.__name__)()
-    
+    handler = CaptureHandler()
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
+    matched = []
+    for t in args.test:
+        matched.extend(fnmatch.filter(test_names, '*'+t+'*'))
+
+    print('executing', str(len(matched)), 'tests:')
+    print(matched)
+    print()
+
+    max_len = max(len(x) for x in matched)
+
+    passed = 0
+    failed = 0
+    start = time.time()
+    for name in matched:
+        print(' '*40, end='')
+        print(Colour.OKBLUE+'\r[{:>2}/{}]'.format(1+passed+failed, len(matched)),
+                Colour.ENDC+name.ljust(max_len), '...', end=' ')
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always') # needed to catch all warnings
+            cls, fn = tests[name]
+            c = cls()
+            fn(c)
+        if caught:
+            failed += 1
+            print(Colour.FAIL+'FAIL'+Colour.ENDC)
+            if verbose:
+                for i, w in enumerate(caught):
+                    d = dict(w.__dict__)
+                    del d['_category_name']
+                    num = '(failure {}/{})'.format(i+1, len(caught))
+                    print(Colour.WARNING+num+Colour.ENDC,
+                            d['message'])
+        else:
+            passed += 1
+            print(Colour.OKGREEN+'OK'+Colour.ENDC)
+        print(handler.records)
+    print('\nran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
+            'passed:', str(passed)+',', 'failed:', str(failed)+'.')
