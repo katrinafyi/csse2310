@@ -71,21 +71,59 @@ def _diff_files(f1, f2, s1, s2=None, t1=None, t2=None):
     return list(diff)
 
 class TestProcess(object):
+
+    @staticmethod
+    def _tee_stream(stream, log):
+        while True:
+            line = next(stream)
+            yield line
+            log.append(line)
+
     def __init__(self, i, args, stdin):
         logger.debug('starting process {} with stdin {}'
                 .format(i, repr(stdin)))
         logger.debug('    cmd: {}'.format(args))
+
         if stdin:
             stdin = open(stdin, 'r')
+            self.stdin_log = list(stdin.readlines())
+            stdin.seek(0)
         else:
             stdin = subprocess.PIPE
+            self.stdin_log = []
+
         self.i = i
         self.args = args
         self.process = subprocess.Popen(args, stdout=subprocess.PIPE,
             stdin=stdin, stderr=subprocess.PIPE)
 
+        self.stdout_log = []
+        self.stderr_log = []
+        self.stdout_diff_log = []
+        self.stderr_diff_log = []
+
+    def save_streams(self, prefix=''):
+        # read remaining data from streams
+        self.stdout_log.extend(self.process.stdout.readlines())
+        self.stderr_log.extend(self.process.stderr.readlines())
+
+        stream_names = ('in', 'out', 'err', 'diff.out', 'diff.err')
+        streams = (self.stdin_log, self.stdout_log, self.stderr_log,
+                self.stdout_diff_log, self.stderr_diff_log)
+        for name, log in zip(stream_names, streams):
+            fname = '{}_{}.{}'.format(self.i, self.args[0].replace('./', ''),
+                    name)
+            path = prefix + fname
+            try:
+                os.makedirs(os.path.dirname(path))
+            except OSError:
+                pass # directory could exist
+            with open(path, 'w') as f:
+                f.writelines(log)
+
     def send(self, msg):
         logger.debug('writing to stdin of process {}: {}'.format(self.i, repr(msg)))
+        self.stdin_log.append(msg)
         self.process.stdin.write(msg)
         self.process.stdin.flush()
 
@@ -96,6 +134,7 @@ class TestProcess(object):
 
     def readline_stdout(self):
         line = self.process.stdout.readline()
+        self.stdout_log.append(line)
         logger.debug('got line {} from process {}'.format(repr(line), self.i))
         #print('read', line)
         return line
@@ -107,10 +146,16 @@ class TestProcess(object):
     def diff_fd(self, fd, comparison):
         if fd == 1:
             f = self.process.stdout
+            log = self.stdout_log
+            dlog = self.stdout_diff_log
         elif fd == 2:
             f = self.process.stderr
+            log = self.stderr_log
+            dlog = self.stderr_diff_log
         fname = ['stdin', 'stdout', 'stderr'][fd]
         out = f.readlines()
+        log.extend(out)
+        dlog.extend(out)
         with open(comparison, 'r') as compare:
             expected = compare.readlines()
 
@@ -155,11 +200,20 @@ class TestProcess(object):
 
 class TestCase(object):
     def __init__(self):
-        self._i = 0
+        self.i = 1
+        self.processes = []
 
     def process(self, args, stdin=None):
-        self._i += 1
-        return TestProcess(self._i, args, stdin)
+        p =  TestProcess(self.i, args, stdin)
+        self.i += 1
+        self.processes.append(p)
+        return p
+
+    def _save_process_streams(self, prefix):
+        for p in self.processes:
+            try: p.kill()
+            except OSError: pass # process already dead
+            p.save_streams(prefix)
     
     def delay(self, t):
         logger.debug('sleeping for {} seconds'.format(t))
@@ -223,13 +277,17 @@ def nonneg_float(s):
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Test runner for CSSE2310. '
             +'Shim marks.py by Kenton Lam.')
+    parser.add_argument('-l', '--list', action='store_true',
+            help='list matching tests without running them.')
     parser.add_argument('-v', '--verbose', action='count', default=0,
             help='verbosity, can be repeated up to 3 times. '
             +'once prints diffs, twice prints successes, thrice prints all actions.')
     parser.add_argument('-d', '--delay', action='store', type=nonneg_float, default=1,
             help='delay time multiplier.')
+    parser.add_argument('-s', '--save', action='store_true',
+            help='save test input and output streams to testres/.')
     parser.add_argument('--debug', action='store_true',
-            help='show full stack trace on exceptions.')
+            help='exit with full stack trace on exceptions.')
     parser.add_argument('test', metavar='TEST', type=str, nargs='*', default=('*',),
             help='tests to run. can contain Bash-style wildcards. default: *')
     return parser.parse_args(args)
@@ -247,9 +305,11 @@ def main():
             test_names.append(name)
     
     args = (parse_args(sys.argv[1:]))
+    list_ = args.list
     delay = args.delay
     verbose = min(args.verbose, 3)
     debug = args.debug
+    save = args.save and not list_
 
     failure_level = logging.ERROR
     diff_level = logging.WARNING
@@ -276,7 +336,7 @@ def main():
         matched.extend(new_matches)
         seen.update(new_matches)
 
-    print('executing', str(len(matched)), 'tests:', matched)
+    print('matched', len(matched), 'tests.')
     print()
 
     max_len = max(len(x) for x in matched) if matched else 0
@@ -285,11 +345,14 @@ def main():
     passed = 0
     failed = 0
     start = time.time()
+    n = 0
     for name in matched:
-        test_num = '[{}/{}]'.format(1+passed+failed, len(matched))
+        n += 1
+        test_num = '[{}/{}]'.format(n, len(matched))
         test_num = test_num.rjust(2*num_len+3)
         print(Colour.MAGENTA+test_num+Colour.ENDC,
                 name.ljust(max_len), '...', end=' ')
+        sys.stdout.flush()
         del handler.records[:]
 
         cls, fn = tests[name]
@@ -300,18 +363,24 @@ def main():
             pass
             # throws due to missing TEST_LOCATION or invalid working dir
 
-        interrupt = False
+        interrupted = False
         c = cls()
         try:
-            fn(c)
+            if not list_:
+                fn(c) # run the test
+            if save: c._save_process_streams('testres/'+name+'/')
         except Exception as e:
             logger.critical(e.__class__.__name__+': '+str(e))
+            if debug: raise # throw the exception again
+        except KeyboardInterrupt as e:
             if debug: raise
-        except KeyboardInterrupt:
-            interrupt = True
-            print(Colour.YELLOW+'INTERRUPTED', end=' ')
+            interrupted = True
+            #print(Colour.YELLOW+'INTERRUPTED', end=' ')
+            logger.critical(e.__class__.__name__)
         else:
-            if any(r for r in handler.records if r.levelno >= failure_level):
+            if list_:
+                pass # don't count pass/fail if -l was passed
+            elif any(r for r in handler.records if r.levelno >= failure_level):
                 failed += 1
                 print(Colour.FAIL+'FAIL', end='')
             else:
@@ -325,10 +394,13 @@ def main():
             if r.levelno in level_names: name = level_names[r.levelno]
             print(name+':'+Colour.ENDC, r.msg)
 
-        if interrupt:
+        if interrupted:
             print('\nterminating due to interrupt.')
             break
-    print('\nran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
+    print()
+    if save:
+        print(Colour.OKGREEN+'output saved:'+Colour.ENDC, 'test outputs are saved to testres folder.\n')
+    print('ran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
             'passed:', str(passed)+',', 'failed:', str(failed)+'.')
     print(Colour.ORANGE+'warning:',
             'this is not an official test and offers no guarantee of correctness.'+Colour.ENDC)
