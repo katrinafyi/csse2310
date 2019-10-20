@@ -7,12 +7,11 @@ Features:
  - Wildcard matching of test names (using Bash's *, ?, []).
  - More verbose output (up to -vvv), including full diffs.
  - Delay time multiplier to adjust delays by a factor between 0 and 1.
- - Display of all failure conditions for a test, not just first failure.
-
+ - Displays all failure conditions for a test, not just the first failure.
+ - Compatible with current grum.py test scripts without modification.
 """
 
-# WARNING: grum.py is python 2
-
+# WARNING: grum.py is python 2.7
 from __future__ import print_function, generators, with_statement, generators
 import fnmatch
 import random
@@ -21,6 +20,7 @@ import sys
 import time
 import logging
 import signal
+import datetime
 
 from pprint import pprint
 import warnings
@@ -91,10 +91,20 @@ class TestProcess(object):
         fname = ['stdin', 'stdout', 'stderr'][fd]
         out = f.read().splitlines(1)
         with open(comparison, 'r') as compare:
+            mod_time = os.path.getmtime(comparison)
+            mod_str = str(datetime.datetime.fromtimestamp(mod_time))
+            now_str = str(datetime.datetime.now())
+
+            actual = '(actual)'
+            name_len = max(len(comparison), len(actual))
+            comparison_str = comparison.ljust(name_len)
+            actual_str = actual.ljust(name_len)
+
             #d = difflib.Differ()
             #diff = list(d.compare(compare.read().splitlines(1), out))
             expected = compare.read().splitlines(1)
-            diff = difflib.unified_diff(expected, out, comparison, '(actual)')
+            diff = difflib.unified_diff(expected, out, comparison_str, actual_str,
+                    mod_str, now_str)
             diff = list(diff)
             if diff:
                 logger.error('{} mismatch on process {} {}'.format(fname, self.i,
@@ -104,7 +114,7 @@ class TestProcess(object):
                 logger.info('{} matched on process {} to file {}'
                         .format(fname, self.i, repr(comparison)))
 
-    signal_names = {getattr(signal, s): s for s in dir(signal)
+    _signal_names = {getattr(signal, s): s for s in dir(signal)
             if s.startswith('SIG') and not s.startswith('SIG_')}
 
     @classmethod
@@ -112,8 +122,8 @@ class TestProcess(object):
         pcode = code if code >= 0 else -code
         s = 'signal ' if code < 0 else 'exit code '
         s += str(pcode)
-        if code < 0 and pcode in cls.signal_names:
-            s += ' ('+cls.signal_names[pcode]+')'
+        if code < 0 and pcode in cls._signal_names:
+            s += ' ('+cls._signal_names[pcode]+')'
         return s
 
 
@@ -181,7 +191,6 @@ def _catch_warnings(display):
 class CaptureHandler(logging.NullHandler):
     def __init__(self):
         super(logging.NullHandler, self).__init__()
-        self.setFormatter(logging.Formatter('%(levelname)s %(funcName)s %(message)s'))
         self.records = []
 
     def handle(self, record):
@@ -197,11 +206,12 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Test runner for CSSE2310. '
             +'Shim marks.py by Kenton Lam.')
     parser.add_argument('-v', '--verbose', action='count', default=0,
-            help='verbosity, can be repeated up to 3 times. once prints diffs, twice prints successes, thrice prints all actions.')
+            help='verbosity, can be repeated up to 3 times. '
+            +'once prints diffs, twice prints successes, thrice prints all actions.')
     parser.add_argument('-d', '--delay', action='store', type=nonneg_float, default=1,
             help='delay time multiplier.')
-    parser.add_argument('test', type=str, nargs='*', default=('*',),
-            help='tests to run. can contain Bash-style wildcards. default: all.')
+    parser.add_argument('test', metavar='TEST', type=str, nargs='*', default=('*',),
+            help='tests to run. can contain Bash-style wildcards. default: *')
     return parser.parse_args(args)
 
 def main():
@@ -266,9 +276,9 @@ def main():
         try:
             cls.setup_class() # needed to set cls.prog
         except (NameError, OSError):
-            pass
-        c = cls()
+            pass # throws due to missing TEST_LOCATION or invalid working dir
 
+        c = cls()
         try:
             fn(c)
         except Exception as e:
