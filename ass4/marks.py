@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env pythos2
 
 """
 Shim marks.py for executing grum.py tests independent of moss.
@@ -53,6 +53,22 @@ class Colour:
     CYAN = '\033[38;5;14m'
     MAGENTA = '\033[38;5;13m'
     ORANGE = '\033[38;5;208m'
+    YELLOW = '\033[38;5;11m'
+
+def _diff_files(f1, f2, s1, s2=None, t1=None, t2=None):
+    if t1 is None:
+        t1 = os.path.getmtime(s1)
+        t1 = str(datetime.datetime.fromtimestamp(t1))
+    if t2 is None:
+        t2 = os.path.getmtime(s2) if s2 else time.time()
+        t2 = str(datetime.datetime.fromtimestamp(t2))
+    if s2 is None:
+        s2 = '(actual)'
+    l = max(len(s1), len(s2))
+    s1 = s1.ljust(l)
+    s2 = s2.ljust(l)
+    diff = difflib.unified_diff(f1, f2, s1, s2, t1, t2)
+    return list(diff)
 
 class TestProcess(object):
     def __init__(self, i, args, stdin):
@@ -75,7 +91,8 @@ class TestProcess(object):
 
     def finish_input(self):
         logger.debug('closing stdin of process {}'.format(self.i))
-        self.process.stdin.close()
+        if self.process.stdin:
+            self.process.stdin.close()
 
     def readline_stdout(self):
         line = self.process.stdout.readline()
@@ -93,23 +110,11 @@ class TestProcess(object):
         elif fd == 2:
             f = self.process.stderr
         fname = ['stdin', 'stdout', 'stderr'][fd]
-        out = f.read().splitlines(1)
+        out = f.readlines()
         with open(comparison, 'r') as compare:
-            mod_time = os.path.getmtime(comparison)
-            mod_str = str(datetime.datetime.fromtimestamp(mod_time))
-            now_str = str(datetime.datetime.now())
+            expected = compare.readlines()
 
-            actual = '(actual)'
-            name_len = max(len(comparison), len(actual))
-            comparison_str = comparison.ljust(name_len)
-            actual_str = actual.ljust(name_len)
-
-            #d = difflib.Differ()
-            #diff = list(d.compare(compare.read().splitlines(1), out))
-            expected = compare.read().splitlines(1)
-            diff = difflib.unified_diff(expected, out, comparison_str, actual_str,
-                    mod_str, now_str)
-            diff = list(diff)
+            diff = _diff_files(expected, out, comparison)
             if diff:
                 logger.error('{} mismatch on process {} {}'.format(fname, self.i,
                     self.args))
@@ -150,7 +155,7 @@ class TestProcess(object):
 
 class TestCase(object):
     def __init__(self):
-        self._i = -1
+        self._i = 0
 
     def process(self, args, stdin=None):
         self._i += 1
@@ -164,10 +169,19 @@ class TestCase(object):
         proc.diff_fd(1, f)
     def assert_stderr_matches_file(self, proc, f):
         proc.diff_fd(2, f)
-
     def assert_exit_status(self, proc, status):
         proc.expect_exit(status)
 
+    def assert_files_equal(self, s1, s2):
+        with open(s1, 'r') as f1, open(s2, 'r') as f2:
+            diff = _diff_files(f2.readlines(), f1.readlines(), s2, s1)
+            if diff:
+                logger.error('actual {} does not match expected {}'
+                        .format(repr(s1), repr(s2)))
+                logger.warning(''.join(diff))
+            else:
+                logger.info('file {} matches expected {}'
+                        .format(repr(s1), repr(s2)))
 
 def marks(category=None, category_marks=0):
     def wrapper(f):
@@ -214,6 +228,8 @@ def parse_args(args):
             +'once prints diffs, twice prints successes, thrice prints all actions.')
     parser.add_argument('-d', '--delay', action='store', type=nonneg_float, default=1,
             help='delay time multiplier.')
+    parser.add_argument('--debug', action='store_true',
+            help='show full stack trace on exceptions.')
     parser.add_argument('test', metavar='TEST', type=str, nargs='*', default=('*',),
             help='tests to run. can contain Bash-style wildcards. default: *')
     return parser.parse_args(args)
@@ -233,6 +249,7 @@ def main():
     args = (parse_args(sys.argv[1:]))
     delay = args.delay
     verbose = min(args.verbose, 3)
+    debug = args.debug
 
     failure_level = logging.ERROR
     diff_level = logging.WARNING
@@ -279,26 +296,38 @@ def main():
         cls.__marks_options__ = {'working_dir': ''}
         try:
             cls.setup_class() # needed to set cls.prog
-        except (NameError, OSError):
-            pass # throws due to missing TEST_LOCATION or invalid working dir
+        except (NameError, OSError) as e:
+            pass
+            # throws due to missing TEST_LOCATION or invalid working dir
 
+        interrupt = False
         c = cls()
         try:
             fn(c)
         except Exception as e:
             logger.critical(e.__class__.__name__+': '+str(e))
-
-        if any(r for r in handler.records if r.levelno >= failure_level):
-            failed += 1
-            print(Colour.FAIL+'FAIL'+Colour.ENDC)
+            if debug: raise
+        except KeyboardInterrupt:
+            interrupt = True
+            print(Colour.YELLOW+'INTERRUPTED', end=' ')
         else:
-            passed += 1
-            print(Colour.OKGREEN+'OK'+Colour.ENDC)
+            if any(r for r in handler.records if r.levelno >= failure_level):
+                failed += 1
+                print(Colour.FAIL+'FAIL', end='')
+            else:
+                passed += 1
+                print(Colour.OKGREEN+'OK', end='')
+        print(Colour.ENDC)
+
         for i, r in enumerate(handler.records):
             if r.levelno < display_level: continue
             name = r.levelname.lower()
             if r.levelno in level_names: name = level_names[r.levelno]
             print(name+':'+Colour.ENDC, r.msg)
+
+        if interrupt:
+            print('\nterminating due to interrupt.')
+            break
     print('\nran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
             'passed:', str(passed)+',', 'failed:', str(failed)+'.')
     print(Colour.ORANGE+'warning:',
