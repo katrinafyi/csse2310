@@ -9,6 +9,9 @@ Features:
  - Delay time multiplier to adjust delays by a factor between 0 and 1.
  - Displays all failure conditions for a test, not just the first failure.
  - Compatible with current grum.py test scripts without modification.
+
+Known issues:
+ - No timeouts implemented, programs can block the tester.
 """
 
 # WARNING: grum.py is python 2.7
@@ -49,6 +52,7 @@ class Colour:
     GREY = '\033[38;5;8m'
     CYAN = '\033[38;5;14m'
     MAGENTA = '\033[38;5;13m'
+    ORANGE = '\033[38;5;208m'
 
 class TestProcess(object):
     def __init__(self, i, args, stdin):
@@ -74,7 +78,7 @@ class TestProcess(object):
         self.process.stdin.close()
 
     def readline_stdout(self):
-        line = self.process.stdout.readline().rstrip()
+        line = self.process.stdout.readline()
         logger.debug('got line {} from process {}'.format(repr(line), self.i))
         #print('read', line)
         return line
@@ -297,3 +301,5 @@ def main():
             print(name+':'+Colour.ENDC, r.msg)
     print('\nran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
             'passed:', str(passed)+',', 'failed:', str(failed)+'.')
+    print(Colour.ORANGE+'warning:',
+            'this is not an official test and offers no guarantee of correctness.'+Colour.ENDC)
