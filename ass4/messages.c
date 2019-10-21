@@ -52,10 +52,10 @@ char* msg_code(MessageType type) {
 }
 
 // The consume_ family of functions take arguments of a pointer to a pointer
-// to the start of the current payload. Each function will modify the value of 
-// *start to point _after_ the part it consumes.
+// to the start of the current payload. Each function will modify the value of
+// *start to point _after_ the part it consumes. They will store the parsed
+// object in the location of the second parameter.
 // They return a bool of true in success or false on failure.
-
 
 // consumes a single colon
 bool consume_colon(char** start) {
@@ -68,7 +68,7 @@ bool consume_colon(char** start) {
 }
 
 // consumes a non-negative integer
-bool consume_int(char** start, int* outInt) {
+bool consume_int(char** start, int* output) {
     // we can't use parse_int because the number may not span the entire
     // string.
     char* end = NULL;
@@ -86,14 +86,14 @@ bool consume_int(char** start, int* outInt) {
     }
     // integer was valid
     *start = end; // move start past the integer parsed.
-    *outInt = val;
+    *output = val;
     return true;
 }
 
 // consumes a string until the next colon or end of the string. method is
 // sufficiently general to use parameter name outStr.
 // MALLOC's the string stored in outStr
-bool consume_str(char** start, char** outStr) {
+bool consume_str(char** start, char** output) {
     int len; // length of the string to consume
     
     // search for colon in the string.
@@ -115,23 +115,23 @@ bool consume_str(char** start, char** outStr) {
     strncpy(copy, *start, len);
     copy[len] = '\0'; // null terminate new string
 
-    *outStr = copy;
+    *output = copy;
     *start = *start + len; // move past this string.
     return true;
 }
 
 // consumes a quantity:name pair representing a material.
-bool consume_material(char** start, Material* outMaterial) {
+bool consume_material(char** start, Material* output) {
     // note we do not use mat_init here because we directly write to 
     // outMaterial.
-    return consume_int(start, &outMaterial->quantity) && 
+    return consume_int(start, &output->quantity) && 
             consume_colon(start) &&
-            consume_str(start, &outMaterial->name);
+            consume_str(start, &output->name);
 }
 
 // consumes an entire message. useful for recursive messages (Defer).
 // MALLOC's a message to store into *outMessage.
-bool consume_message(char** start, Message** outMessage) {
+bool consume_message(char** start, Message** output) {
     // allocate on stack until we validate the message.
     Message message;
     MessageStatus status = msg_parse(*start, &message);
@@ -143,7 +143,7 @@ bool consume_message(char** start, Message** outMessage) {
     Message* newMsg = malloc(sizeof(Message));
     *newMsg = message;
     // update the out param with the new message location
-    *outMessage = newMsg;
+    *output = newMsg;
     *start = *start + strlen(*start); // entire string is consumed.
     return true;
 }
@@ -226,33 +226,6 @@ bool parse_execute(char* payload, MessageData* data) {
             consume_eof(start);
 }
 
-// the format_ family of functions all return MALLOC'd strings when given 
-// specific data to format. these are (approximately) the inverse of the
-// consume_ functions.
-
-// formats an integer and string, colon separated.
-char* format_int_str(int number, char* str) {
-    return asprintf("%d%c%s", number, COLON, str);
-}
-
-// foramts a single integer
-char* format_int(int number) {
-    return asprintf("%d", number);
-}
-
-// formats an int followed by two strings, colon separated
-char* format_int_str_str(int number, char* str1, char* str2) {
-    return asprintf("%d%c%s%c%s", number, COLON, str1, COLON, str2);
-}
-
-// formats a defer payload, taking the key and deferred message
-char* format_defer(int key, Message message) {
-    char* encoded = msg_encode(message);
-    char* ret = asprintf("%d%c%s", key, COLON, encoded);
-    free(encoded);
-    return ret;
-}
-
 // see header
 bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
     bool valid = false;
@@ -282,30 +255,37 @@ bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
     return valid;
 }
 
+// formats a defer payload, taking the key and deferred message
+char* format_defer(int key, Message message) {
+    char* encoded = msg_encode(message);
+    char* ret = asprintf("%d%c%s", key, COLON, encoded);
+    free(encoded);
+    return ret;
+}
+
 // see header
 char* msg_payload_encode(Message message) {
-    // format_ functions are similar to consume_ in terms of functionality.
-    // because we don't really need strict format checks here, we skip the 
-    // abstraction of the parse_ methods.
     MessageData data = message.data;
     Material mat = data.material;
+
     switch (message.type) {
         case MSG_CONNECT:
-            return format_int(data.depotPort);
+            return asprintf("%d", data.depotPort);
         case MSG_IM:
-            return format_int_str(data.depotPort, data.depotName);
+            return asprintf("%d%c%s", data.depotPort, COLON, data.depotName);
         case MSG_DELIVER:
         case MSG_WITHDRAW:
-            return format_int_str(mat.quantity, mat.name);
+            return asprintf("%d%c%s", mat.quantity, COLON, mat.name);
         case MSG_TRANSFER:
-            return format_int_str_str(mat.quantity, mat.name, data.depotName);
+            return asprintf("%d%c%s%c%s", mat.quantity, COLON, mat.name, COLON,
+                    data.depotName);
         case MSG_DEFER:
             // note dereference of deferMessage
             return format_defer(data.deferKey, *data.deferMessage);
         case MSG_EXECUTE:
-            return format_int(data.deferKey);
+            return asprintf("%d", data.deferKey);
         default:
-            assert(0);
+            assert(0); // no message matched
     }
 }
 

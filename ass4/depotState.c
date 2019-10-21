@@ -39,6 +39,8 @@ void ds_init(DepotState* depotState, char* name) {
 // then free the items and destroy the array.
 void destroy_helper(Array* array, void (*destroy)(void*)) {
     if (array != NULL) {
+        DEBUG_PRINTF("at time of destroy, array had %d items\n",
+                array->numItems);
         // disposes each item in the array
         array_foreach(array, destroy);
         // frees memory used by each item in the array, then disposes the

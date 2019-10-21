@@ -74,7 +74,7 @@ sigset_t blocked_sigset(void) {
     sigset_t sigset;
     sigemptyset(&sigset);
     sigaddset(&sigset, SIGHUP);
-    //sigaddset(&ss, SIGUSR1);
+    sigaddset(&sigset, SIGUSR1);
     return sigset;
 }
 
@@ -541,20 +541,22 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
     pthread_t signalThread;
     pthread_create(&signalThread, NULL, signal_thread, depotState->incoming);
     // start server to listen for incoming connections
-    start_server_thread(depotState, server);
+    pthread_t serverThread = start_server_thread(depotState, server);
 
-    // IMPORTANT: print port number after listen and signal threads started
-    printf("%d\n", port);
+    printf("%d\n", port); // IMPORTANT: print ports after threads started
     fflush(stdout);
 
     // main loop of the depot. acts on incoming messages
-    while (1) {
+    bool breakMain = false;
+    while (!breakMain) {
         Message* msg = chan_wait(depotState->incoming);
         int numItems;
         sem_getvalue(&depotState->incoming->numItems, &numItems);
         DEBUG_PRINTF("received %s message, %d messages remain\n", 
                 msg_code(msg->type), numItems);
-        if (msg->type >= MSG_NULL) { // meta messages are after MSG_NULL
+        if (msg->type == MSG_META_SIGNAL && msg->data.signal == SIGUSR1) {
+            breakMain = true; // debug exit on SIGUSR1 (10)
+        } else if (msg->type >= MSG_NULL) { // meta messages >= MSG_NULL
             execute_meta_message(depotState, msg);
         } else {
             execute_message(depotState, msg);
@@ -562,7 +564,12 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         msg_destroy(msg);
         free(msg);
     }
-    assert(0); // should never get here
+    // WARNING: only works correctly when no connections are open
+    DEBUG_PRINT("terminating program due to signal");
+    pthread_cancel(serverThread); // terminate and cleanup threads
+    pthread_cancel(signalThread);
+    pthread_join(serverThread, NULL);
+    pthread_join(signalThread, NULL);
     return D_NORMAL;
 }
 

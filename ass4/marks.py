@@ -24,6 +24,7 @@ import time
 import logging
 import signal
 import datetime
+import re
 
 from pprint import pprint
 import warnings
@@ -38,6 +39,19 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 delay = 1 # delay time coefficient
+
+_find_unsafe = re.compile(r'[a-zA-Z0-9_^@%+=:,./-]').search
+
+# from shellescape python package
+def quote(s):
+    """Return a shell-escaped version of the string *s*."""
+    if not s:
+        return "''"
+    if _find_unsafe(s) is None:
+        return s
+    # use single quotes, and put single quotes into double quotes
+    # the string $'b is then quoted as '$'"'"'b'
+    return "'" + s.replace("'", "'\"'\"'") + "'"
 
 class Colour:
     HEADER = '\033[95m'
@@ -82,7 +96,7 @@ class TestProcess(object):
     def __init__(self, i, args, stdin):
         logger.debug('starting process {} with stdin {}'
                 .format(i, repr(stdin)))
-        logger.debug('    cmd: {}'.format(args))
+        logger.debug('    ' + ' '.join(quote(a) for a in args))
 
         if stdin:
             stdin = open(stdin, 'r')
@@ -216,7 +230,8 @@ class TestCase(object):
             p.save_streams(prefix)
     
     def delay(self, t):
-        logger.debug('sleeping for {} seconds'.format(t))
+        scale = '' if delay == 1 else ' (scaled to '+str(t*delay)+')'
+        logger.debug('sleeping for {} seconds{}'.format(t, scale))
         time.sleep(t*delay)
 
     def assert_stdout_matches_file(self, proc, f):
@@ -370,8 +385,8 @@ def main():
                 fn(c) # run the test
             if save: c._save_process_streams('testres/'+name+'/')
         except Exception as e:
-            logger.critical(e.__class__.__name__+': '+str(e))
             if debug: raise # throw the exception again
+            logger.critical('test could not continue due to exception:\n'+e.__class__.__name__+': '+str(e))
         except KeyboardInterrupt as e:
             if debug: raise
             interrupted = True
@@ -400,6 +415,8 @@ def main():
     print()
     if save:
         print(Colour.OKGREEN+'output saved:'+Colour.ENDC, 'test outputs are saved to testres folder.\n')
+    if list_:
+        print(Colour.OKBLUE+'list tests:'+Colour.ENDC, 'tests displayed. no tests were run.\n')
     print('ran', passed+failed, 'tests in', round(time.time()-start, 2), 'seconds.',
             'passed:', str(passed)+',', 'failed:', str(failed)+'.')
     print(Colour.ORANGE+'warning:',
