@@ -554,8 +554,8 @@ DepotExitCode exec_depot_loop(DepotState* depotState) {
         sem_getvalue(&depotState->incoming->numItems, &numItems);
         DEBUG_PRINTF("received %s message, %d messages remain\n", 
                 msg_code(msg->type), numItems);
-        if (msg->type == MSG_META_SIGNAL && msg->data.signal == SIGUSR1) {
-            breakMain = true; // debug exit on SIGUSR1 (10)
+        if (msg->type == MSG_META_SIGNAL && msg->data.signal != SIGHUP) {
+            breakMain = true; // debug exit on non-sighup messages
         } else if (msg->type >= MSG_NULL) { // meta messages >= MSG_NULL
             execute_meta_message(depotState, msg);
         } else {

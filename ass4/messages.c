@@ -255,19 +255,13 @@ bool msg_payload_decode(MessageType type, char* payload, MessageData* data) {
     return valid;
 }
 
-// formats a defer payload, taking the key and deferred message
-char* format_defer(int key, Message message) {
-    char* encoded = msg_encode(message);
-    char* ret = asprintf("%d%c%s", key, COLON, encoded);
-    free(encoded);
-    return ret;
-}
-
 // see header
 char* msg_payload_encode(Message message) {
     MessageData data = message.data;
     Material mat = data.material;
 
+    char* msgEncoded;
+    char* output;
     switch (message.type) {
         case MSG_CONNECT:
             return asprintf("%d", data.depotPort);
@@ -280,8 +274,10 @@ char* msg_payload_encode(Message message) {
             return asprintf("%d%c%s%c%s", mat.quantity, COLON, mat.name, COLON,
                     data.depotName);
         case MSG_DEFER:
-            // note dereference of deferMessage
-            return format_defer(data.deferKey, *data.deferMessage);
+            msgEncoded = msg_encode(*data.deferMessage);
+            output = asprintf("%d%c%s", data.deferKey, COLON, msgEncoded);
+            free(msgEncoded);
+            return output;
         case MSG_EXECUTE:
             return asprintf("%d", data.deferKey);
         default:

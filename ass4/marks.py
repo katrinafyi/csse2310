@@ -1,4 +1,4 @@
-#!/usr/bin/env pythos2
+#!/usr/bin/env python2
 
 """
 Shim marks.py for executing grum.py tests independent of moss.
@@ -24,7 +24,6 @@ import time
 import logging
 import signal
 import datetime
-import re
 
 from pprint import pprint
 import warnings
@@ -39,19 +38,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 delay = 1 # delay time coefficient
-
-_find_unsafe = re.compile(r'[a-zA-Z0-9_^@%+=:,./-]').search
-
-# from shellescape python package
-def quote(s):
-    """Return a shell-escaped version of the string *s*."""
-    if not s:
-        return "''"
-    if _find_unsafe(s) is None:
-        return s
-    # use single quotes, and put single quotes into double quotes
-    # the string $'b is then quoted as '$'"'"'b'
-    return "'" + s.replace("'", "'\"'\"'") + "'"
+valgrind = False # open processes within valgrind
 
 class Colour:
     HEADER = '\033[95m'
@@ -94,9 +81,10 @@ class TestProcess(object):
             log.append(line)
 
     def __init__(self, i, args, stdin):
-        logger.debug('starting process {} with stdin {}'
-                .format(i, repr(stdin)))
-        logger.debug('    ' + ' '.join(quote(a) for a in args))
+        stdin_str = (' < ' + quote(stdin)) if stdin else ''
+        logger.debug('starting process {} with stdin {}, cmd:'
+                .format(i, repr(stdin))
+                + '\n    ' + ' '.join(quote(a) for a in args) + stdin_str)
 
         if stdin:
             stdin = open(stdin, 'r')
@@ -108,7 +96,8 @@ class TestProcess(object):
 
         self.i = i
         self.args = args
-        self.process = subprocess.Popen(args, stdout=subprocess.PIPE,
+        prefix = ['valgrind'] if valgrind else []
+        self.process = subprocess.Popen(prefix + args, stdout=subprocess.PIPE,
             stdin=stdin, stderr=subprocess.PIPE)
 
         self.stdout_log = []
@@ -301,6 +290,8 @@ def parse_args(args):
             help='delay time multiplier.')
     parser.add_argument('-s', '--save', action='store_true',
             help='save test input and output streams to testres/.')
+    parser.add_argument('--valgrind', action='store_true',
+            help='execute all processes within valgrind (will fail tests)')
     parser.add_argument('--debug', action='store_true',
             help='exit with full stack trace on exceptions.')
     parser.add_argument('test', metavar='TEST', type=str, nargs='*', default=('*',),
@@ -308,7 +299,8 @@ def parse_args(args):
     return parser.parse_args(args)
 
 def main():
-    global delay
+    global delay, valgrind
+
     tests = {}
     test_names = []
     for cls in TestCase.__subclasses__():
@@ -325,6 +317,7 @@ def main():
     verbose = min(args.verbose, 3)
     debug = args.debug
     save = args.save and not list_
+    valgrind = args.valgrind
 
     failure_level = logging.ERROR
     diff_level = logging.WARNING
