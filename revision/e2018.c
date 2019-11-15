@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 char* read_line(FILE* f) {
     int len = 0;
@@ -60,6 +61,9 @@ void run_part(char** argv, FILE* a, FILE* b) {
         dup2(fileno(b), STDOUT_FILENO);
 
         execvp(argv[0], argv);
+    } else {
+        fclose(a);
+        fclose(b);
     }
 }
 
@@ -85,11 +89,14 @@ void run_cmd(char** cmds, char* a, char* b) {
             in = fdopen(fd[0], "r");
         }
     }
+    for (int i = 0; i < n; i++)
+        wait(NULL);
 }
 
 int main(int argc, char** argv) {
-    char* cmds[4] = {"ls -l", "cat", NULL};
-    //run_cmd(cmds, "a", "b");
+    char* cmds[10] = {"grep .c", "wc", NULL};
+    run_cmd(cmds, "a", "b");
+    return 0;
     while (1) {
         char* s = read_line(stdin);
         if (s == NULL) break;
